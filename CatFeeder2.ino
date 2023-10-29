@@ -1,9 +1,11 @@
 //Подключение библиотек
 #include <lvgl.h> //библиотека пользовательского интерфейса
 #include "touch.h" //работа с тачем
+#include "interface.h"//'экранный интерфейс
 #include <TFT_eSPI.h> //драйвер дисплея
 #include <SPI.h> //драйвер spi
 #include <WiFi.h> //библиотека для рабоы с wifi esp32
+#include <WiFiManager.h> //Легкая настройка подключения к Wifi сети
 #include <GyverNTP.h> //синхронизация с сервером точного времени
 
 //Объявление глобальных переменных и массивов
@@ -32,15 +34,14 @@ static const uint16_t screenHeight = 320; //высота экрана
 //Объявление служебных переменных для LVGL
 static lv_disp_draw_buf_t draw_buf;
 static lv_color_t buf[screenWidth * screenHeight / 6];
-//объекты
-lv_obj_t * btn1;
-lv_obj_t * screenMain;
-lv_obj_t * label;
+
 
 
 //Инициализация библиотек
 GyverNTP ntp(timezone); //инициализация работы с ntp, в параметрах часовой пояс
 TFT_eSPI tft = TFT_eSPI(); // создаем экземпляр объекта TFT_eSPI
+WiFiManager wm; //экземпляр объекта wifi manager
+
 
 /***** БЛОК СЛУЖЕБНЫХ ФУНКЦИЙ ****/
 //Функция для вывода содержимого буфера на экран
@@ -79,19 +80,23 @@ void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data)
   data->state = LV_INDEV_STATE_REL;
   }
   }
-//Функция обработки нажатия экранной кнопки
-static void event_handler_btn(lv_event_t * event){
- static uint32_t cnt = 1;
- lv_obj_t * btn = lv_event_get_target(event);
- lv_obj_t * label = lv_obj_get_child(btn, 0);
- lv_label_set_text_fmt(label, "%"LV_PRIu32, cnt);
- cnt++;
- }
+
+
 /***** КОНЕЦ БЛОКА СЛУЖЕБНЫХ ФУНКЦИЙ ****/
 
 void setup() 
 {
   Serial.begin( 115200 ); //открытие серийного порта
+  //Инициализация wifi
+  WiFi.mode(WIFI_AP_STA);
+  if(!wm.autoConnect("CatFeeder2","12345678")) {
+        Serial.println("Не удалось подкключиться к сети");
+    } 
+    else {  
+        Serial.println("Подключение успешно");
+    }
+
+  //Настройки экрана  
   touch_init(); //иницилизация тача 
   lv_init();//инициализация LVGL
   //Далее идут функции настройки LVGL 
@@ -111,37 +116,18 @@ void setup()
   indev_drv.type = LV_INDEV_TYPE_POINTER; //указываем тип драйвера. В данном случае это тачскрин
   indev_drv.read_cb = my_touchpad_read; //указываем имя функции обработчика нажатий на тачскрин, которую мы создали
   lv_indev_drv_register( &indev_drv ); //регистрация драйвера тачскрина и сохранение его настроек
-  
+  tft.init(); // инициализируем дисплей
+  tft.setRotation (2);
   
   //настраиваем пины для шагового двигателя
   for (byte i = 0; i < 4; i++) pinMode(drvPins[i], OUTPUT);   // пины выходы
-  //Инициализация дисплея
-  tft.init(); // инициализируем дисплей
-  tft.setRotation (2);
-  tft.fillScreen(TFT_BLACK);
-  tft.println("Done!");
+    
+  
   //запуск сервисов
-  //ntp.begin(); //сервис синхронизации времени
+  ntp.begin(); //сервис синхронизации времени
 
-  //Создаем экранные объекты
- lv_obj_t * screenMain = lv_obj_create(NULL); //создаем экранный объект, который будет содержать все другие объекты
-//Создадим объект надпись и опишем его свойства
- label = lv_label_create(screenMain); //создаем объект Надпись как дочерний объект screenMain
- lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP); //текст можно переносить по строкам если не вмещается
- lv_label_set_text(label, "Press the button!"); //сам текст для надписи
- lv_obj_set_size(label, 240, 40); //размеры надписи
- lv_obj_set_pos(label, 0, 15); //положение на экране
-//создадим объект Кнопка
- btn1 = lv_btn_create(screenMain); //создаем объект Кнопка как дочерний объект screenMain
- lv_obj_add_event_cb(btn1, event_handler_btn, LV_EVENT_CLICKED, NULL); //функция, которая вызывается при нажатии на кнопку
- lv_obj_set_width(btn1, 120); //ширина
- lv_obj_set_height(btn1, 30); //высота
- lv_obj_set_pos(btn1,10, 40); //положение
- //далее создадим надпись на кнопке
- lv_obj_t * label1 = lv_label_create(btn1); //создаем объект Надпись как дочерний объект созданной ранее кнопки
- lv_label_set_text(label1, "Press me!"); //Надпись на кнопке
-// далее выводим все на экран
- lv_scr_load(screenMain);
+  //Отрисовка интерфейса
+  load_interface();
 }
 
 void loop() 
@@ -149,7 +135,7 @@ void loop()
   //функция обновления экрана и параметров LVGL 
   lv_timer_handler(); 
   delay( 10 );
-  //ntp.tick(); //синхронизируем время
+  ntp.tick(); //синхронизируем время
   //Проверка таймера кормления 2 раза в секунду
   /*static uint32_t tmr = 0;
   if (millis() - tmr > 500) 
