@@ -6,6 +6,7 @@
 #include <WiFi.h> //библиотека для рабоы с wifi esp32
 #include <WiFiManager.h> //Легкая настройка подключения к Wifi сети
 #include <GyverNTP.h> //синхронизация с сервером точного времени
+#include <GyverTimer.h>//подключение различных таймеров
 
 //Объявление глобальных переменных и массивов
 const byte feedTime[][2] = {
@@ -40,12 +41,19 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
     //Панель состояния
     static lv_obj_t * ui_wifistatus; //статус wifi
     static lv_obj_t * ui_status_ip; //ip адрес
+    //Экранные объекты
+      //Вкладка кормления
+      static lv_obj_t * ui_clock; //часы
+      static lv_obj_t * ui_label_feedAmount; //размер порции
 
 //Инициализация библиотек
 GyverNTP ntp(timezone); //инициализация работы с ntp, в параметрах часовой пояс
 TFT_eSPI tft = TFT_eSPI(); // создаем экземпляр объекта TFT_eSPI
 WiFiManager wm; //экземпляр объекта wifi manager
 
+//Инициализация таймеров
+GTimer reftime(MS);//часы
+GTimer reflvgl(MS); //обновление экранов LVGL 
 
 /***** БЛОК СЛУЖЕБНЫХ ФУНКЦИЙ ****/
 //Функция для вывода содержимого буфера на экран
@@ -140,8 +148,12 @@ void setup()
   //запуск сервисов
   ntp.begin(); //сервис синхронизации времени
 
+  //Установка значений таймеров
+  reftime.setInterval(1000);//обновление времени на экране 1000 мс или 1 секунда
+  reflvgl.setInterval(30);//обновление экрана LVGL 30 мс
 }
 
+/**** ВТОРОЙ БЛОК ФУНКЦИЙ ****/
 void WiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info){
   Serial.println("WiFi connected");
   IPAddress ip = WiFi.localIP();
@@ -153,12 +165,11 @@ void WiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info){
   Serial.println("IP address: ");
   Serial.println(ip);
 }
+/**** КОНЕЦ БЛОКА ФУНКЦИЙ ****/
+
 
 void loop() 
 {
-  //функция обновления экрана и параметров LVGL 
-  lv_timer_handler(); 
-  delay( 10 );
   //Проверка статуса wifi
   if (WiFi.status() == WL_CONNECTED)
     { 
@@ -171,6 +182,12 @@ void loop()
       lv_obj_add_flag(ui_wifistatus, LV_OBJ_FLAG_HIDDEN);
       lv_obj_add_flag(ui_status_ip, LV_OBJ_FLAG_HIDDEN);
     }
+  
+  //Проверяем значения таймеров
+  if (reflvgl.isReady()) { lv_timer_handler();} //Обновляем экран
+  if (reftime.isReady()) {if (lv_tabview_get_tab_act(ui_tabview)==0) {lv_label_set_text(ui_clock, ntp.timeString().c_str());}} //обновляем занчение часов на экране
+
+
   //Проверка таймера кормления 2 раза в секунду
   /*static uint32_t tmr = 0;
   if (millis() - tmr > 500) 
