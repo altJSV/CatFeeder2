@@ -35,9 +35,9 @@
  #define TOUCH_XPT2046_MOSI 23
  #define TOUCH_XPT2046_CS 21
  #define TOUCH_XPT2046_INT 34
- #define TOUCH_XPT2046_ROTATION 0
- #define TOUCH_MAP_X1 4000
- #define TOUCH_MAP_X2 100
+ #define TOUCH_XPT2046_ROTATION 2
+ #define TOUCH_MAP_X1 100
+ #define TOUCH_MAP_X2 4000
  #define TOUCH_MAP_Y1 100
  #define TOUCH_MAP_Y2 4000
 
@@ -175,11 +175,11 @@ bool touch_touched()
  {
  TS_Point p = ts.getPoint();
 #if defined(TOUCH_SWAP_XY)
- touch_last_x = map(p.y, TOUCH_MAP_X1, TOUCH_MAP_X2, 0, 319);
- touch_last_y = map(p.x, TOUCH_MAP_Y1, TOUCH_MAP_Y2, 0, 239);
+ touch_last_x = map(p.y, TOUCH_MAP_X1, TOUCH_MAP_X2, 0, 239);
+ touch_last_y = map(p.x, TOUCH_MAP_Y1, TOUCH_MAP_Y2, 0, 319);
 #else
- touch_last_x = map(p.x, TOUCH_MAP_X1, TOUCH_MAP_X2, 0, 319);
- touch_last_y = map(p.y, TOUCH_MAP_Y1, TOUCH_MAP_Y2, 0, 239);
+ touch_last_x = map(p.x, TOUCH_MAP_X1, TOUCH_MAP_X2, 0, 239);
+ touch_last_y = map(p.y, TOUCH_MAP_Y1, TOUCH_MAP_Y2, 0, 319);
 #endif
  return true;
  }
