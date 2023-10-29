@@ -1,7 +1,6 @@
 //Подключение библиотек
 #include <lvgl.h> //библиотека пользовательского интерфейса
 #include "touch.h" //работа с тачем
-#include "interface.h"//'экранный интерфейс
 #include <TFT_eSPI.h> //драйвер дисплея
 #include <SPI.h> //драйвер spi
 #include <WiFi.h> //библиотека для рабоы с wifi esp32
@@ -35,7 +34,12 @@ static const uint16_t screenHeight = 320; //высота экрана
 static lv_disp_draw_buf_t draw_buf;
 static lv_color_t buf[screenWidth * screenHeight / 6];
 
-
+//объекты интерфейса LVGL
+    //Контейнеры
+    static lv_obj_t * ui_tabview; // панель вкладок
+    //Панель состояния
+    static lv_obj_t * ui_wifistatus; //статус wifi
+    static lv_obj_t * ui_status_ip; //ip адрес
 
 //Инициализация библиотек
 GyverNTP ntp(timezone); //инициализация работы с ntp, в параметрах часовой пояс
@@ -87,14 +91,6 @@ void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data)
 void setup() 
 {
   Serial.begin( 115200 ); //открытие серийного порта
-  //Инициализация wifi
-  WiFi.mode(WIFI_AP_STA);
-  if(!wm.autoConnect("CatFeeder2","12345678")) {
-        Serial.println("Не удалось подкключиться к сети");
-    } 
-    else {  
-        Serial.println("Подключение успешно");
-    }
 
   //Настройки экрана  
   touch_init(); //иницилизация тача 
@@ -119,6 +115,24 @@ void setup()
   tft.init(); // инициализируем дисплей
   tft.setRotation (2);
   
+//Отрисовка интерфейса
+  draw_interface();
+
+ //Инициализация wifi
+ 
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.onEvent(WiFiGotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
+  if(!wm.autoConnect("CatFeeder2","12345678")) {
+        Serial.println("Не удалось подкключиться к сети");
+        lv_obj_add_flag(ui_wifistatus, LV_OBJ_FLAG_HIDDEN); 
+        lv_obj_add_flag(ui_status_ip, LV_OBJ_FLAG_HIDDEN); 
+    } 
+    else {  
+        Serial.println("Подключение успешно");
+        lv_obj_clear_flag(ui_wifistatus, LV_OBJ_FLAG_HIDDEN); //Отображение иконки wifi
+        lv_obj_clear_flag(ui_status_ip, LV_OBJ_FLAG_HIDDEN); //Показать IP адрес
+    } 
+
   //настраиваем пины для шагового двигателя
   for (byte i = 0; i < 4; i++) pinMode(drvPins[i], OUTPUT);   // пины выходы
     
@@ -126,8 +140,18 @@ void setup()
   //запуск сервисов
   ntp.begin(); //сервис синхронизации времени
 
-  //Отрисовка интерфейса
-  load_interface();
+}
+
+void WiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info){
+  Serial.println("WiFi connected");
+  IPAddress ip = WiFi.localIP();
+  String ipString =String(ip[0]);
+  for (byte octet = 1; octet < 4; ++octet) {
+    ipString += '.' + String(ip[octet]);
+  }
+  lv_label_set_text(ui_status_ip,ipString.c_str());
+  Serial.println("IP address: ");
+  Serial.println(ip);
 }
 
 void loop() 
@@ -135,7 +159,18 @@ void loop()
   //функция обновления экрана и параметров LVGL 
   lv_timer_handler(); 
   delay( 10 );
-  ntp.tick(); //синхронизируем время
+  //Проверка статуса wifi
+  if (WiFi.status() == WL_CONNECTED)
+    { 
+      lv_obj_clear_flag(ui_wifistatus, LV_OBJ_FLAG_HIDDEN);
+      lv_obj_clear_flag(ui_status_ip, LV_OBJ_FLAG_HIDDEN);
+      ntp.tick(); //синхронизируем время
+    }
+  else
+    {
+      lv_obj_add_flag(ui_wifistatus, LV_OBJ_FLAG_HIDDEN);
+      lv_obj_add_flag(ui_status_ip, LV_OBJ_FLAG_HIDDEN);
+    }
   //Проверка таймера кормления 2 раза в секунду
   /*static uint32_t tmr = 0;
   if (millis() - tmr > 500) 
