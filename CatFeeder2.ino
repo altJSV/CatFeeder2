@@ -1,4 +1,6 @@
 //Подключение библиотек
+#include <TFT_eSPI.h> //драйвер дисплея
+#include <SPI.h> //драйвер spi
 #include <WiFi.h> //библиотека для рабоы с wifi esp32
 #include <GyverNTP.h> //синхронизация с сервером точного времени
 
@@ -18,23 +20,28 @@ int feedAmount = 100; //размер порции
 #define STEPS_BKW 12        // шаги назад
 #define timezone 3          // часовой пояс
 
-const byte drvPins[] = {3, 4, 5, 6};  // драйвер (фазаА1, фазаА2, фазаВ1, фазаВ2)
+const byte drvPins[] = {5, 17, 16, 22};  // драйвер (фазаА1, фазаА2, фазаВ1, фазаВ2)
 
 //Инициализация библиотек
 GyverNTP ntp(timezone); //инициализация работы с ntp, в параметрах часовой пояс
+TFT_eSPI tft = TFT_eSPI(); // создаем экземпляр объекта TFT_eSPI
 
 void setup() {
   //настраиваем пины для шагового двигателя
   for (byte i = 0; i < 4; i++) pinMode(drvPins[i], OUTPUT);   // пины выходы
-
+  //Инициализация дисплея
+  tft.init(); // инициализируем дисплей
+  tft.setRotation (2);
+  tft.fillScreen(TFT_BLACK);
+  tft.println("Done!");
   //запуск сервисов
-  ntp.begin(); //сервис синхронизации времени
+  //ntp.begin(); //сервис синхронизации времени
 }
 
 void loop() {
-  ntp.tick(); //синхронизируем время
+  //ntp.tick(); //синхронизируем время
   //Проверка таймера кормления 2 раза в секунду
-  static uint32_t tmr = 0;
+  /*static uint32_t tmr = 0;
   if (millis() - tmr > 500) 
   {           // два раза в секунду
       static byte prevMin = 0;
@@ -50,7 +57,7 @@ void loop() {
       }
   
   }
-/*
+
   btn.tick(); //проверка кнопки
   if (btn.click()) feed();
 
