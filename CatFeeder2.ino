@@ -9,14 +9,15 @@
 #include <GyverTimer.h>//подключение различных таймеров
 
 //Объявление глобальных переменных и массивов
-const byte feedTime[][2] = {
-  {7, 0},       // часы, минуты. НЕ НАЧИНАТЬ ЧИСЛО С НУЛЯ
-  {12, 0},
-  {17, 0},
-  {21, 0},
+uint8_t feedTime[][3] = {
+  {7, 0, 1},       // часы, минуты. НЕ НАЧИНАТЬ ЧИСЛО С НУЛЯ
+  {12, 0, 1},
+  {17, 0, 1},
+  {21, 0, 1},
 };
 
 int feedAmount = 100; //размер порции
+uint16_t timefeed;
 
 //различные параметры и настройки
 #define FEED_SPEED 3000     // задержка между шагами мотора (мкс)
@@ -45,6 +46,20 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
       //Вкладка кормления
       static lv_obj_t * ui_clock; //часы
       static lv_obj_t * ui_label_feedAmount; //размер порции
+      static lv_obj_t * ui_remain; //осталось
+      //Вкладка таймеры
+      static lv_obj_t * ui_timer1_hour; //слайдер часов будильника 1
+      static lv_obj_t * ui_timer1_minute; //слайдер минут будильника 1
+      static lv_obj_t * ui_timer1_check; //активатор будильника 1
+      static lv_obj_t * ui_timer2_hour; //слайдер часов будильника 2
+      static lv_obj_t * ui_timer2_minute; //слайдер минут будильника 2
+      static lv_obj_t * ui_timer2_check; //активатор будильника 2
+      static lv_obj_t * ui_timer3_hour; //слайдер часов будильника 3
+      static lv_obj_t * ui_timer3_minute; //слайдер минут будильника 3
+      static lv_obj_t * ui_timer3_check; //активатор будильника 3
+      static lv_obj_t * ui_timer4_hour; //слайдер часов будильника 4
+      static lv_obj_t * ui_timer4_minute; //слайдер минут будильника 4
+      static lv_obj_t * ui_timer4_check; //активатор будильника 4
 
 //Инициализация библиотек
 GyverNTP ntp(timezone); //инициализация работы с ntp, в параметрах часовой пояс
@@ -54,7 +69,7 @@ WiFiManager wm; //экземпляр объекта wifi manager
 //Инициализация таймеров
 GTimer reftime(MS);//часы
 GTimer reflvgl(MS); //обновление экранов LVGL 
-
+GTimer refremain(MS); //обновление экранов LVGL 
 /***** БЛОК СЛУЖЕБНЫХ ФУНКЦИЙ ****/
 //Функция для вывода содержимого буфера на экран
 void my_disp_flush( lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p )
@@ -150,6 +165,7 @@ void setup()
 
   //Установка значений таймеров
   reftime.setInterval(1000);//обновление времени на экране 1000 мс или 1 секунда
+  refremain.setInterval(1000);//обновление времени на экране 1000 мс или 1 секунда
   reflvgl.setInterval(30);//обновление экрана LVGL 30 мс
 }
 
@@ -186,7 +202,31 @@ void loop()
   //Проверяем значения таймеров
   if (reflvgl.isReady()) { lv_timer_handler();} //Обновляем экран
   if (reftime.isReady()) {if (lv_tabview_get_tab_act(ui_tabview)==0) {lv_label_set_text(ui_clock, ntp.timeString().c_str());}} //обновляем занчение часов на экране
-
+  if (refremain.isReady())
+    {
+      uint16_t curtime=ntp.hour()*60 + ntp.minute();
+      uint16_t mintime=1450;
+      uint16_t remtime=0;
+      //расчет времени до кормления
+      for (byte i = 0; i < sizeof(feedTime) / 2; i++)    // проверяем массив с расписанием
+        {
+           uint8_t hr=feedTime[i][0];
+           uint8_t mn=feedTime[i][1];
+           uint16_t feedtimesum=(hr * 60) + mn;
+           if ( feedtimesum >= curtime) 
+            {
+            remtime=feedtimesum-curtime;
+            }
+            else 
+              {
+                remtime=1440-curtime + feedtimesum;
+              }
+             if (remtime<mintime) mintime=remtime;
+           
+            
+        } 
+        lv_label_set_text_fmt(ui_remain, "Время до кормления: %d:%d",(int)mintime/60, mintime%60); 
+    }
 
   //Проверка таймера кормления 2 раза в секунду
   /*static uint32_t tmr = 0;
