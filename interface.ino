@@ -1,12 +1,21 @@
 
-//Функция обработки нажатия экранной кнопки
-static void event_handler_btn(lv_event_t * event)
+//Функция обработки нажатия кнопки кормления
+static void event_feed(lv_event_t * e)
   {
-  static uint32_t cnt = 1;
-  lv_obj_t * btn = lv_event_get_target(event);
-  lv_obj_t * label = lv_obj_get_child(btn, 0);
-   lv_label_set_text_fmt(label, "%"LV_PRIu32, cnt);
-   cnt++;
+  lv_event_code_t code = lv_event_get_code(e);
+   if(code == LV_EVENT_CLICKED) 
+   {
+    //Окно контейнер
+    ui_feedwindow = lv_win_create(lv_scr_act(), 0);
+    lv_obj_t * feed_windows_cont = lv_win_get_content(ui_feedwindow);  //контейнер для содержимого окна
+    //Полоса прогресса кормления
+    ui_feed_progress_bar = lv_bar_create(feed_windows_cont);
+    lv_obj_set_size(ui_feed_progress_bar, lv_pct(100), 40);
+    lv_obj_align(ui_feed_progress_bar, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+    lv_bar_set_value(ui_feed_progress_bar, 0, LV_ANIM_OFF);
+    lv_bar_set_range(ui_feed_progress_bar, 0, feedAmount); //установка максимального значения шкалы прогресса
+    reffeedtime.setInterval(100); //запускаем таймер для подгрузки окна кормления
+    }
  }
 
 //Смена активной вкладки
@@ -61,6 +70,7 @@ void draw_interface()
     lv_obj_t * ui_feed_button = lv_btn_create(ui_tab1); // кнопка кормления  
     lv_obj_set_size(ui_feed_button, lv_pct(100), 40);
     lv_obj_align(ui_feed_button, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+    lv_obj_add_event_cb(ui_feed_button, event_feed, LV_EVENT_ALL, NULL); //обработчик нажатия кнопки
     lv_obj_t * ui_feed_btn_label=lv_label_create(ui_feed_button);//Надпись на кнопке
     lv_label_set_text(ui_feed_btn_label, "Выдать корм");
     lv_obj_center(ui_feed_btn_label);
@@ -161,5 +171,17 @@ void draw_interface()
       lv_checkbox_set_text(ui_timer4_check, "");
       if (feedTime[3][2]==1) lv_obj_add_state(ui_timer4_check, LV_STATE_CHECKED);
 
-
+  /* СОЗДАЕМ ЭЛЕМЕНТЫ ИНТЕРФЕЙСА НА ЭКРАНЕ КОРМЛЕНИЯ*/
+    //Окно контейнер
+    /*
+    ui_feedwindow = lv_win_create(lv_scr_act(), 0);
+    lv_obj_t * feed_windows_cont = lv_win_get_content(ui_feedwindow);  //контейнер для содержимого окна
+    lv_obj_add_flag(ui_feedwindow, LV_OBJ_FLAG_HIDDEN); //скрываем окно
+    //Полоса прогресса кормления
+    ui_feed_progress_bar = lv_bar_create(feed_windows_cont);
+    lv_obj_set_size(ui_feed_progress_bar, lv_pct(100), 40);
+    lv_obj_align(ui_feed_progress_bar, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+    lv_bar_set_range(ui_feed_progress_bar, 0, feedAmount);
+    lv_bar_set_value(ui_feed_progress_bar, 0, LV_ANIM_OFF);
+  */
   }

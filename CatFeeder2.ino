@@ -9,14 +9,14 @@
 #include <GyverTimer.h>//подключение различных таймеров
 
 //Объявление глобальных переменных и массивов
-uint8_t feedTime[][3] = {
+uint8_t feedTime[4][3] = {
   {7, 0, 1},       // часы, минуты. НЕ НАЧИНАТЬ ЧИСЛО С НУЛЯ
   {12, 0, 1},
   {17, 0, 1},
   {21, 0, 1},
 };
 
-int feedAmount = 100; //размер порции
+int feedAmount = 250; //размер порции
 uint16_t timefeed;
 
 //различные параметры и настройки
@@ -38,11 +38,13 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
 
 //объекты интерфейса LVGL
     //Контейнеры
+    static lv_obj_t * ui_feedwindow; // окно кормления
     static lv_obj_t * ui_tabview; // панель вкладок
     //Панель состояния
     static lv_obj_t * ui_wifistatus; //статус wifi
     static lv_obj_t * ui_status_ip; //ip адрес
     //Экранные объекты
+      //Основной экран
       //Вкладка кормления
       static lv_obj_t * ui_clock; //часы
       static lv_obj_t * ui_label_feedAmount; //размер порции
@@ -61,6 +63,9 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
       static lv_obj_t * ui_timer4_minute; //слайдер минут будильника 4
       static lv_obj_t * ui_timer4_check; //активатор будильника 4
 
+      //Окно кормления
+      static lv_obj_t * ui_feed_progress_bar; //полоса прогресса кормления
+
 //Инициализация библиотек
 GyverNTP ntp(timezone); //инициализация работы с ntp, в параметрах часовой пояс
 TFT_eSPI tft = TFT_eSPI(); // создаем экземпляр объекта TFT_eSPI
@@ -69,7 +74,8 @@ WiFiManager wm; //экземпляр объекта wifi manager
 //Инициализация таймеров
 GTimer reftime(MS);//часы
 GTimer reflvgl(MS); //обновление экранов LVGL 
-GTimer refremain(MS); //обновление экранов LVGL 
+GTimer refremain(MS); //таймер обновления времени до кормления 
+GTimer reffeedtime(MS); //таймер времени до запуска кормления 
 /***** БЛОК СЛУЖЕБНЫХ ФУНКЦИЙ ****/
 //Функция для вывода содержимого буфера на экран
 void my_disp_flush( lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p )
@@ -128,7 +134,7 @@ void setup()
   disp_drv.ver_res = screenHeight; //высота экрана
   disp_drv.flush_cb = my_disp_flush; //функция которая выводит содержимое буфера в заданное место экрана. Указываем имя функции которую мы написали выше
   disp_drv.draw_buf = &draw_buf; //объявляем библиотеке, что содержимое буфера экрана находится в переменной draw_buf
-  lv_disp_drv_register( &disp_drv ); //регистрируем драйвер дисплея и сохранем его настройки
+  lv_disp_drv_register( &disp_drv ); //регистрируем драйвер дисплея и сохраняем его настройки
   // Инициализируем драйвер тачскрина
   static lv_indev_drv_t indev_drv; //объявляем переменные для хранения драйвера тачскрина
   lv_indev_drv_init( &indev_drv ); // базовая инициализация драйвера
@@ -165,9 +171,9 @@ void setup()
 
   //Установка значений таймеров
   reftime.setInterval(1000);//обновление времени на экране 1000 мс или 1 секунда
-  refremain.setInterval(1000);//обновление времени на экране 1000 мс или 1 секунда
+  refremain.setInterval(30000);//обновление времени на экране 30000 мс или 30 секунд
   reflvgl.setInterval(30);//обновление экрана LVGL 30 мс
-}
+  }
 
 /**** ВТОРОЙ БЛОК ФУНКЦИЙ ****/
 void WiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info){
@@ -202,31 +208,8 @@ void loop()
   //Проверяем значения таймеров
   if (reflvgl.isReady()) { lv_timer_handler();} //Обновляем экран
   if (reftime.isReady()) {if (lv_tabview_get_tab_act(ui_tabview)==0) {lv_label_set_text(ui_clock, ntp.timeString().c_str());}} //обновляем занчение часов на экране
-  if (refremain.isReady())
-    {
-      uint16_t curtime=ntp.hour()*60 + ntp.minute();
-      uint16_t mintime=1450;
-      uint16_t remtime=0;
-      //расчет времени до кормления
-      for (byte i = 0; i < sizeof(feedTime) / 2; i++)    // проверяем массив с расписанием
-        {
-           uint8_t hr=feedTime[i][0];
-           uint8_t mn=feedTime[i][1];
-           uint16_t feedtimesum=(hr * 60) + mn;
-           if ( feedtimesum >= curtime) 
-            {
-            remtime=feedtimesum-curtime;
-            }
-            else 
-              {
-                remtime=1440-curtime + feedtimesum;
-              }
-             if (remtime<mintime) mintime=remtime;
-           
-            
-        } 
-        lv_label_set_text_fmt(ui_remain, "Время до кормления: %d:%d",(int)mintime/60, mintime%60); 
-    }
+  if (refremain.isReady()){feedRemain();} //Отображение времени оставшегося до кормления
+  if (reffeedtime.isReady()) {reffeedtime.stop();feed();}
 
   //Проверка таймера кормления 2 раза в секунду
   /*static uint32_t tmr = 0;
