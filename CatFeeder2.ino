@@ -7,6 +7,8 @@
 #include <WiFiManager.h> //Легкая настройка подключения к Wifi сети
 #include <GyverNTP.h> //синхронизация с сервером точного времени
 #include <GyverTimer.h>//подключение различных таймеров
+#include <WiFiClient.h> //работа с wif соединением
+#include <PubSubClient.h> //работа по протоколу mqtt
 
 //Объявление глобальных переменных и массивов
 uint8_t feedTime[4][3] = {
@@ -32,6 +34,12 @@ const byte drvPins[] = {5, 17, 16, 22};  // драйвер (фазаА1, фаз�
 static const uint16_t screenWidth = 240; //ширина экрана
 static const uint16_t screenHeight = 320; //высота экрана
 
+//MQTT настройки
+const char* mqtt_server = "192.168.1.1"; //ip или http адрес
+int mqtt_port = 1883; //порт
+const char* mqtt_login="login"; //логин
+const char* mqtt_pass="pass"; //пароль
+
 //Объявление служебных переменных для LVGL
 static lv_disp_draw_buf_t draw_buf;
 static lv_color_t buf[screenWidth * screenHeight / 6];
@@ -42,6 +50,7 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
     static lv_obj_t * ui_tabview; // панель вкладок
     //Панель состояния
     static lv_obj_t * ui_wifistatus; //статус wifi
+    static lv_obj_t * ui_mqttstatus; //статус wifi
     static lv_obj_t * ui_status_ip; //ip адрес
     //Экранные объекты
       //Основной экран
@@ -70,6 +79,8 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
 GyverNTP ntp(timezone); //инициализация работы с ntp, в параметрах часовой пояс
 TFT_eSPI tft = TFT_eSPI(); // создаем экземпляр объекта TFT_eSPI
 WiFiManager wm; //экземпляр объекта wifi manager
+WiFiClient esp32Client;
+PubSubClient client(esp32Client);
 
 //Инициализация таймеров
 GTimer reftime(MS);//часы
@@ -161,7 +172,7 @@ void setup()
         lv_obj_clear_flag(ui_wifistatus, LV_OBJ_FLAG_HIDDEN); //Отображение иконки wifi
         lv_obj_clear_flag(ui_status_ip, LV_OBJ_FLAG_HIDDEN); //Показать IP адрес
     } 
-
+  
   //настраиваем пины для шагового двигателя
   for (byte i = 0; i < 4; i++) pinMode(drvPins[i], OUTPUT);   // пины выходы
     
@@ -176,6 +187,7 @@ void setup()
   }
 
 /**** ВТОРОЙ БЛОК ФУНКЦИЙ ****/
+//Подключение к Wifi успешно. Получен ip адрес
 void WiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info){
   Serial.println("WiFi connected");
   IPAddress ip = WiFi.localIP();
@@ -186,6 +198,7 @@ void WiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info){
   lv_label_set_text(ui_status_ip,ipString.c_str());
   Serial.println("IP address: ");
   Serial.println(ip);
+  MQTT_init();//Подключение к MQTT брокеру
 }
 /**** КОНЕЦ БЛОКА ФУНКЦИЙ ****/
 
@@ -209,8 +222,8 @@ void loop()
   if (reflvgl.isReady()) { lv_timer_handler();} //Обновляем экран
   if (reftime.isReady()) {if (lv_tabview_get_tab_act(ui_tabview)==0) {lv_label_set_text(ui_clock, ntp.timeString().c_str());}} //обновляем занчение часов на экране
   if (refremain.isReady()){feedRemain();} //Отображение времени оставшегося до кормления
-  if (reffeedtime.isReady()) {reffeedtime.stop();feed();}
-
+  if (reffeedtime.isReady()) {reffeedtime.stop();feed();}//ожидание загрузки экрана кормления и запуск функции
+  client.loop(); //чтение состояния топиков MQQT
   //Проверка таймера кормления 2 раза в секунду
   /*static uint32_t tmr = 0;
   if (millis() - tmr > 500) 

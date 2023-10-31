@@ -28,7 +28,7 @@ static void event_feed(lv_event_t * e)
     }
   }
 
-//Измеение значения размера порции на экране
+//Изменение значения размера порции на экране
    static void slider_feedamount_event_cb(lv_event_t * e)
     {
       lv_obj_t * slider = lv_event_get_target(e);
@@ -60,6 +60,12 @@ void draw_interface()
     lv_label_set_text(ui_status_ip, " ");
     lv_obj_add_flag(ui_status_ip, LV_OBJ_FLAG_FLOATING); 
     lv_obj_add_flag(ui_status_ip, LV_OBJ_FLAG_HIDDEN);
+    //Иконка MQTT
+    ui_mqttstatus = lv_label_create(ui_tabview);
+    lv_obj_align(ui_mqttstatus, LV_ALIGN_TOP_RIGHT, -25, 0);
+    lv_label_set_text(ui_mqttstatus, LV_SYMBOL_LOOP);
+    lv_obj_add_flag(ui_mqttstatus, LV_OBJ_FLAG_FLOATING); 
+    lv_obj_add_flag(ui_mqttstatus, LV_OBJ_FLAG_HIDDEN);
   //Вкладка кормления (ui_tab1)
     //Часы
     ui_clock = lv_label_create(ui_tab1); //часы
