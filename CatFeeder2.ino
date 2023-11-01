@@ -21,7 +21,7 @@ uint8_t feedTime[4][3] = {
 };
 
 int feedAmount = 250; //размер порции
-uint16_t timefeed;
+uint16_t lastFeed=0; //время последнего кормления
 
 //различные параметры и настройки
 #define FEED_SPEED 3000     // задержка между шагами мотора (мкс)
@@ -60,6 +60,7 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
       static lv_obj_t * ui_clock; //часы
       static lv_obj_t * ui_label_feedAmount; //размер порции
       static lv_obj_t * ui_remain; //осталось
+      static lv_obj_t * img_running_cat; //кот на шкале прогресса
       //Вкладка таймеры
       static lv_obj_t * ui_timer1_hour; //слайдер часов будильника 1
       static lv_obj_t * ui_timer1_minute; //слайдер минут будильника 1
@@ -185,7 +186,7 @@ void setup()
 
   //Установка значений таймеров
   reftime.setInterval(1000);//обновление времени на экране 1000 мс или 1 секунда
-  refremain.setInterval(30000);//обновление времени на экране 30000 мс или 30 секунд
+  refremain.setInterval(10000);//обновление времени на экране 30000 мс или 30 секунд
   reflvgl.setInterval(30);//обновление экрана LVGL 30 мс
   refchecktime.setInterval(500);//раз в полсекунды
   }
@@ -215,6 +216,7 @@ void loop()
       lv_obj_clear_flag(ui_wifistatus, LV_OBJ_FLAG_HIDDEN);
       lv_obj_clear_flag(ui_status_ip, LV_OBJ_FLAG_HIDDEN);
       ntp.tick(); //синхронизируем время
+      if (ntp.synced() && lastFeed==0) lastFeed=ntp.hour()*60 + ntp.minute(); //заполняем время последнего кормления при первом запуске. По умолчанию ставим время первой синхронизации с с ервером времени
     }
   else
     {

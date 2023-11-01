@@ -68,7 +68,7 @@ void draw_interface()
     lv_obj_set_style_text_font(ui_clock, &digital60, 0);
     //графика
     //бегущий кот
-    lv_obj_t * img_running_cat = lv_gif_create(ui_tab1);
+    img_running_cat = lv_gif_create(ui_tab1);
     lv_gif_set_src(img_running_cat, &runingcat_img);
     lv_obj_set_pos(img_running_cat, 0, 105);
     //миска с едой

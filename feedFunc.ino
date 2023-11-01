@@ -27,6 +27,7 @@ void feed()
     delay(50);
   }  
   //disableMotor();//выключаем мотор
+  lastFeed=ntp.hour()*60 + ntp.minute();
   lv_obj_del(ui_feedwindow);
   
 }
@@ -56,6 +57,7 @@ void feedRemain()
 uint16_t curtime=ntp.hour()*60 + ntp.minute(); //Текущее время в минутах
       uint16_t mintime=1450; //Мнимальньное время между кормлениями в минутах
       uint16_t remtime=0; //Оставшееся время до кормления
+      uint16_t alarmtime=1440; //время наиболе ближнего будильника
       //расчет времени до кормления
       for (byte i = 0; i < 4; i++)    // проверяем массив с расписанием
         {
@@ -72,9 +74,25 @@ uint16_t curtime=ntp.hour()*60 + ntp.minute(); //Текущее время в м
               {
                 remtime=1440-curtime + feedtimesum;
               }
-             if (remtime<mintime) mintime=remtime;
+             if (remtime<mintime) 
+             {
+              mintime=remtime; 
+              alarmtime=feedtimesum;
+              }
            }
             
         } 
         lv_label_set_text_fmt(ui_remain, "Время до кормления: %d:%d",(int)mintime/60, mintime%60); 
+    //Движение котика по шкале
+    if (lastFeed>alarmtime) {alarmtime=lastFeed+(1440-lastFeed)+alarmtime;}
+    
+    uint8_t x_cat=map(alarmtime-mintime,lastFeed,alarmtime,0,160);//вычисляем координату х котика на шкале
+    Serial.println(x_cat);
+    Serial.print("mintime: ");
+    Serial.println(mintime);
+    Serial.print("lastfeed: ");
+    Serial.println(lastFeed);
+    Serial.print("alarmtime: ");
+    Serial.println(alarmtime);
+    lv_obj_set_x(img_running_cat,x_cat);
 }
