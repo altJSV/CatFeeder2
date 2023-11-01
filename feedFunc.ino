@@ -1,3 +1,20 @@
+//отрисовка интерфейса кормления
+void prefid()
+{
+  //Отрисовываем интерфейс окна кормления и запускаем таймер
+  //Окно контейнер
+    ui_feedwindow = lv_win_create(lv_scr_act(), 0);
+    lv_obj_t * feed_windows_cont = lv_win_get_content(ui_feedwindow);  //контейнер для содержимого окна
+    //Полоса прогресса кормления
+    ui_feed_progress_bar = lv_bar_create(feed_windows_cont);
+    lv_obj_set_size(ui_feed_progress_bar, lv_pct(100), 40);
+    lv_obj_align(ui_feed_progress_bar, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+    lv_bar_set_value(ui_feed_progress_bar, 0, LV_ANIM_OFF);
+    lv_bar_set_range(ui_feed_progress_bar, 0, feedAmount); //установка максимального значения шкалы прогресса
+    reffeedtime.setInterval(100); //запускаем таймер для подгрузки окна кормления
+}
+
+
 //Запуск кормления
 void feed() 
 { 

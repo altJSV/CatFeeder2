@@ -5,16 +5,7 @@ static void event_feed(lv_event_t * e)
   lv_event_code_t code = lv_event_get_code(e);
    if(code == LV_EVENT_CLICKED) 
    {
-    //Окно контейнер
-    ui_feedwindow = lv_win_create(lv_scr_act(), 0);
-    lv_obj_t * feed_windows_cont = lv_win_get_content(ui_feedwindow);  //контейнер для содержимого окна
-    //Полоса прогресса кормления
-    ui_feed_progress_bar = lv_bar_create(feed_windows_cont);
-    lv_obj_set_size(ui_feed_progress_bar, lv_pct(100), 40);
-    lv_obj_align(ui_feed_progress_bar, LV_ALIGN_BOTTOM_LEFT, 0, 0);
-    lv_bar_set_value(ui_feed_progress_bar, 0, LV_ANIM_OFF);
-    lv_bar_set_range(ui_feed_progress_bar, 0, feedAmount); //установка максимального значения шкалы прогресса
-    reffeedtime.setInterval(100); //запускаем таймер для подгрузки окна кормления
+    prefid();
     }
  }
 
@@ -39,6 +30,9 @@ static void event_feed(lv_event_t * e)
 void draw_interface()
   {
   //Создаем экранные объекты
+  //графические ресурсы
+  LV_IMG_DECLARE(runingcat_img); //гифка с котиком
+  LV_IMG_DECLARE(food_img); //гифка с едой
   //Контейнеры
     ui_tabview = lv_tabview_create(lv_scr_act(), LV_DIR_BOTTOM, 30); //создаем панель вкладок
       //Создаем вкладки и присваиваем им отображаемые имена
@@ -72,6 +66,20 @@ void draw_interface()
     lv_obj_align(ui_clock, LV_ALIGN_TOP_LEFT, 0, 0); //положение на экране
     lv_obj_set_size(ui_clock, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
     lv_obj_set_style_text_font(ui_clock, &digital60, 0);
+    //графика
+    //бегущий кот
+    lv_obj_t * img_running_cat = lv_gif_create(ui_tab1);
+    lv_gif_set_src(img_running_cat, &runingcat_img);
+    lv_obj_set_pos(img_running_cat, 0, 105);
+    //миска с едой
+    lv_obj_t * img_food_gif = lv_gif_create(ui_tab1);
+    lv_gif_set_src(img_food_gif, &food_img);
+    lv_obj_set_pos(img_food_gif, 195, 115);
+    lv_obj_t * img_line;
+    img_line = lv_line_create(ui_tab1);
+    static lv_point_t line_points[] = { {0, 130}, {220, 130}};
+    lv_line_set_points(img_line, line_points, 2);     /*Set the points*/
+
     //Кнопка кормления
     lv_obj_t * ui_feed_button = lv_btn_create(ui_tab1); // кнопка кормления  
     lv_obj_set_size(ui_feed_button, lv_pct(100), 40);

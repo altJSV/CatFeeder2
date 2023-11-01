@@ -2,6 +2,8 @@
 #include <lvgl.h> //библиотека пользовательского интерфейса
 #include "touch.h" //работа с тачем
 #include <TFT_eSPI.h> //драйвер дисплея
+#include "runingcat_img.c" //нрафика бегущего кота
+//#include "food_img.c"//графика миски едой
 #include <SPI.h> //драйвер spi
 #include <WiFi.h> //библиотека для рабоы с wifi esp32
 #include <WiFiManager.h> //Легкая настройка подключения к Wifi сети
@@ -86,7 +88,8 @@ PubSubClient client(esp32Client);
 GTimer reftime(MS);//часы
 GTimer reflvgl(MS); //обновление экранов LVGL 
 GTimer refremain(MS); //таймер обновления времени до кормления 
-GTimer reffeedtime(MS); //таймер времени до запуска кормления 
+GTimer reffeedtime(MS); //таймер времени до запуска кормления
+GTimer refchecktime(MS);//проверка срабатывания таймеров кормления 
 /***** БЛОК СЛУЖЕБНЫХ ФУНКЦИЙ ****/
 //Функция для вывода содержимого буфера на экран
 void my_disp_flush( lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p )
@@ -184,6 +187,7 @@ void setup()
   reftime.setInterval(1000);//обновление времени на экране 1000 мс или 1 секунда
   refremain.setInterval(30000);//обновление времени на экране 30000 мс или 30 секунд
   reflvgl.setInterval(30);//обновление экрана LVGL 30 мс
+  refchecktime.setInterval(500);//раз в полсекунды
   }
 
 /**** ВТОРОЙ БЛОК ФУНКЦИЙ ****/
@@ -223,39 +227,21 @@ void loop()
   if (reftime.isReady()) {if (lv_tabview_get_tab_act(ui_tabview)==0) {lv_label_set_text(ui_clock, ntp.timeString().c_str());}} //обновляем занчение часов на экране
   if (refremain.isReady()){feedRemain();} //Отображение времени оставшегося до кормления
   if (reffeedtime.isReady()) {reffeedtime.stop();feed();}//ожидание загрузки экрана кормления и запуск функции
-  client.loop(); //чтение состояния топиков MQQT
-  //Проверка таймера кормления 2 раза в секунду
-  /*static uint32_t tmr = 0;
-  if (millis() - tmr > 500) 
-  {           // два раза в секунду
-      static byte prevMin = 0;
-      tmr = millis();
-      if (ntp.status()==0)
+  if (refchecktime.isReady()) //проверка таймера кормления
       {
-        if (prevMin != ntp.minute()) 
-          {//исключаем двойной запуск кормления при срабатывании таймера
-            prevMin = ntp.minute();
-            for (byte i = 0; i < sizeof(feedTime) / 2; i++)    // проверяем массив с расписанием
-            if (feedTime[i][0] == ntp.hour() && feedTime[i][1] == ntp.minute()) feed();//при совпадении включаем кормушку
-          }
-      }
+        static byte prevMin = 0;
+          if (ntp.status()==0)
+            {
+              if (prevMin != ntp.minute()) 
+                {//исключаем двойной запуск кормления при срабатывании таймера
+                  prevMin = ntp.minute();
+                  for (byte i = 0; i < sizeof(feedTime) / 2; i++)    // проверяем массив с расписанием
+                  if (feedTime[i][0] == ntp.hour() && feedTime[i][1] == ntp.minute() &&feedTime[i][2] == 1) prefid();
+                }
+            }
+  }
+  client.loop(); //чтение состояния топиков MQQT
   
-  }
-
-  btn.tick(); //проверка кнопки
-  if (btn.click()) feed();
-
-  if (btn.hold()) {
-    int newAmount = 0;
-    while (btn.isHold()) {
-      btn.tick();
-      oneRev();
-      newAmount++;
-    }
-    disableMotor();
-    feedAmount = newAmount;
-  }
- */ 
 }
 
 
