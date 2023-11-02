@@ -2,6 +2,8 @@
 #include <lvgl.h> //библиотека пользовательского интерфейса
 #include "touch.h" //работа с тачем
 #include "secrets.h" //различные параметры авторизации
+#include <FS.h> //Работа с файловой системой
+#include <SPIFFS.h> //файловая система esp32
 #include <TFT_eSPI.h> //драйвер дисплея
 #include "runingcat_img.c" //нрафика бегущего кота
 //#include "food_img.c"//графика миски едой
@@ -13,6 +15,7 @@
 #include <WiFiClient.h> //работа с wif соединением
 #include <PubSubClient.h> //работа по протоколу mqtt
 #include <WebServer.h> //веб интерфейс
+#include <ArduinoJson.h>//библиотека для работы с файлами конфигурации
 
 //Объявление глобальных переменных и массивов
 uint8_t feedTime[4][3] = {
@@ -32,6 +35,8 @@ bool savealarm=false; //флаг осслеживающий, что значен
 #define STEPS_FRW 19        // шаги вперёд
 #define STEPS_BKW 12        // шаги назад
 #define timezone 3          // часовой пояс
+
+#define FORMAT_SPIFFS_IF_FAILED true //форматирование файловой системы при ошибке инициализации
 
 //Настройка шагового двигателя
 const byte drvPins[] = {5, 17, 16, 22};  // драйвер (фазаА1, фазаА2, фазаВ1, фазаВ2)
@@ -189,6 +194,7 @@ void setup()
   //запуск сервисов
   ntp.begin(); //сервис синхронизации времени
   server_init();//запуск веб сервера
+  fs_init();//Инициализация файловой системы
 
   //Установка значений таймеров
   reftime.setInterval(1000);//обновление времени на экране 1000 мс или 1 секунда

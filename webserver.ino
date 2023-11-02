@@ -62,7 +62,7 @@ server.send(200, "text/html", page);
 void handle_mqtt_setting()
 {
   mqtt_server = server.arg("server");
-  mqtt_port = server.arg("port").toInt;
+  mqtt_port = server.arg("port").toInt();
   mqtt_login = server.arg("login");
   mqtt_pass = server.arg("pass");
   /*String page;
