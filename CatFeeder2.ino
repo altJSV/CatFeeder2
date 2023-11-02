@@ -21,7 +21,9 @@ uint8_t feedTime[4][3] = {
 };
 
 int feedAmount = 250; //размер порции
+
 uint16_t lastFeed=0; //время последнего кормления
+bool savealarm=false; //флаг осслеживающий, что значение будильника изменилось 
 
 //различные параметры и настройки
 #define FEED_SPEED 3000     // задержка между шагами мотора (мкс)
@@ -77,6 +79,7 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
 
       //Окно кормления
       static lv_obj_t * ui_feed_progress_bar; //полоса прогресса кормления
+      static lv_obj_t * ui_feed_progress_bar_label; //текст на полосе прогресса кормления
 
 //Инициализация библиотек
 GyverNTP ntp(timezone); //инициализация работы с ntp, в параметрах часовой пояс

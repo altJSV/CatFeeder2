@@ -1,3 +1,9 @@
+//событие измениния значения таймеров кормления
+static void alarm_roll_event_handler(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if(code == LV_EVENT_VALUE_CHANGED) {savealarm=true;}
+}
 
 //Функция обработки нажатия кнопки кормления
 static void event_feed(lv_event_t * e)
@@ -15,7 +21,27 @@ static void event_feed(lv_event_t * e)
     uint16_t acttab=lv_tabview_get_tab_act(ui_tabview);
     if(lv_event_get_code(e) == LV_EVENT_VALUE_CHANGED) 
     {
-       
+       if (acttab!=1 && savealarm==true) //Если изменяется активная вкладка и стоит флаг, что значение одного из элементов вкладки будильники изменилось
+        {
+          savealarm=false;//отключаем флаг
+          //Опрашиваем значения всех элементов и заносим в массив
+          //Таймер 0
+          feedTime[0][0]=lv_roller_get_selected(ui_timer1_hour);//часы
+          feedTime[0][1]=lv_roller_get_selected(ui_timer1_minute);//минуты
+          feedTime[0][2]=lv_obj_has_state(ui_timer1_check, LV_STATE_CHECKED);//включен или выключен
+          //Таймер 1
+          feedTime[1][0]=lv_roller_get_selected(ui_timer2_hour);//часы
+          feedTime[1][1]=lv_roller_get_selected(ui_timer2_minute);//минуты
+          feedTime[1][2]=lv_obj_has_state(ui_timer2_check, LV_STATE_CHECKED);//включен или выключен
+          //Таймер 2
+          feedTime[2][0]=lv_roller_get_selected(ui_timer3_hour);//часы
+          feedTime[2][1]=lv_roller_get_selected(ui_timer3_minute);//минуты
+          feedTime[2][2]=lv_obj_has_state(ui_timer3_check, LV_STATE_CHECKED);//включен или выключен
+          //Таймер 3
+          feedTime[3][0]=lv_roller_get_selected(ui_timer4_hour);//часы
+          feedTime[3][1]=lv_roller_get_selected(ui_timer4_minute);//минуты
+          feedTime[3][2]=lv_obj_has_state(ui_timer4_check, LV_STATE_CHECKED);//включен или выключен
+        }
     }
   }
 
@@ -120,16 +146,19 @@ void draw_interface()
       lv_roller_set_selected(ui_timer1_hour, feedTime[0][0], LV_ANIM_OFF);
       lv_obj_align(ui_timer1_hour, LV_ALIGN_TOP_LEFT, 0, 5);
       lv_obj_set_size(ui_timer1_hour,70,60);
+      lv_obj_add_event_cb(ui_timer1_hour, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
        ui_timer1_minute=lv_roller_create(ui_tab2);
       lv_roller_set_visible_row_count(ui_timer1_minute, 2);
       lv_roller_set_options(ui_timer1_minute, rollminutes, LV_ROLLER_MODE_INFINITE);
       lv_roller_set_selected(ui_timer1_minute, feedTime[0][1], LV_ANIM_OFF);
       lv_obj_set_size(ui_timer1_minute,70,60);
       lv_obj_align_to(ui_timer1_minute, ui_timer1_hour, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+      lv_obj_add_event_cb(ui_timer1_minute, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer1_check = lv_checkbox_create(ui_tab2);
       lv_obj_align_to(ui_timer1_check, ui_timer1_minute, LV_ALIGN_OUT_RIGHT_MID, 15, 0);
       lv_checkbox_set_text(ui_timer1_check, "");
       if (feedTime[0][2]==1) lv_obj_add_state(ui_timer1_check, LV_STATE_CHECKED);
+      lv_obj_add_event_cb(ui_timer1_check, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
 
       //Таймер 2
       ui_timer2_hour=lv_roller_create(ui_tab2);
@@ -138,16 +167,19 @@ void draw_interface()
       lv_roller_set_selected(ui_timer2_hour, feedTime[1][0], LV_ANIM_OFF);
       lv_obj_set_size(ui_timer2_hour,70,60);
       lv_obj_align_to(ui_timer2_hour, ui_timer1_hour,  LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
+      lv_obj_add_event_cb(ui_timer2_hour, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer2_minute=lv_roller_create(ui_tab2);
       lv_roller_set_visible_row_count(ui_timer2_minute, 2);
       lv_roller_set_options(ui_timer2_minute, rollminutes, LV_ROLLER_MODE_INFINITE);
       lv_roller_set_selected(ui_timer2_minute, feedTime[1][1], LV_ANIM_OFF);
       lv_obj_set_size(ui_timer2_minute,70,60);
       lv_obj_align_to(ui_timer2_minute,ui_timer2_hour,  LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+      lv_obj_add_event_cb(ui_timer2_minute, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer2_check = lv_checkbox_create(ui_tab2);
       lv_obj_align_to(ui_timer2_check, ui_timer2_minute, LV_ALIGN_OUT_RIGHT_MID, 15, 0);
       lv_checkbox_set_text(ui_timer2_check, "");
       if (feedTime[1][2]==1) lv_obj_add_state(ui_timer2_check, LV_STATE_CHECKED);
+      lv_obj_add_event_cb(ui_timer2_check, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
 
       //Таймер 3
       ui_timer3_hour=lv_roller_create(ui_tab2);
@@ -156,16 +188,19 @@ void draw_interface()
       lv_roller_set_selected(ui_timer3_hour, feedTime[2][0], LV_ANIM_OFF);
       lv_obj_set_size(ui_timer3_hour,70,60);
       lv_obj_align_to(ui_timer3_hour, ui_timer2_hour,  LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
+      lv_obj_add_event_cb(ui_timer3_hour, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer3_minute=lv_roller_create(ui_tab2);
       lv_roller_set_visible_row_count(ui_timer3_minute, 2);
       lv_roller_set_options(ui_timer3_minute, rollminutes, LV_ROLLER_MODE_INFINITE);
       lv_roller_set_selected(ui_timer3_minute, feedTime[2][1], LV_ANIM_OFF);
       lv_obj_set_size(ui_timer3_minute,70,60);
       lv_obj_align_to(ui_timer3_minute,ui_timer3_hour,  LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+      lv_obj_add_event_cb(ui_timer3_minute, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer3_check = lv_checkbox_create(ui_tab2);
       lv_obj_align_to(ui_timer3_check, ui_timer3_minute, LV_ALIGN_OUT_RIGHT_MID, 15, 0);
       lv_checkbox_set_text(ui_timer3_check, "");
       if (feedTime[2][2]==1) lv_obj_add_state(ui_timer3_check, LV_STATE_CHECKED);
+      lv_obj_add_event_cb(ui_timer3_check, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
 
       //Таймер 4
       ui_timer4_hour=lv_roller_create(ui_tab2);
@@ -174,16 +209,19 @@ void draw_interface()
       lv_roller_set_selected(ui_timer4_hour, feedTime[3][0], LV_ANIM_OFF);
       lv_obj_set_size(ui_timer4_hour,70,60);
       lv_obj_align_to(ui_timer4_hour, ui_timer3_hour,  LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
+      lv_obj_add_event_cb(ui_timer4_hour, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer4_minute=lv_roller_create(ui_tab2);
       lv_roller_set_visible_row_count(ui_timer4_minute, 2);
       lv_roller_set_options(ui_timer4_minute, rollminutes, LV_ROLLER_MODE_INFINITE);
       lv_roller_set_selected(ui_timer4_minute, feedTime[3][1], LV_ANIM_OFF);
       lv_obj_set_size(ui_timer4_minute,70,60);
       lv_obj_align_to(ui_timer4_minute,ui_timer4_hour,  LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+      lv_obj_add_event_cb(ui_timer4_minute, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer4_check = lv_checkbox_create(ui_tab2);
       lv_obj_align_to(ui_timer4_check, ui_timer4_minute, LV_ALIGN_OUT_RIGHT_MID, 15, 0);
       lv_checkbox_set_text(ui_timer4_check, "");
       if (feedTime[3][2]==1) lv_obj_add_state(ui_timer4_check, LV_STATE_CHECKED);
+      lv_obj_add_event_cb(ui_timer4_check, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
 
   /* СОЗДАЕМ ЭЛЕМЕНТЫ ИНТЕРФЕЙСА НА ЭКРАНЕ КОРМЛЕНИЯ*/
     //Окно контейнер
