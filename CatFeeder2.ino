@@ -1,6 +1,7 @@
 //Подключение библиотек
 #include <lvgl.h> //библиотека пользовательского интерфейса
 #include "touch.h" //работа с тачем
+#include "secrets.h" //различные параметры авторизации
 #include <TFT_eSPI.h> //драйвер дисплея
 #include "runingcat_img.c" //нрафика бегущего кота
 //#include "food_img.c"//графика миски едой
@@ -42,8 +43,7 @@ static const uint16_t screenHeight = 320; //высота экрана
 //MQTT настройки
 String mqtt_server = "192.168.1.1"; //ip или http адрес
 int mqtt_port = 1883; //порт
-String mqtt_login="login"; //логин
-String mqtt_pass="pass"; //пароль
+
 
 //Объявление служебных переменных для LVGL
 static lv_disp_draw_buf_t draw_buf;
