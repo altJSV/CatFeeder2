@@ -11,6 +11,7 @@
 #include <GyverTimer.h>//подключение различных таймеров
 #include <WiFiClient.h> //работа с wif соединением
 #include <PubSubClient.h> //работа по протоколу mqtt
+#include <WebServer.h> //веб интерфейс
 
 //Объявление глобальных переменных и массивов
 uint8_t feedTime[4][3] = {
@@ -39,10 +40,10 @@ static const uint16_t screenWidth = 240; //ширина экрана
 static const uint16_t screenHeight = 320; //высота экрана
 
 //MQTT настройки
-const char* mqtt_server = "192.168.1.1"; //ip или http адрес
+String mqtt_server = "192.168.1.1"; //ip или http адрес
 int mqtt_port = 1883; //порт
-const char* mqtt_login="login"; //логин
-const char* mqtt_pass="pass"; //пароль
+String mqtt_login="login"; //логин
+String mqtt_pass="pass"; //пароль
 
 //Объявление служебных переменных для LVGL
 static lv_disp_draw_buf_t draw_buf;
@@ -87,6 +88,7 @@ TFT_eSPI tft = TFT_eSPI(); // создаем экземпляр объекта T
 WiFiManager wm; //экземпляр объекта wifi manager
 WiFiClient esp32Client;
 PubSubClient client(esp32Client);
+WebServer server(80); //поднимаем веб сервер на 80 порту
 
 //Инициализация таймеров
 GTimer reftime(MS);//часы
@@ -186,6 +188,7 @@ void setup()
   
   //запуск сервисов
   ntp.begin(); //сервис синхронизации времени
+  server_init();//запуск веб сервера
 
   //Установка значений таймеров
   reftime.setInterval(1000);//обновление времени на экране 1000 мс или 1 секунда
@@ -246,6 +249,7 @@ void loop()
             }
   }
   client.loop(); //чтение состояния топиков MQQT
+  server.handleClient(); //обработка запросов web интерфейса
   
 }
 

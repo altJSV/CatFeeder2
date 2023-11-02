@@ -20,7 +20,7 @@ void prefid()
     //текст на полосе
     ui_feed_progress_bar_label = lv_label_create(ui_feed_progress_bar);
     lv_label_set_text_fmt(ui_feed_progress_bar_label,"%d", (feedAmount/100) * lv_bar_get_value(ui_feed_progress_bar));
-    lv_obj_set_style_text_color(ui_feed_progress_bar_label,lv_palette_lighten(LV_PALETTE_GREY),0);
+    lv_obj_set_style_text_color(ui_feed_progress_bar_label,lv_palette_main(LV_PALETTE_GREY),0);
     lv_obj_align_to(ui_feed_progress_bar_label, ui_feed_progress_bar, LV_ALIGN_CENTER, 0, 0);
     reffeedtime.setInterval(100); //запускаем таймер для подгрузки окна кормления
     
@@ -95,7 +95,7 @@ uint16_t curtime=ntp.hour()*60 + ntp.minute(); //Текущее время в м
            }
             
         } 
-        lv_label_set_text_fmt(ui_remain, "Время до кормления: %dч. %dм.",(int)mintime/60, mintime%60); 
+        lv_label_set_text_fmt(ui_remain, "До кормления: %dч. %dм.",(int)mintime/60, mintime%60); 
     //Движение котика по шкале
     if (lastFeed>alarmtime) {alarmtime=lastFeed+(1440-lastFeed)+alarmtime;}
     

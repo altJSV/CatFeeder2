@@ -1,13 +1,13 @@
 //Инициализация MQTT
 void MQTT_init(){  
   static uint32_t tmr = 0;
-  client.setServer(mqtt_server, mqtt_port);
+  client.setServer(mqtt_server.c_str(), mqtt_port);
   client.setCallback(MQTTcallback);
   byte tries=10;
   while (--tries && !client.connected()) 
   {   
      Serial.println("Подключение к MQTT брокеру...");
-     if (client.connect("CatFeeder", mqtt_login,mqtt_pass))
+     if (client.connect("CatFeeder", mqtt_login.c_str(),mqtt_pass.c_str()))
        {
       Serial.println("Подключено");
       client.publish("CatFeeder/status","Ok");
