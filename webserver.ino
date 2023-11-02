@@ -65,22 +65,19 @@ void handle_mqtt_setting()
   mqtt_port = server.arg("port").toInt();
   mqtt_login = server.arg("login");
   mqtt_pass = server.arg("pass");
-  /*String page;
+  String page;
   int statusCode;
-  if (eeprom_write(qsid,qpass))
+  if (saveConfiguration("/config.json"))
     {
-      page="{'Успешно':'сохранено в EEPROM. Перезагружаемся для подключения к точке доступа'}";
+      page="{'Успешно':'Cохранено в память устройства.'}";
       statusCode = 200;
-      ESP.reset();
     }
     else
     {
     page = "{'Ошибка':'404 не найдено'}";
         statusCode = 404;
-        Serial.println("Sending 404");
+        Serial.println("Отправляем 404");
         server.sendHeader("Access-Control-Allow-Origin", "*");
-      server.send(statusCode, "application/json", page);*/
-  server.sendHeader("Location", "/",true);   //редирект на главную
-  server.send(302, "text/plane","");
-
+        server.send(statusCode, "application/json", page);
+    }
 }

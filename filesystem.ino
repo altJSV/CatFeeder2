@@ -16,8 +16,6 @@ bool fs_init()
     else 
       {
         Serial.println("Файловая система инициализирована");
-        //Serial.println("Чтение файла конфигурации...");
-        //loadConfiguration(filename);
         listDir(SPIFFS, "/", 0);
         return true;
       }
@@ -41,32 +39,24 @@ bool loadConfiguration(const char *filename) {
               file.close();
               return false;
               }
-  /*
-  // копируем значения 
-  const char * jspc_server_path = doc1["pcadress"] ;
-  //const char * jstoken = doc1["yatoken"];
-  const char * jsapi_key= doc1["weatherapi"];
-  const char * jsqLocation= doc1["weathercity"];
-  const char * jsSSID=doc1["ssid"];
-  const char * jsPASS=doc1["pass"];
-  usesensor= (bool)doc1["usesensor"];
-  gmt= (int8_t)doc1["gmt"];
-  refpcinterval= (uint32_t)doc1["refpcinterval"];
-  refweatherinterval= (uint32_t)doc1["refweatherinterval"];
-  refsensorinterval= (uint32_t)doc1["refsensorinterval"];
-  bright_level = (uint8_t)doc1["bright_level"];
-  daybegin=(uint8_t)doc1["day_begin"];
-  dayend=(uint8_t)doc1["day_end"];
-  photosensor= (bool)doc1["photosensor"];
-  pc_server_path = jspc_server_path;
-  ledindicator = (bool)doc1["ledindicator"];
-  darktheme = (bool)doc1["darktheme"] | true;
-  api_key = jsapi_key;
-  qLocation  = jsqLocation;
-  SSID=jsSSID;
-  PASS=jsPASS;
+ 
+  // чтение значений 
+  const char * mqtt_server_p= doc1["mqtt_server"];
+  mqtt_port= (uint16_t)doc1["mqtt_port"];
+  const char * mqtt_login_p= doc1["mqtt_login"];
+  const char * mqtt_pass_p= doc1["mqtt_pass"];
+  feedAmount = (uint8_t)doc1["feed_amount"];
+  mqtt_server=mqtt_server_p;
+  mqtt_login=mqtt_login_p;
+  mqtt_pass=mqtt_pass_p;
+  //массив данных будильника
+  for (byte i = 0; i < 4; i++) 
+  {
+    feedTime[i][0]=(uint8_t)doc1["houralarm"+String(i)];
+    feedTime[i][1]=(uint8_t)doc1["minutesalarm"+String(i)];
+    feedTime[i][2]=(uint8_t)doc1["activealarm"+String(i)];
+  }
   // Закрываем файл
-  */
   file.close();
   return true;
 }
@@ -86,25 +76,19 @@ bool saveConfiguration(const char *filename)
 
   //Выделяем память под JSON
   StaticJsonDocument<1024> doc1;
-
-  // Пишем значения в документ
-  /*doc1["pcadress"] = pc_server_path; //адрес сервера пк монитора
-  doc1["refpcinterval"] = refpcinterval; //период обновления пк монитора
-  doc1["weatherapi"] = api_key;//api ключ погоды
-  doc1["weathercity"] = qLocation; //Местоположение
-  doc1["refweatherinterval"] = refweatherinterval;//период обновления погоды
-  doc1["gmt"] = gmt; //часовой пояс
-  doc1["ledindicator"] = ledindicator;//состояние led индикатора
-  doc1["darktheme"] = darktheme;//темная тема
-  doc1["day_begin"] = daybegin;//начало дневного времени
-  doc1["day_end"] = dayend;//конец дневного времени
-  doc1["usesensor"] = usesensor; //использование сенсора bme
-  doc1["refsensorinterval"] = refsensorinterval; //период обновления сенсора
-  doc1["bright_level"] = bright_level;// яркость подсветки экрана
-  doc1["ssid"] = SSID; //часовой пояс
-  doc1["pass"] = PASS;//состояние led индикатора
-  doc1["photosensor"] = photosensor; //автоматическая регулировка яркости подсветки
-  */
+  doc1["mqtt_server"] = mqtt_server; //адрес брокера mqtt
+  doc1["mqtt_port"] = mqtt_port; //порт mqtt брокера
+  doc1["mqtt_login"] = mqtt_login;//mqtt логин
+  doc1["mqtt_pass"] = mqtt_pass; //mqtt пароль
+  doc1["feed_amount"] = feedAmount;// размер порции
+  //массив данных будильника
+  for (byte i = 0; i < 4; i++) 
+  {
+    doc1["houralarm"+String(i)]=feedTime[i][0];
+    doc1["minutesalarm"+String(i)]=feedTime[i][1];
+    doc1["activealarm"+String(i)]=feedTime[i][2];
+  }
+    
   // Сохраняем JSON в файл
   if (serializeJson(doc1, file) == 0) {
     Serial.println(F("Ошибка записи в файл"));

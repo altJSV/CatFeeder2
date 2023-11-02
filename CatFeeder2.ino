@@ -49,6 +49,8 @@ static const uint16_t screenHeight = 320; //высота экрана
 String mqtt_server = "192.168.1.1"; //ip или http адрес
 int mqtt_port = 1883; //порт
 
+//Файл конфигурации
+const char * filename = "/config.json";  // имя файла конфигурации
 
 //Объявление служебных переменных для LVGL
 static lv_disp_draw_buf_t draw_buf;
@@ -100,7 +102,8 @@ GTimer reftime(MS);//часы
 GTimer reflvgl(MS); //обновление экранов LVGL 
 GTimer refremain(MS); //таймер обновления времени до кормления 
 GTimer reffeedtime(MS); //таймер времени до запуска кормления
-GTimer refchecktime(MS);//проверка срабатывания таймеров кормления 
+GTimer refchecktime(MS);//проверка срабатывания таймеров кормления
+GTimer refsaveconfigdelay(MS);//проверка срабатывания таймеров кормления 
 /***** БЛОК СЛУЖЕБНЫХ ФУНКЦИЙ ****/
 //Функция для вывода содержимого буфера на экран
 void my_disp_flush( lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p )
@@ -148,6 +151,15 @@ void setup()
 
   //Настройки экрана  
   touch_init(); //иницилизация тача 
+  
+  //Инициализация файловой системы
+ if (fs_init())
+  {
+        Serial.println("Чтение файла конфигурации...");
+        loadConfiguration("/config.json");
+        readFile(SPIFFS, "/config.json");
+  }
+
   lv_init();//инициализация LVGL
   //Далее идут функции настройки LVGL 
   lv_disp_draw_buf_init( &draw_buf, buf, NULL, screenWidth * screenHeight / 6 ); //создаем буфер для вывода информации на экран
@@ -172,6 +184,8 @@ void setup()
 //Отрисовка интерфейса
   draw_interface();
 
+ 
+ 
  //Инициализация wifi
  
   WiFi.mode(WIFI_AP_STA);
@@ -194,7 +208,7 @@ void setup()
   //запуск сервисов
   ntp.begin(); //сервис синхронизации времени
   server_init();//запуск веб сервера
-  fs_init();//Инициализация файловой системы
+  
 
   //Установка значений таймеров
   reftime.setInterval(1000);//обновление времени на экране 1000 мс или 1 секунда
@@ -241,6 +255,7 @@ void loop()
   if (reftime.isReady()) {if (lv_tabview_get_tab_act(ui_tabview)==0) {lv_label_set_text(ui_clock, ntp.timeString().c_str());}} //обновляем занчение часов на экране
   if (refremain.isReady()){feedRemain();} //Отображение времени оставшегося до кормления
   if (reffeedtime.isReady()) {reffeedtime.stop();feed();}//ожидание загрузки экрана кормления и запуск функции
+  if (refsaveconfigdelay.isReady()) {refsaveconfigdelay.stop();saveConfiguration("/config.json");} //Обновляем экран
   if (refchecktime.isReady()) //проверка таймера кормления
       {
         static byte prevMin = 0;
