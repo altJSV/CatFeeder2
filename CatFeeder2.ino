@@ -27,6 +27,8 @@ uint8_t feedTime[4][3] = {
 
 int feedAmount = 250; //размер порции
 
+int8_t timezone = 3;
+
 uint16_t lastFeed=0; //время последнего кормления
 bool savealarm=false; //флаг осслеживающий, что значение будильника изменилось 
 
@@ -34,7 +36,6 @@ bool savealarm=false; //флаг осслеживающий, что значен
 #define FEED_SPEED 3000     // задержка между шагами мотора (мкс)
 #define STEPS_FRW 19        // шаги вперёд
 #define STEPS_BKW 12        // шаги назад
-#define timezone 3          // часовой пояс
 
 #define FORMAT_SPIFFS_IF_FAILED true //форматирование файловой системы при ошибке инициализации
 

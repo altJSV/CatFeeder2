@@ -81,6 +81,7 @@ bool saveConfiguration(const char *filename)
   doc1["mqtt_login"] = mqtt_login;//mqtt логин
   doc1["mqtt_pass"] = mqtt_pass; //mqtt пароль
   doc1["feed_amount"] = feedAmount;// размер порции
+  doc1["timezone"] = timezone; //часовой пояс
   //массив данных будильника
   for (byte i = 0; i < 4; i++) 
   {

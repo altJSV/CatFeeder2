@@ -224,17 +224,42 @@ void draw_interface()
       if (feedTime[3][2]==1) lv_obj_add_state(ui_timer4_check, LV_STATE_CHECKED);
       lv_obj_add_event_cb(ui_timer4_check, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
 
-  /* СОЗДАЕМ ЭЛЕМЕНТЫ ИНТЕРФЕЙСА НА ЭКРАНЕ КОРМЛЕНИЯ*/
-    //Окно контейнер
-    /*
-    ui_feedwindow = lv_win_create(lv_scr_act(), 0);
-    lv_obj_t * feed_windows_cont = lv_win_get_content(ui_feedwindow);  //контейнер для содержимого окна
-    lv_obj_add_flag(ui_feedwindow, LV_OBJ_FLAG_HIDDEN); //скрываем окно
-    //Полоса прогресса кормления
-    ui_feed_progress_bar = lv_bar_create(feed_windows_cont);
-    lv_obj_set_size(ui_feed_progress_bar, lv_pct(100), 40);
-    lv_obj_align(ui_feed_progress_bar, LV_ALIGN_BOTTOM_LEFT, 0, 0);
-    lv_bar_set_range(ui_feed_progress_bar, 0, feedAmount);
-    lv_bar_set_value(ui_feed_progress_bar, 0, LV_ANIM_OFF);
-  */
+  //Вкладка настроек
+    //Груупируем настройки. Создаем панель для каждой группы
+    //Панель настроек дисплея
+    lv_obj_t * ui_set_panel_display = lv_obj_create(ui_tab3);
+      //Название панели
+      lv_obj_t * ui_set_panel_display_label = lv_label_create(ui_set_panel_display);//метка названия панели
+      lv_obj_align(ui_set_panel_display_label, LV_ALIGN_TOP_MID, 0, 0); //Выравниваем по центру вверху
+      lv_label_set_text (ui_set_panel_display_label,"Настройки дисплея");//Пишем текст метки
+      //Надпись настройка яркости
+      lv_obj_t * ui_set_panel_display_bright_label = lv_label_create(ui_set_panel_display);//метка названия панели
+      lv_obj_align(ui_set_panel_display_bright_label, LV_ALIGN_TOP_LEFT, 0, 20); //Выравниваем по левому краю
+      lv_label_set_text (ui_set_panel_display_bright_label,"Яркость дисплея");//Пишем текст метки
+      //Слайдер изменения яркости
+      lv_obj_t * ui_set_panel_display_bright_slider = lv_slider_create(ui_set_panel_display);
+      lv_obj_set_width(ui_set_panel_display_bright_slider,lv_pct(100));
+      lv_obj_align_to(ui_set_panel_display_bright_slider, ui_set_panel_display_bright_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
+      lv_slider_set_range(ui_set_panel_display_bright_slider, 1 , 255);
+      
+      lv_obj_set_size(ui_set_panel_display, lv_pct(100),LV_SIZE_CONTENT); 
+    
+    //Панель настроек часов
+    lv_obj_t * ui_set_panel_time = lv_obj_create(ui_tab3);
+      //Название панели
+      lv_obj_t * ui_set_panel_time_label = lv_label_create(ui_set_panel_time);//метка названия панели
+      lv_obj_align(ui_set_panel_time_label, LV_ALIGN_TOP_MID, 0, 0); //Выравниваем по центру вверху
+      lv_label_set_text (ui_set_panel_time_label,"Настройки времени");//Пишем текст метки
+      //Надпись часовой пояс
+      lv_obj_t * ui_set_panel_time_gmt_label = lv_label_create(ui_set_panel_time);//метка названия панели
+      lv_obj_align(ui_set_panel_time_gmt_label, LV_ALIGN_TOP_LEFT, 0, 20); //Выравниваем по левому краю
+      lv_label_set_text (ui_set_panel_time_gmt_label,"Часовой пояс");//Пишем текст метки
+      //Слайдер изменения часового пояса
+      lv_obj_t * ui_set_panel_time_gmt_slider = lv_slider_create(ui_set_panel_time);
+      lv_obj_set_width(ui_set_panel_time_gmt_slider,lv_pct(100));
+      lv_obj_align_to(ui_set_panel_time_gmt_slider, ui_set_panel_time_gmt_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
+      lv_slider_set_range(ui_set_panel_time_gmt_slider, -12 , 14);
+      lv_slider_set_value(ui_set_panel_time_gmt_slider, timezone, LV_ANIM_OFF);
+    lv_obj_set_size(ui_set_panel_time, lv_pct(100),LV_SIZE_CONTENT);
+    lv_obj_align_to(ui_set_panel_time, ui_set_panel_display, LV_ALIGN_OUT_BOTTOM_LEFT,0,5); 
   }
