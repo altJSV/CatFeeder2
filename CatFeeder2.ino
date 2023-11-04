@@ -27,7 +27,10 @@ uint8_t feedTime[4][3] = {
 
 int feedAmount = 250; //размер порции
 
-int8_t timezone = 3;
+int8_t timezone = 3; //часовой пояс
+
+//переключатель цветовой темы оформления
+bool theme = true;  //true темная тема, false светлая
 
 uint16_t lastFeed=0; //время последнего кормления
 bool savealarm=false; //флаг осслеживающий, что значение будильника изменилось 
@@ -184,6 +187,7 @@ void setup()
   
 //Отрисовка интерфейса
   draw_interface();
+
 
  
  

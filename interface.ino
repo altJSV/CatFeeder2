@@ -1,8 +1,25 @@
+//Перключение темы
+  static void theme_switch_event(lv_event_t * e)
+  {
+    lv_obj_t * obj = lv_event_get_target(e);
+        if (lv_obj_has_state(obj, LV_STATE_CHECKED)) 
+        {
+          theme=true;
+        }
+        else
+        {
+          theme=false;
+        }
+  lv_theme_default_init(NULL, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_CYAN), theme, &fira);  
+  refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+  } 
+
 //событие измениния значения таймеров кормления
 static void alarm_roll_event_handler(lv_event_t * e)
 {
     lv_event_code_t code = lv_event_get_code(e);
     if(code == LV_EVENT_VALUE_CHANGED) {savealarm=true;}
+    refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
 }
 
 //Функция обработки нажатия кнопки кормления
@@ -56,6 +73,8 @@ static void event_feed(lv_event_t * e)
 
 void draw_interface()
   {
+  //Установка цветового оформления
+  lv_theme_default_init(NULL, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_CYAN), theme, &fira);   
   //Создаем экранные объекты
   //графические ресурсы
   LV_IMG_DECLARE(runingcat_img); //гифка с котиком
@@ -230,7 +249,7 @@ void draw_interface()
     lv_obj_t * ui_set_panel_display = lv_obj_create(ui_tab3);
       //Название панели
       lv_obj_t * ui_set_panel_display_label = lv_label_create(ui_set_panel_display);//метка названия панели
-      lv_obj_align(ui_set_panel_display_label, LV_ALIGN_TOP_MID, 0, 0); //Выравниваем по центру вверху
+      lv_obj_align(ui_set_panel_display_label, LV_ALIGN_TOP_MID, 0, 5); //Выравниваем по центру вверху
       lv_label_set_text (ui_set_panel_display_label,"Настройки дисплея");//Пишем текст метки
       //Надпись настройка яркости
       lv_obj_t * ui_set_panel_display_bright_label = lv_label_create(ui_set_panel_display);//метка названия панели
@@ -241,6 +260,17 @@ void draw_interface()
       lv_obj_set_width(ui_set_panel_display_bright_slider,lv_pct(100));
       lv_obj_align_to(ui_set_panel_display_bright_slider, ui_set_panel_display_bright_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
       lv_slider_set_range(ui_set_panel_display_bright_slider, 1 , 255);
+      //Переключение светлой и темной темы
+      lv_obj_t  * ui_set_display_theme_label = lv_label_create(ui_set_panel_display); //создаем объект заголовок
+      lv_label_set_text(ui_set_display_theme_label, "Темная тема"); //текст
+      lv_obj_align_to(ui_set_display_theme_label,ui_set_panel_display_bright_slider, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
+      //Переключатель светлой и тёмной темы
+      lv_obj_t * ui_set_display_theme_switch = lv_switch_create(ui_set_panel_display);
+      lv_obj_add_event_cb(ui_set_display_theme_switch, theme_switch_event, LV_EVENT_VALUE_CHANGED, NULL);
+      lv_obj_set_size(ui_set_display_theme_switch,32,16);
+      lv_obj_align_to(ui_set_display_theme_switch, ui_set_display_theme_label, LV_ALIGN_OUT_RIGHT_MID, 10, 0); //положение на экране
+      
+      if (theme){lv_obj_add_state(ui_set_display_theme_switch, LV_STATE_CHECKED); } else{lv_obj_clear_state(ui_set_display_theme_switch, LV_STATE_CHECKED);}
       
       lv_obj_set_size(ui_set_panel_display, lv_pct(100),LV_SIZE_CONTENT); 
     

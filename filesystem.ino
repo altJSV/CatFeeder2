@@ -46,6 +46,7 @@ bool loadConfiguration(const char *filename) {
   const char * mqtt_login_p= doc1["mqtt_login"];
   const char * mqtt_pass_p= doc1["mqtt_pass"];
   feedAmount = (uint8_t)doc1["feed_amount"];
+  theme = (bool)doc1["theme"];
   mqtt_server=mqtt_server_p;
   mqtt_login=mqtt_login_p;
   mqtt_pass=mqtt_pass_p;
@@ -82,6 +83,8 @@ bool saveConfiguration(const char *filename)
   doc1["mqtt_pass"] = mqtt_pass; //mqtt пароль
   doc1["feed_amount"] = feedAmount;// размер порции
   doc1["timezone"] = timezone; //часовой пояс
+  doc1["theme"] = theme;// тема оформления
+  
   //массив данных будильника
   for (byte i = 0; i < 4; i++) 
   {
