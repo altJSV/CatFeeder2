@@ -1,6 +1,5 @@
 //Подключение библиотек
 #include <lvgl.h> //библиотека пользовательского интерфейса
-#include "touch.h" //работа с тачем
 #include "secrets.h" //различные параметры авторизации
 #include <FS.h> //Работа с файловой системой
 #include <SPIFFS.h> //файловая система esp32
@@ -16,6 +15,8 @@
 #include <PubSubClient.h> //работа по протоколу mqtt
 #include <WebServer.h> //веб интерфейс
 #include <ArduinoJson.h>//библиотека для работы с файлами конфигурации
+
+
 
 //Объявление глобальных переменных и массивов
 uint8_t feedTime[4][3] = {
@@ -43,6 +44,7 @@ bool savealarm=false; //флаг осслеживающий, что значен
 #define STEPS_BKW 12        // шаги назад
 
 #define FORMAT_SPIFFS_IF_FAILED true //форматирование файловой системы при ошибке инициализации
+#define CALIBRATION_FILE "/TouchCalData" 
 
 //Настройка шагового двигателя
 const byte drvPins[] = {32, 33, 25, 26};  // драйвер (фазаА1, фазаА2, фазаВ1, фазаВ2)
@@ -133,30 +135,78 @@ void my_disp_flush( lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *colo
 
  lv_disp_flush_ready( disp );
   }
+
 // Вычисление координат касания
-void my_touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data)
-  {
-  if (touch_has_signal()) //если есть касание
-  {
-  if (touch_touched())
-  {
-  data->state = LV_INDEV_STATE_PR; //сообщаем библиотеке, что есть касание и удерживается
+void my_touchpad_read( lv_indev_drv_t * indev_driver, lv_indev_data_t * data )
+{
+    uint16_t touchX, touchY;
 
-  //Отправка координат
-  data->point.x = touch_last_x; //координата касания по X
-  data->point.y = touch_last_y; //координата касания по Y
-  }
-  else if (touch_released())
-  {
-  data->state = LV_INDEV_STATE_REL; //сообщаем библиотеке, что касания больше нет
-  }
-  }
-  else
-  {
-  data->state = LV_INDEV_STATE_REL;
-  }
+    bool touched = tft.getTouch( &touchX, &touchY, 600 );
+
+    if( !touched )
+    {
+        data->state = LV_INDEV_STATE_REL;
+    }
+    else
+    {
+        data->state = LV_INDEV_STATE_PR;
+
+        /*设置坐标*/
+        data->point.x = touchX;
+        data->point.y = touchY;
+
+        Serial.print( "Data x " );
+        Serial.println( touchX );
+
+        Serial.print( "Data y " );
+        Serial.println( touchY );
+    }
+}
+
+void touch_calibrate(bool rewrite)
+{
+  uint16_t calData[5];
+  uint8_t calDataOK = 0;
+
+  if (rewrite) {SPIFFS.remove(CALIBRATION_FILE); rewrite=false;}
+  // Проверка наличия файла калибровки и его целостности
+  if (SPIFFS.exists(CALIBRATION_FILE)) {
+      File f = SPIFFS.open(CALIBRATION_FILE, "r");
+      if (f) {
+        if (f.readBytes((char *)calData, 14) == 14)
+          calDataOK = 1;
+        f.close();
+      }
+    
   }
 
+  if (calDataOK && !rewrite) {
+    // настройки калибровки верны
+    tft.setTouch(calData);
+  } else {
+    // data not valid so recalibrate
+    tft.fillScreen(TFT_BLACK);
+    tft.setCursor(20, 0);
+    tft.setTextSize(1);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+
+    tft.println("Touch a points to calibrate...");
+    tft.println();
+
+
+    tft.calibrateTouch(calData, TFT_MAGENTA, TFT_BLACK, 15);
+    tft.setTextColor(TFT_GREEN, TFT_BLACK);
+    tft.println("Screen calibration complete!");
+
+    // store data
+    File f = SPIFFS.open(CALIBRATION_FILE, "w");
+    if (f) {
+      f.write((const unsigned char *)calData, 14);
+      f.close();
+      ESP.restart();
+    }
+  }
+}
 
 /***** КОНЕЦ БЛОКА СЛУЖЕБНЫХ ФУНКЦИЙ ****/
 
@@ -165,7 +215,7 @@ void setup()
   Serial.begin( 115200 ); //открытие серийного порта
 
   //Настройки экрана  
-  touch_init(); //иницилизация тача
+  //touch_init(); //иницилизация тача
 
   //Настройка подсветки экрана
   pinMode(TFT_BACKLIGHT,OUTPUT);//Переключаем пин подсветки на передачу данных
@@ -173,13 +223,16 @@ void setup()
   ledcAttachPin(TFT_BACKLIGHT, 0); //подключаем пин подсветки к каналу 0
   ledcWrite(0, bright_level); //устанавливаем значение подсветки по умолчанию 250
 
-  
+  tft.init(); // инициализируем дисплей
+  tft.setRotation (2); 
+
   //Инициализация файловой системы
  if (fs_init())
   {
         Serial.println("Чтение файла конфигурации...");
         loadConfiguration("/config.json");
         readFile(SPIFFS, "/config.json");
+        touch_calibrate(false);
   }
 
   lv_init();//инициализация LVGL
@@ -200,8 +253,7 @@ void setup()
   indev_drv.type = LV_INDEV_TYPE_POINTER; //указываем тип драйвера. В данном случае это тачскрин
   indev_drv.read_cb = my_touchpad_read; //указываем имя функции обработчика нажатий на тачскрин, которую мы создали
   lv_indev_drv_register( &indev_drv ); //регистрация драйвера тачскрина и сохранение его настроек
-  tft.init(); // инициализируем дисплей
-  tft.setRotation (2);
+  
   
 //Отрисовка интерфейса
   draw_interface();

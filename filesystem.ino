@@ -8,6 +8,7 @@ bool fs_init()
         bool formatted = SPIFFS.format();
         if(formatted){
         Serial.println("\n\nФорматирование окончено");
+        ESP.restart();
         }else{
        Serial.println("\n\nОшибка форматирования");
         }
