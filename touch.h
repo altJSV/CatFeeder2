@@ -57,7 +57,7 @@ TAMC_GT911 ts = TAMC_GT911(TOUCH_GT911_SDA, TOUCH_GT911_SCL, TOUCH_GT911_INT, TO
 #elif defined(TOUCH_XPT2046)
 #include <XPT2046_Touchscreen.h>
 #include <SPI.h>
-XPT2046_Touchscreen ts(TOUCH_XPT2046_CS, TOUCH_XPT2046_INT);
+XPT2046_Touchscreen ts(TOUCH_XPT2046_CS);
 
 #endif
 
@@ -132,7 +132,7 @@ bool touch_has_signal()
  return true;
 
 #elif defined(TOUCH_XPT2046)
- return ts.tirqTouched();
+ return ts.touched();
 
 #else
  return false;
