@@ -4,6 +4,7 @@ void server_init()
    //обработчики http запросов
    server.on("/",handle_main);
    server.on("/mqttsetting",handle_mqtt_setting);
+   server.on("/change_brightness", handle_change_brightness);
    //запускаем сервер
    server.begin();
 }
@@ -14,7 +15,7 @@ void handle_main()
   //Заголовки html
   String page = "<!DOCTYPE HTML><html>";
   page+="<head>";
-  page+="<title>Панель управления RGB кольцом</title>";
+  page+="<title>Панель управления Cat Feeder 2</title>";
   page+="<meta name='viewport' content='width=device-width, initial-scale=1'>";
   page+="<meta charset='UTF-8'>";
   
@@ -36,12 +37,34 @@ void handle_main()
   page+="</style>";
 
   //скрипты
+  //заголовок
+  //Изменение яркости дисплея
+  page+="<script type='text/javascript'>";
+  page+="function change_brightness(){";
+  page+="const bright = document.getElementById('bright');";
+  page+="var valbright=bright.value;";
+  page+="var server = '/change_brightness?val='+valbright;";
+  page+="request = new XMLHttpRequest();";
+  page+="request.open('GET',server, true);";
+  page+="request.send();}";
 
+  //конец блока
+  page+="</script>";
+  page+="</head>";
+  
   //тело страницы
   page+="<body>";
   page+="<h1 align='center'>Cat Feeder 2</h1>";
 
   //Блоки данных
+  //Настройки дисплея
+  page+="<div class='headerblock'>";
+  page+="<h2>Настройки дисплея</h2>";
+  page+="<div class='main'>";
+  page+="<p>&nbsp;Установите с помощью слайдера яркость подсветки дисплея</p>";
+  page+="<input id='bright' type='range' class='slider' min='1' max='255' step='1' width='90%' align='center' value='"+String(bright_level)+"'  onchange='change_brightness()'>";
+  page+="</div></div>";
+  
   //MQTT
   page+="<div class='headerblock'>";
   page+="<h2>Параметры подключения к MQTT брокеру</h2>";
@@ -80,4 +103,14 @@ void handle_mqtt_setting()
         server.sendHeader("Access-Control-Allow-Origin", "*");
         server.send(statusCode, "application/json", page);
     }
+}
+
+void handle_change_brightness()
+{
+  bright_level=server.arg("val").toInt();;
+    lv_slider_set_value(ui_set_panel_display_bright_slider, bright_level, LV_ANIM_ON);
+    lv_label_set_text_fmt(ui_backlight_slider_label, "%d%", bright_level);
+    ledcWrite(0, bright_level);
+    server.sendHeader("Location", "/",true);   //редирект на главную
+    server.send(302, "text/plane","");
 }

@@ -29,6 +29,8 @@ int feedAmount = 250; //размер порции
 
 int8_t timezone = 3; //часовой пояс
 
+uint8_t bright_level=250; //яркость подсветки экрана
+
 //переключатель цветовой темы оформления
 bool theme = true;  //true темная тема, false светлая
 
@@ -45,9 +47,13 @@ bool savealarm=false; //флаг осслеживающий, что значен
 //Настройка шагового двигателя
 const byte drvPins[] = {32, 33, 25, 26};  // драйвер (фазаА1, фазаА2, фазаВ1, фазаВ2)
 
+
 //Параметры экрана
 static const uint16_t screenWidth = 240; //ширина экрана
 static const uint16_t screenHeight = 320; //высота экрана
+
+//подсветка экрана
+#define TFT_BACKLIGHT 27 //пин подсветки экрана
 
 //MQTT настройки
 String mqtt_server = "192.168.1.1"; //ip или http адрес
@@ -92,6 +98,11 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
       //Окно кормления
       static lv_obj_t * ui_feed_progress_bar; //полоса прогресса кормления
       static lv_obj_t * ui_feed_progress_bar_label; //текст на полосе прогресса кормления
+
+      //Окно настроек
+      static lv_obj_t * ui_set_panel_display_bright_slider; //слайдер изменения ярккости подсветки экрана
+      static lv_obj_t * ui_backlight_slider_label; //текст на слайдере яркости подсветки экрана
+      static lv_obj_t * ui_gmt_slider_label; //текст на слайдере изменения часового пояса  
 
 //Инициализация библиотек
 GyverNTP ntp(timezone); //инициализация работы с ntp, в параметрах часовой пояс
@@ -154,7 +165,14 @@ void setup()
   Serial.begin( 115200 ); //открытие серийного порта
 
   //Настройки экрана  
-  touch_init(); //иницилизация тача 
+  touch_init(); //иницилизация тача
+
+  //Настройка подсветки экрана
+  pinMode(TFT_BACKLIGHT,OUTPUT);//Переключаем пин подсветки на передачу данных
+  ledcSetup(0, 1000, 8); //инициализируем управление подсветкой (канал 0-15, частота шим 250 Гц, разрешение 0-256)
+  ledcAttachPin(TFT_BACKLIGHT, 0); //подключаем пин подсветки к каналу 0
+  ledcWrite(0, bright_level); //устанавливаем значение подсветки по умолчанию 250
+
   
   //Инициализация файловой системы
  if (fs_init())

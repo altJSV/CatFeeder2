@@ -1,4 +1,26 @@
-//Перключение темы
+//Обработка изменения значения слайдера яркости экрана
+  static void slider_brightness_event_cb(lv_event_t * e)
+  {
+    lv_obj_t * slider = lv_event_get_target(e);
+    lv_label_set_text_fmt(ui_backlight_slider_label, "%d%", (int)lv_slider_get_value(slider));
+    lv_obj_align_to(ui_backlight_slider_label, slider, LV_ALIGN_CENTER, 0, 0);
+    bright_level=(int)lv_slider_get_value(slider);
+    ledcWrite(0, bright_level);
+    refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+  }
+
+//Обработка изменения значения слайдера часового пояса
+  static void slider_gmt_event_cb(lv_event_t * e)
+  {
+    lv_obj_t * slider = lv_event_get_target(e);
+    lv_label_set_text_fmt(ui_gmt_slider_label, "GMT: %d%", (int8_t)lv_slider_get_value(slider));
+    lv_obj_align_to(ui_gmt_slider_label, slider, LV_ALIGN_CENTER, 0, 0);
+    timezone=(int8_t)lv_slider_get_value(slider);
+    ntp.setGMT(timezone);
+    refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+  }
+
+//Переключение темы
   static void theme_switch_event(lv_event_t * e)
   {
     lv_obj_t * obj = lv_event_get_target(e);
@@ -244,7 +266,7 @@ void draw_interface()
       lv_obj_add_event_cb(ui_timer4_check, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
 
   //Вкладка настроек
-    //Груупируем настройки. Создаем панель для каждой группы
+    //Группируем настройки. Создаем панель для каждой группы
     //Панель настроек дисплея
     lv_obj_t * ui_set_panel_display = lv_obj_create(ui_tab3);
       //Название панели
@@ -256,10 +278,17 @@ void draw_interface()
       lv_obj_align(ui_set_panel_display_bright_label, LV_ALIGN_TOP_LEFT, 0, 20); //Выравниваем по левому краю
       lv_label_set_text (ui_set_panel_display_bright_label,"Яркость дисплея");//Пишем текст метки
       //Слайдер изменения яркости
-      lv_obj_t * ui_set_panel_display_bright_slider = lv_slider_create(ui_set_panel_display);
-      lv_obj_set_width(ui_set_panel_display_bright_slider,lv_pct(100));
+      ui_set_panel_display_bright_slider = lv_slider_create(ui_set_panel_display);
+      lv_obj_set_size(ui_set_panel_display_bright_slider, lv_pct(100), 20);
       lv_obj_align_to(ui_set_panel_display_bright_slider, ui_set_panel_display_bright_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
       lv_slider_set_range(ui_set_panel_display_bright_slider, 1 , 255);
+      lv_slider_set_value(ui_set_panel_display_bright_slider, bright_level, LV_ANIM_OFF);
+      lv_obj_add_event_cb(ui_set_panel_display_bright_slider, slider_brightness_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+      //текст на слайдере изменения яркости
+      ui_backlight_slider_label = lv_label_create(ui_set_panel_display);
+      lv_label_set_text_fmt(ui_backlight_slider_label, "%d%", (int)lv_slider_get_value(ui_set_panel_display_bright_slider));
+      lv_obj_align_to(ui_backlight_slider_label,ui_set_panel_display_bright_slider, LV_ALIGN_CENTER, 0, 0);
+
       //Переключение светлой и темной темы
       lv_obj_t  * ui_set_display_theme_label = lv_label_create(ui_set_panel_display); //создаем объект заголовок
       lv_label_set_text(ui_set_display_theme_label, "Темная тема"); //текст
@@ -267,7 +296,7 @@ void draw_interface()
       //Переключатель светлой и тёмной темы
       lv_obj_t * ui_set_display_theme_switch = lv_switch_create(ui_set_panel_display);
       lv_obj_add_event_cb(ui_set_display_theme_switch, theme_switch_event, LV_EVENT_VALUE_CHANGED, NULL);
-      lv_obj_set_size(ui_set_display_theme_switch,32,16);
+      lv_obj_set_size(ui_set_display_theme_switch,32,22);
       lv_obj_align_to(ui_set_display_theme_switch, ui_set_display_theme_label, LV_ALIGN_OUT_RIGHT_MID, 10, 0); //положение на экране
       
       if (theme){lv_obj_add_state(ui_set_display_theme_switch, LV_STATE_CHECKED); } else{lv_obj_clear_state(ui_set_display_theme_switch, LV_STATE_CHECKED);}
@@ -286,10 +315,16 @@ void draw_interface()
       lv_label_set_text (ui_set_panel_time_gmt_label,"Часовой пояс");//Пишем текст метки
       //Слайдер изменения часового пояса
       lv_obj_t * ui_set_panel_time_gmt_slider = lv_slider_create(ui_set_panel_time);
-      lv_obj_set_width(ui_set_panel_time_gmt_slider,lv_pct(100));
+      lv_obj_set_size(ui_set_panel_time_gmt_slider, lv_pct(100), 20);
       lv_obj_align_to(ui_set_panel_time_gmt_slider, ui_set_panel_time_gmt_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
       lv_slider_set_range(ui_set_panel_time_gmt_slider, -12 , 14);
       lv_slider_set_value(ui_set_panel_time_gmt_slider, timezone, LV_ANIM_OFF);
+      lv_obj_add_event_cb(ui_set_panel_time_gmt_slider, slider_gmt_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+      //Надпись на слайдере изменения часового пояса
+      ui_gmt_slider_label = lv_label_create(ui_set_panel_time);
+      lv_label_set_text_fmt(ui_gmt_slider_label, "GMT: %d", (int)lv_slider_get_value(ui_set_panel_time_gmt_slider));
+      lv_obj_align_to(ui_gmt_slider_label, ui_set_panel_time_gmt_slider, LV_ALIGN_CENTER, 0, 0);
+
     lv_obj_set_size(ui_set_panel_time, lv_pct(100),LV_SIZE_CONTENT);
     lv_obj_align_to(ui_set_panel_time, ui_set_panel_display, LV_ALIGN_OUT_BOTTOM_LEFT,0,5); 
   }
