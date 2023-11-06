@@ -1,13 +1,3 @@
-//Обработка изменения значения слайдера яркости экрана
-  static void slider_brightness_event_cb(lv_event_t * e)
-  {
-    lv_obj_t * slider = lv_event_get_target(e);
-    lv_label_set_text_fmt(ui_backlight_slider_label, "%d%", (int)lv_slider_get_value(slider));
-    lv_obj_align_to(ui_backlight_slider_label, slider, LV_ALIGN_CENTER, 0, 0);
-    bright_level=(int)lv_slider_get_value(slider);
-    ledcWrite(0, bright_level);
-    refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
-  }
 
 //Обработка изменения значения слайдера часового пояса
   static void slider_gmt_event_cb(lv_event_t * e)
@@ -40,31 +30,10 @@
 static void alarm_roll_event_handler(lv_event_t * e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if(code == LV_EVENT_VALUE_CHANGED) {savealarm=true;}
-    refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
-}
-
-//Функция обработки нажатия кнопки кормления
-static void event_feed(lv_event_t * e)
-  {
-  lv_event_code_t code = lv_event_get_code(e);
-   if(code == LV_EVENT_CLICKED) 
-   {
-    prefid();
-    }
- }
-
-//Смена активной вкладки
- static void change_tab_event(lv_event_t * e)
-  {
-    uint16_t acttab=lv_tabview_get_tab_act(ui_tabview);
-    if(lv_event_get_code(e) == LV_EVENT_VALUE_CHANGED) 
+    if(code == LV_EVENT_VALUE_CHANGED) 
     {
-       if (acttab!=1 && savealarm==true) //Если изменяется активная вкладка и стоит флаг, что значение одного из элементов вкладки будильники изменилось
-        {
-          savealarm=false;//отключаем флаг
-          //Опрашиваем значения всех элементов и заносим в массив
-          //Таймер 0
+      //Опрашиваем значение всех элементов
+      //Таймер 0
           feedTime[0][0]=lv_roller_get_selected(ui_timer1_hour);//часы
           feedTime[0][1]=lv_roller_get_selected(ui_timer1_minute);//минуты
           feedTime[0][2]=lv_obj_has_state(ui_timer1_check, LV_STATE_CHECKED);//включен или выключен
@@ -80,9 +49,31 @@ static void event_feed(lv_event_t * e)
           feedTime[3][0]=lv_roller_get_selected(ui_timer4_hour);//часы
           feedTime[3][1]=lv_roller_get_selected(ui_timer4_minute);//минуты
           feedTime[3][2]=lv_obj_has_state(ui_timer4_check, LV_STATE_CHECKED);//включен или выключен
-        }
+    
+    refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
     }
-  }
+}
+
+//Функция обработки нажатия кнопки кормления
+static void event_feed(lv_event_t * e)
+  {
+  lv_event_code_t code = lv_event_get_code(e);
+   if(code == LV_EVENT_CLICKED) 
+   {
+    prefid();
+    }
+ }
+
+ //Функция обработки нажатия кнопки калибровки экрана
+static void event_calibrate(lv_event_t * e)
+  {
+  lv_event_code_t code = lv_event_get_code(e);
+   if(code == LV_EVENT_CLICKED) 
+   {
+    touch_calibrate(true);
+    }
+ }
+
 
 //Изменение значения размера порции на экране
    static void slider_feedamount_event_cb(lv_event_t * e)
@@ -107,8 +98,7 @@ void draw_interface()
       lv_obj_t * ui_tab1 = lv_tabview_add_tab(ui_tabview, "Кормление");
       lv_obj_t * ui_tab2 = lv_tabview_add_tab(ui_tabview, "Таймеры");
       lv_obj_t * ui_tab3 = lv_tabview_add_tab(ui_tabview, "Настройки");
-      //обработчики событий для вкладок
-      lv_obj_add_event_cb(ui_tabview, change_tab_event, LV_EVENT_ALL, NULL);//смена активной вкладки
+      
   //Панель состояния
     //Иконка Wifi
     ui_wifistatus = lv_label_create(ui_tabview);
@@ -273,26 +263,22 @@ void draw_interface()
       lv_obj_t * ui_set_panel_display_label = lv_label_create(ui_set_panel_display);//метка названия панели
       lv_obj_align(ui_set_panel_display_label, LV_ALIGN_TOP_MID, 0, 5); //Выравниваем по центру вверху
       lv_label_set_text (ui_set_panel_display_label,"Настройки дисплея");//Пишем текст метки
-      //Надпись настройка яркости
-      lv_obj_t * ui_set_panel_display_bright_label = lv_label_create(ui_set_panel_display);//метка названия панели
-      lv_obj_align(ui_set_panel_display_bright_label, LV_ALIGN_TOP_LEFT, 0, 20); //Выравниваем по левому краю
-      lv_label_set_text (ui_set_panel_display_bright_label,"Яркость дисплея");//Пишем текст метки
-      //Слайдер изменения яркости
-      ui_set_panel_display_bright_slider = lv_slider_create(ui_set_panel_display);
-      lv_obj_set_size(ui_set_panel_display_bright_slider, lv_pct(100), 20);
-      lv_obj_align_to(ui_set_panel_display_bright_slider, ui_set_panel_display_bright_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
-      lv_slider_set_range(ui_set_panel_display_bright_slider, 1 , 255);
-      lv_slider_set_value(ui_set_panel_display_bright_slider, bright_level, LV_ANIM_OFF);
-      lv_obj_add_event_cb(ui_set_panel_display_bright_slider, slider_brightness_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
-      //текст на слайдере изменения яркости
-      ui_backlight_slider_label = lv_label_create(ui_set_panel_display);
-      lv_label_set_text_fmt(ui_backlight_slider_label, "%d%", (int)lv_slider_get_value(ui_set_panel_display_bright_slider));
-      lv_obj_align_to(ui_backlight_slider_label,ui_set_panel_display_bright_slider, LV_ALIGN_CENTER, 0, 0);
-
+      
+      //Кнопка калибровки экрана
+      lv_obj_t * ui_calibrate_button = lv_btn_create(ui_set_panel_display); // кнопка кормления  
+      lv_obj_set_size(ui_calibrate_button, lv_pct(100), 30);
+      lv_obj_align(ui_calibrate_button, LV_ALIGN_TOP_LEFT, 0, 25);
+      lv_obj_add_event_cb(ui_calibrate_button,  event_calibrate, LV_EVENT_ALL, NULL); //обработчик нажатия кнопки
+      
+      //текст на кнопке калибровки экрана
+      lv_obj_t * ui_calibrate_button_text = lv_label_create(ui_calibrate_button);
+      lv_label_set_text(ui_calibrate_button_text, "Калибровка экрана");
+      lv_obj_center(ui_calibrate_button_text);
+      
       //Переключение светлой и темной темы
       lv_obj_t  * ui_set_display_theme_label = lv_label_create(ui_set_panel_display); //создаем объект заголовок
       lv_label_set_text(ui_set_display_theme_label, "Темная тема"); //текст
-      lv_obj_align_to(ui_set_display_theme_label,ui_set_panel_display_bright_slider, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
+      lv_obj_align_to(ui_set_display_theme_label,ui_calibrate_button, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
       //Переключатель светлой и тёмной темы
       lv_obj_t * ui_set_display_theme_switch = lv_switch_create(ui_set_panel_display);
       lv_obj_add_event_cb(ui_set_display_theme_switch, theme_switch_event, LV_EVENT_VALUE_CHANGED, NULL);
@@ -300,6 +286,7 @@ void draw_interface()
       lv_obj_align_to(ui_set_display_theme_switch, ui_set_display_theme_label, LV_ALIGN_OUT_RIGHT_MID, 10, 0); //положение на экране
       
       if (theme){lv_obj_add_state(ui_set_display_theme_switch, LV_STATE_CHECKED); } else{lv_obj_clear_state(ui_set_display_theme_switch, LV_STATE_CHECKED);}
+      
       
       lv_obj_set_size(ui_set_panel_display, lv_pct(100),LV_SIZE_CONTENT); 
     

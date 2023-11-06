@@ -4,7 +4,6 @@ void server_init()
    //обработчики http запросов
    server.on("/",handle_main);
    server.on("/mqttsetting",handle_mqtt_setting);
-   server.on("/change_brightness", handle_change_brightness);
    //запускаем сервер
    server.begin();
 }
@@ -29,7 +28,7 @@ void handle_main()
   page+="-moz-appearance: none; -webkit-appearance: none; appearance: none; background-color: #fff;"; 
   page+="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'), linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);"; 
   page+="background-repeat: no-repeat, repeat; background-position: right .7em top 50%, 0 0; background-size: .65em auto, 100%;}";
-  page+=".slider {-webkit-appearance: none; appearance: none; width: 100%; height: 25px; background: #d3d3d3; outline: none; opacity: 0.7; -webkit-transition: .2s; transition: opacity .2s;}";
+  page+=".slider {-webkit-appearance: none; appearance: none; width: 90%; height: 25px; background: #d3d3d3; outline: none; opacity: 0.7; -webkit-transition: .2s; transition: opacity .2s;}";
   page+=".slider:hover { opacity: 1;}";
   page+=".slider::-webkit-slider-thumb {-webkit-appearance: none; appearance: none; width: 25px; height: 25px; background: Dodgerblue; cursor: pointer;}";
   page+=".slider::-moz-range-thumb {width: 25px; height: 25px; background: Dodgerblue; cursor: pointer;}";  
@@ -40,13 +39,7 @@ void handle_main()
   //заголовок
   //Изменение яркости дисплея
   page+="<script type='text/javascript'>";
-  page+="function change_brightness(){";
-  page+="const bright = document.getElementById('bright');";
-  page+="var valbright=bright.value;";
-  page+="var server = '/change_brightness?val='+valbright;";
-  page+="request = new XMLHttpRequest();";
-  page+="request.open('GET',server, true);";
-  page+="request.send();}";
+
 
   //конец блока
   page+="</script>";
@@ -57,13 +50,6 @@ void handle_main()
   page+="<h1 align='center'>Cat Feeder 2</h1>";
 
   //Блоки данных
-  //Настройки дисплея
-  page+="<div class='headerblock'>";
-  page+="<h2>Настройки дисплея</h2>";
-  page+="<div class='main'>";
-  page+="<p>&nbsp;Установите с помощью слайдера яркость подсветки дисплея</p>";
-  page+="<input id='bright' type='range' class='slider' min='1' max='255' step='1' width='90%' align='center' value='"+String(bright_level)+"'  onchange='change_brightness()'>";
-  page+="</div></div>";
   
   //MQTT
   page+="<div class='headerblock'>";
@@ -105,12 +91,3 @@ void handle_mqtt_setting()
     }
 }
 
-void handle_change_brightness()
-{
-  bright_level=server.arg("val").toInt();;
-    lv_slider_set_value(ui_set_panel_display_bright_slider, bright_level, LV_ANIM_ON);
-    lv_label_set_text_fmt(ui_backlight_slider_label, "%d%", bright_level);
-    ledcWrite(0, bright_level);
-    server.sendHeader("Location", "/",true);   //редирект на главную
-    server.send(302, "text/plane","");
-}
