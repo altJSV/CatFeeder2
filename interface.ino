@@ -283,7 +283,7 @@ void draw_interface()
       lv_obj_t * ui_set_display_theme_switch = lv_switch_create(ui_set_panel_display);
       lv_obj_add_event_cb(ui_set_display_theme_switch, theme_switch_event, LV_EVENT_VALUE_CHANGED, NULL);
       lv_obj_set_size(ui_set_display_theme_switch,32,22);
-      lv_obj_align_to(ui_set_display_theme_switch, ui_set_display_theme_label, LV_ALIGN_OUT_RIGHT_MID, 10, 0); //положение на экране
+      lv_obj_align_to(ui_set_display_theme_switch, ui_set_display_theme_label, LV_ALIGN_OUT_RIGHT_MID, 30, 0); //положение на экране
       
       if (theme){lv_obj_add_state(ui_set_display_theme_switch, LV_STATE_CHECKED); } else{lv_obj_clear_state(ui_set_display_theme_switch, LV_STATE_CHECKED);}
       

@@ -36,10 +36,9 @@ void feed()
     lv_label_set_text_fmt(ui_feed_progress_bar_label,"%d", i*100/feedAmount);
     lv_event_send(ui_feed_progress_bar, LV_EVENT_REFRESH, NULL);
     lv_timer_handler();
-    Serial.println(i);
-    delay(20);
+    oneRev();
   }  
-  //disableMotor();//выключаем мотор
+  disableMotor();//выключаем мотор
   lastFeed=ntp.hour()*60 + ntp.minute();
   lv_obj_del(ui_feedwindow);
   
