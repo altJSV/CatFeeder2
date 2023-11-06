@@ -15,6 +15,7 @@
 #include <PubSubClient.h> //работа по протоколу mqtt
 #include <WebServer.h> //веб интерфейс
 #include <ArduinoJson.h>//библиотека для работы с файлами конфигурации
+#include <WebOTA.h> //OTA обновление
 
 
 
@@ -35,7 +36,7 @@ int8_t timezone = 3; //часовой пояс
 bool theme = true;  //true темная тема, false светлая
 
 uint16_t lastFeed=0; //время последнего кормления
-bool savealarm=false; //флаг осслеживающий, что значение будильника изменилось 
+unsigned long ota_progress_millis = 0; //прогресс OTA обновления
 
 //различные параметры и настройки
 #define FEED_SPEED 3000     // задержка между шагами мотора (мкс)
@@ -68,6 +69,7 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
 //объекты интерфейса LVGL
     //Контейнеры
     static lv_obj_t * ui_feedwindow; // окно кормления
+    static lv_obj_t * ui_otawindow; // окно кормления
     static lv_obj_t * ui_tabview; // панель вкладок
     //Панель состояния
     static lv_obj_t * ui_wifistatus; //статус wifi
@@ -97,6 +99,7 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
       //Окно кормления
       static lv_obj_t * ui_feed_progress_bar; //полоса прогресса кормления
       static lv_obj_t * ui_feed_progress_bar_label; //текст на полосе прогресса кормления
+
 
       //Окно настроек
       static lv_obj_t * ui_gmt_slider_label; //текст на слайдере изменения часового пояса  
@@ -267,6 +270,7 @@ void setup()
   
   //запуск сервисов
   ntp.begin(); //сервис синхронизации времени
+  ElegantOTA.begin(&server);    // Запуск ElegantOTA
   server_init();//запуск веб сервера
   
 
@@ -332,7 +336,7 @@ void loop()
   }
   client.loop(); //чтение состояния топиков MQQT
   server.handleClient(); //обработка запросов web интерфейса
-  
+  webota.handle();
 }
 
 
