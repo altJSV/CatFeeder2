@@ -15,7 +15,7 @@
 #include <PubSubClient.h> //работа по протоколу mqtt
 #include <WebServer.h> //веб интерфейс
 #include <ArduinoJson.h>//библиотека для работы с файлами конфигурации
-#include <WebOTA.h> //OTA обновление
+#include <ElegantOTA.h> //OTA обновление
 
 
 
@@ -51,8 +51,8 @@ const byte drvPins[] = {32, 33, 25, 26};  // драйвер (фазаА1, фаз
 
 
 //Параметры экрана
-static const uint16_t screenWidth = 240; //ширина экрана
-static const uint16_t screenHeight = 320; //высота экрана
+static const uint16_t screenWidth = 320; //ширина экрана
+static const uint16_t screenHeight = 240; //высота экрана
 
 
 //MQTT настройки
@@ -212,7 +212,7 @@ void setup()
 
   //Настройки экрана  
   tft.init(); // инициализируем дисплей
-  tft.setRotation (2); 
+  tft.setRotation (1); 
 
   //Инициализация файловой системы
  if (fs_init())
@@ -336,7 +336,6 @@ void loop()
   }
   client.loop(); //чтение состояния топиков MQQT
   server.handleClient(); //обработка запросов web интерфейса
-  webota.handle();
 }
 
 
