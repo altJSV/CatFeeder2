@@ -22,7 +22,7 @@
         {
           theme=false;
         }
-  lv_theme_default_init(NULL, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_CYAN), theme, &fira);  
+  lv_theme_default_init(NULL, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_CYAN), theme, &mainfont14);  
   refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
   } 
 
@@ -80,14 +80,14 @@ static void event_calibrate(lv_event_t * e)
     {
       lv_obj_t * slider = lv_event_get_target(e);
       feedAmount=(int)lv_slider_get_value(slider);
-      lv_label_set_text_fmt(ui_label_feedAmount,"%d", feedAmount);
+      lv_label_set_text_fmt(ui_label_feedAmount,"%d грам", feedAmount);
       refsaveconfigdelay.setInterval(10000);
     }
 
 void draw_interface()
   {
   //Установка цветового оформления
-  lv_theme_default_init(NULL, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_CYAN), theme, &fira);   
+  lv_theme_default_init(NULL, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_CYAN), theme, &mainfont14);   
   //Создаем экранные объекты
   //графические ресурсы
   LV_IMG_DECLARE(runingcat_img); //гифка с котиком
@@ -125,7 +125,7 @@ void draw_interface()
     lv_obj_set_size(ui_clock, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
     lv_obj_set_style_text_font(ui_clock, &digital60, 0);
     //графика
-    //бегущий кот
+    /*бегущий кот
     img_running_cat = lv_gif_create(ui_tab1);
     lv_gif_set_src(img_running_cat, &runingcat_img);
     lv_obj_set_pos(img_running_cat, 0, 105);
@@ -144,27 +144,27 @@ void draw_interface()
     lv_obj_align(ui_feed_button, LV_ALIGN_BOTTOM_LEFT, 0, 0);
     lv_obj_add_event_cb(ui_feed_button, event_feed, LV_EVENT_ALL, NULL); //обработчик нажатия кнопки
     lv_obj_t * ui_feed_btn_label=lv_label_create(ui_feed_button);//Надпись на кнопке
-    lv_label_set_text(ui_feed_btn_label, "Выдать корм");
+    lv_label_set_text(ui_feed_btn_label, "Покормить "LV_SYMBOL_CATFOOD );
     lv_obj_center(ui_feed_btn_label);
     //Размер порции
     lv_obj_t * ui_slider_feed_amount = lv_slider_create(ui_tab1);
     lv_obj_set_size(ui_slider_feed_amount, lv_pct(90), 20);
     lv_slider_set_range(ui_slider_feed_amount, 50 , 250);
     lv_slider_set_value(ui_slider_feed_amount, feedAmount, LV_ANIM_OFF);
-    lv_obj_align_to(ui_slider_feed_amount, ui_feed_button, LV_ALIGN_TOP_LEFT, 0, -45);
+    lv_obj_align_to(ui_slider_feed_amount, ui_feed_button, LV_ALIGN_TOP_RIGHT, 0, -45);
     lv_obj_add_event_cb(ui_slider_feed_amount, slider_feedamount_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
   
     ui_label_feedAmount = lv_label_create(ui_tab1);
-    lv_label_set_text_fmt(ui_label_feedAmount,"%d", feedAmount);
+    lv_label_set_text_fmt(ui_label_feedAmount,"%d грамм", feedAmount);
     lv_obj_align_to(ui_label_feedAmount, ui_slider_feed_amount, LV_ALIGN_CENTER, 0, 0);
 
     lv_obj_t * ui_label_feed_text = lv_label_create(ui_tab1);
-    lv_label_set_text(ui_label_feed_text, "Размер порции (50-250):");
-    lv_obj_align_to(ui_label_feed_text, ui_slider_feed_amount, LV_ALIGN_TOP_LEFT, 0, -25);
+    lv_label_set_text(ui_label_feed_text, LV_SYMBOL_SCALES);
+    lv_obj_align_to(ui_label_feed_text, ui_slider_feed_amount, LV_ALIGN_OUT_LEFT_MID, 0, 0);
 
     ui_remain = lv_label_create(ui_tab1);
     lv_label_set_text(ui_remain, " ");
-    lv_obj_align_to(ui_remain, ui_label_feed_text, LV_ALIGN_TOP_LEFT, 0, -25);
+    lv_obj_align(ui_remain, LV_ALIGN_TOP_LEFT, 0, 60);
 
 
   //Вкладка таймеров

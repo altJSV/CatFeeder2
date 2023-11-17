@@ -46,6 +46,16 @@ unsigned long ota_progress_millis = 0; //прогресс OTA обновлени
 #define FORMAT_SPIFFS_IF_FAILED true //форматирование файловой системы при ошибке инициализации
 #define CALIBRATION_FILE "/TouchCalData" 
 
+//добавляем вывод новых символов
+#define LV_SYMBOL_SANDCLOCK "\xEF\x82\xB3" //песочные часы
+#define LV_SYMBOL_SCALES "\xEF\x82\xB4" //кухонные весы
+#define LV_SYMBOL_TIMEOK "\xEF\x82\xB5" //часы ОК
+#define LV_SYMBOL_CATFOOD "\xEF\x82\xB6"//кошачья еда
+#define LV_SYMBOL_DISPLAY "\xEF\x82\xB7" //монитор
+#define LV_SYMBOL_DCLOCK "\xEF\x82\xB8" //цифровые часы
+#define LV_SYMBOL_BLUETOOTH "\xEF\x82\xB9" //bluetooth
+
+
 //Настройка шагового двигателя
 const byte drvPins[] = {32, 33, 25, 26};  // драйвер (фазаА1, фазаА2, фазаВ1, фазаВ2)
 

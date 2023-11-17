@@ -94,10 +94,10 @@ uint16_t curtime=ntp.hour()*60 + ntp.minute(); //Текущее время в м
            }
             
         } 
-        lv_label_set_text_fmt(ui_remain, "До кормления: %dч. %dм.",(int)mintime/60, mintime%60); 
-    //Движение котика по шкале
+        lv_label_set_text_fmt(ui_remain, LV_SYMBOL_SANDCLOCK" %dч. %dм.",(int)mintime/60, mintime%60); 
+    /*Движение котика по шкале
     if (lastFeed>alarmtime) {alarmtime=lastFeed+(1440-lastFeed)+alarmtime;}
     
     uint8_t x_cat=map(alarmtime-mintime,lastFeed,alarmtime,0,160);//вычисляем координату х котика на шкале
-    lv_obj_set_x(img_running_cat,x_cat);
+    lv_obj_set_x(img_running_cat,x_cat);*/
 }
