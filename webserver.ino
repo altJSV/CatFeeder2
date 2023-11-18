@@ -17,12 +17,17 @@ void handle_main()
   page+="<title>Панель управления Cat Feeder 2</title>";
   page+="<meta name='viewport' content='width=device-width, initial-scale=1'>";
   page+="<meta charset='UTF-8'>";
-  
   //стили
   page+="<style>";
   page+=".icon-block {position: fixed; top: 1%; right: 2%;}";
-  page+=".headerblock {display: flex; width: 80%; color: white; margin: 10px auto 10px auto; flex-direction: column; align-items: center; justify-content: center; background: 	Dodgerblue;}";
-  page+=".main {width: 100%; color: black; background: 	Skyblue; font-size: 16px; font-family: sans-serif; font-weight: 700;"; 
+  page+=".mainblock {display: flex; width: 60%; color: white; margin: 10px auto 10px auto; flex-direction: column; align-items: center; justify-content: center; background: Lightcyan;}";
+  page+=".headerblock {display: flex; width: 90%; color: white; margin: 10px auto 10px auto; padding: 0; flex-direction: column; align-items: center; justify-content: center; background: Dodgerblue;}";
+  page+=".infoblock {display: flex; width: 90%; color: white; margin: 10px auto 10px auto; flex-direction: column; align-items: center; justify-content: center; background: Forestgreen; }";
+  page+=".warningblock {display: flex; width: 90%; color: white; margin: 10px auto 10px auto; flex-direction: column; align-items: center; justify-content: center; background: Crimson; border-radius: 10px 10px 0 0;}";
+  page+=".main {display:block; margin:auto; color: black; background: 	Skyblue; padding: 10px; font-size: 16px; font-family: sans-serif; font-weight: 700;}"; 
+  page+=".inputs {padding:10px; border-radius:10px; margin: 10px auto;}";
+  page+=".buttons {padding:10px;border-radius:10px; background: Dodgerblue; color: white; margin: 10px auto;}";
+  page+=".links {padding:10px;border-radius:10px; background: Sandybrown; color: white; text-decoration: none; font-size: 16px; font-family: sans-serif; font-weight: 700; align-items: center; justify-content: center; margin: 10px auto 10px auto; display: flex; width: 88%; }";
   page+=".select-css {width: 100%; display: block; font-size: 16px; font-family: sans-serif; font-weight: 700; color: #444; line-height: 1.3; padding: .6em 1.4em .5em .8em; width: 100%; max-width: 100%;";
   page+="box-sizing: border-box; margin: 0; border: 1px solid #aaa; box-shadow: 0 1px 0 1px rgba(0,0,0,.04); border-radius: .5em;";
   page+="-moz-appearance: none; -webkit-appearance: none; appearance: none; background-color: #fff;"; 
@@ -50,18 +55,20 @@ void handle_main()
   page+="<h1 align='center'>Cat Feeder 2</h1>";
 
   //Блоки данных
-  
+  page+="<div class='mainblock'>"; //основной контейнер
   //MQTT
   page+="<div class='headerblock'>";
-  page+="<h2>Параметры подключения к MQTT брокеру</h2>";
+  page+="<div style='display:flex'><h2>Параметры подключения к MQTT брокеру</h2></div>";
   page+="<div class='main'>";
-  page+="<p><form method='get' action='/mqttsetting'><label>Сервер: </label><input style='padding:10px;border-radius:10px; 15px' type='text' name='server'  length=32 value='"+mqtt_server+"'>&nbsp;";
-  page+="<label>Порт: </label><input style='padding:10px;border-radius:10px;' name='port' type='number' length=64 value='"+String(mqtt_port)+"'>&nbsp;&nbsp;";
-  page+="<label>Логин: </label><input style='padding:10px;border-radius:10px; 15px' type='text' name='login'  length=32 value='"+mqtt_login+"'>&nbsp;<label>Пароль: </label><input style='padding:10px;border-radius:10px;' name='pass' type='password' length=64 value='"+mqtt_pass+"'>&nbsp;&nbsp;";
-  page+="<input style='padding:10px;border-radius:10px; background: 	Dodgerblue; color: white'  type='submit'></form></p>";
+  page+="<p><form method='get' action='/mqttsetting'><label>Сервер: <input class='inputs' type='text' name='server'  length=32 value='"+mqtt_server+"'>&nbsp;</label>";
+  page+="<label>Порт: <input class='inputs' name='port' type='number' length=64 value='"+String(mqtt_port)+"'>&nbsp;&nbsp;</label>";
+  page+="<label>Логин: <input class='inputs' type='text' name='login'  length=32 value='"+mqtt_login+"'>&nbsp;</label><label>Пароль: <input class='inputs' name='pass' type='password' length=64 value='"+mqtt_pass+"'>&nbsp;&nbsp;</label>";
+  page+="<input class='buttons'  type='submit'></form></p>";
   page+="</div></div>";
 
+  page+="<a href='#' class='links'>Статистика</a>";
   //Завершающий код
+  page+="</div>";
   page+="</body>";
   page+="</html>";
 server.send(200, "text/html", page);

@@ -126,7 +126,7 @@ void draw_interface()
     ui_clock = lv_label_create(ui_tab1); //часы
     lv_obj_align(ui_clock, LV_ALIGN_TOP_LEFT, 0, 5); //положение на экране
     lv_obj_set_size(ui_clock, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-    lv_obj_set_style_text_font(ui_clock, &digital60, 0);
+    lv_obj_set_style_text_font(ui_clock, &digital, 0);
     //графика
     /*бегущий кот
     img_running_cat = lv_gif_create(ui_tab1);
