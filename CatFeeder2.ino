@@ -80,6 +80,7 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
     static lv_obj_t * ui_feedwindow; // окно кормления
     static lv_obj_t * ui_otawindow; // окно кормления
     static lv_obj_t * ui_tabview; // панель вкладок
+    static lv_obj_t * ui_tabview_settings; //панель вкладок настроек
     //Панель состояния
     static lv_obj_t * ui_wifistatus; //статус wifi
     static lv_obj_t * ui_mqttstatus; //статус wifi

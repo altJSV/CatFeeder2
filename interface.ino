@@ -89,15 +89,18 @@ void draw_interface()
   //Установка цветового оформления
   lv_theme_default_init(NULL, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_CYAN), theme, &mainfont14);   
   //Создаем экранные объекты
-  //графические ресурсы
-  LV_IMG_DECLARE(runingcat_img); //гифка с котиком
-  LV_IMG_DECLARE(food_img); //гифка с едой
+  
   //Контейнеры
     ui_tabview = lv_tabview_create(lv_scr_act(), LV_DIR_BOTTOM, 30); //создаем панель вкладок
       //Создаем вкладки и присваиваем им отображаемые имена
       lv_obj_t * ui_tab1 = lv_tabview_add_tab(ui_tabview, "Кормление");
       lv_obj_t * ui_tab2 = lv_tabview_add_tab(ui_tabview, "Таймеры");
       lv_obj_t * ui_tab3 = lv_tabview_add_tab(ui_tabview, "Настройки");
+    //вкладки на экране настроек
+    ui_tabview_settings = lv_tabview_create(ui_tab3, LV_DIR_LEFT, 30);
+      lv_obj_t * ui_set_tab1 = lv_tabview_add_tab(ui_tabview_settings, LV_SYMBOL_DISPLAY);
+      lv_obj_t * ui_set_tab2 = lv_tabview_add_tab(ui_tabview_settings, LV_SYMBOL_DCLOCK);
+      lv_obj_t * ui_set_tab3 = lv_tabview_add_tab(ui_tabview_settings, LV_SYMBOL_SCALES);
       
   //Панель состояния
     //Иконка Wifi
@@ -257,8 +260,8 @@ void draw_interface()
 
   //Вкладка настроек
     //Группируем настройки. Создаем панель для каждой группы
-    //Панель настроек дисплея
-    lv_obj_t * ui_set_panel_display = lv_obj_create(ui_tab3);
+    //Панель настроек дисплея на вкладке 1
+    lv_obj_t * ui_set_panel_display = lv_obj_create(ui_set_tab1);
       //Название панели
       lv_obj_t * ui_set_panel_display_label = lv_label_create(ui_set_panel_display);//метка названия панели
       lv_obj_align(ui_set_panel_display_label, LV_ALIGN_TOP_MID, 0, 5); //Выравниваем по центру вверху
@@ -290,8 +293,8 @@ void draw_interface()
       
       lv_obj_set_size(ui_set_panel_display, lv_pct(100),LV_SIZE_CONTENT); 
     
-    //Панель настроек часов
-    lv_obj_t * ui_set_panel_time = lv_obj_create(ui_tab3);
+    //Панель настроек часов на вкладке 2
+    lv_obj_t * ui_set_panel_time = lv_obj_create(ui_set_tab2);
       //Название панели
       lv_obj_t * ui_set_panel_time_label = lv_label_create(ui_set_panel_time);//метка названия панели
       lv_obj_align(ui_set_panel_time_label, LV_ALIGN_TOP_MID, 0, 0); //Выравниваем по центру вверху
@@ -313,5 +316,5 @@ void draw_interface()
       lv_obj_align_to(ui_gmt_slider_label, ui_set_panel_time_gmt_slider, LV_ALIGN_CENTER, 0, 0);
 
     lv_obj_set_size(ui_set_panel_time, lv_pct(100),LV_SIZE_CONTENT);
-    lv_obj_align_to(ui_set_panel_time, ui_set_panel_display, LV_ALIGN_OUT_BOTTOM_LEFT,0,5); 
+    //lv_obj_align_to(ui_set_panel_time, ui_set_panel_display, LV_ALIGN_OUT_BOTTOM_LEFT,0,5); 
   }
