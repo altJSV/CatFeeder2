@@ -4,8 +4,7 @@
 #include <FS.h> //Работа с файловой системой
 #include <SPIFFS.h> //файловая система esp32
 #include <TFT_eSPI.h> //драйвер дисплея
-#include "runingcat_img.c" //нрафика бегущего кота
-//#include "food_img.c"//графика миски едой
+#include "images.c" //файл с графикой
 #include <SPI.h> //драйвер spi
 #include <WiFi.h> //библиотека для рабоы с wifi esp32
 #include <WiFiManager.h> //Легкая настройка подключения к Wifi сети
