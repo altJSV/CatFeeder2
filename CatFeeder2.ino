@@ -20,11 +20,11 @@
 
 
 //Объявление глобальных переменных и массивов
-uint8_t feedTime[4][3] = {
-  {7, 0, 1},       // часы, минуты. НЕ НАЧИНАТЬ ЧИСЛО С НУЛЯ
-  {12, 0, 1},
-  {17, 0, 1},
-  {21, 0, 1},
+uint8_t feedTime[4][4] = {
+  {7, 0, 1,250},       // часы, минуты. НЕ НАЧИНАТЬ ЧИСЛО С НУЛЯ
+  {12, 0, 1,200},
+  {17, 0, 1,250},
+  {21, 0, 1,150},
 };
 
 int feedAmount = 250; //размер порции
@@ -98,15 +98,20 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
       static lv_obj_t * ui_timer1_hour; //слайдер часов будильника 1
       static lv_obj_t * ui_timer1_minute; //слайдер минут будильника 1
       static lv_obj_t * ui_timer1_check; //активатор будильника 1
+      static lv_obj_t * ui_timer1_amount;//размер порции будильника 1
       static lv_obj_t * ui_timer2_hour; //слайдер часов будильника 2
       static lv_obj_t * ui_timer2_minute; //слайдер минут будильника 2
       static lv_obj_t * ui_timer2_check; //активатор будильника 2
+      static lv_obj_t * ui_timer2_amount;//размер порции будильника 2
       static lv_obj_t * ui_timer3_hour; //слайдер часов будильника 3
       static lv_obj_t * ui_timer3_minute; //слайдер минут будильника 3
       static lv_obj_t * ui_timer3_check; //активатор будильника 3
+      static lv_obj_t * ui_timer3_amount;//размер порции будильника 3
       static lv_obj_t * ui_timer4_hour; //слайдер часов будильника 4
       static lv_obj_t * ui_timer4_minute; //слайдер минут будильника 4
       static lv_obj_t * ui_timer4_check; //активатор будильника 4
+      static lv_obj_t * ui_timer4_amount;//размер порции будильника 4
+
 
       //Окно кормления
       static lv_obj_t * ui_feed_progress_bar; //полоса прогресса кормления
@@ -163,12 +168,6 @@ void my_touchpad_read( lv_indev_drv_t * indev_driver, lv_indev_data_t * data )
         data->state = LV_INDEV_STATE_PR;
         data->point.x = touchX;
         data->point.y = touchY;
-
-        Serial.print( "Data x " );
-        Serial.println( touchX );
-
-        Serial.print( "Data y " );
-        Serial.println( touchY );
     }
 }
 
@@ -259,10 +258,6 @@ void setup()
 //Отрисовка интерфейса
   draw_interface();
 
-//Инициализация управления подсветкой
-ledcSetup(0, 1000, 8);
-ledcAttachPin(5, 0);
-ledcWrite(0,200);
  
  //Инициализация wifi
  
@@ -295,6 +290,8 @@ ledcWrite(0,200);
   reflvgl.setInterval(30);//обновление экрана LVGL 30 мс
   refchecktime.setInterval(500);//раз в полсекунды
   refsaveconfigdelay.stop();
+  ledcSetup(0, 2500, 8);
+  ledcAttachPin(27, 0);
   }
 
 /**** ВТОРОЙ БЛОК ФУНКЦИЙ ****/

@@ -57,6 +57,7 @@ bool loadConfiguration(const char *filename) {
     feedTime[i][0]=(uint8_t)doc1["houralarm"+String(i)];
     feedTime[i][1]=(uint8_t)doc1["minutesalarm"+String(i)];
     feedTime[i][2]=(uint8_t)doc1["activealarm"+String(i)];
+    feedTime[i][3]=(uint8_t)doc1["amountalarm"+String(i)];
   }
   // Закрываем файл
   file.close();
@@ -92,6 +93,7 @@ bool saveConfiguration(const char *filename)
     doc1["houralarm"+String(i)]=feedTime[i][0];
     doc1["minutesalarm"+String(i)]=feedTime[i][1];
     doc1["activealarm"+String(i)]=feedTime[i][2];
+    doc1["amountalarm"+String(i)]=feedTime[i][3];
   }
     
   // Сохраняем JSON в файл

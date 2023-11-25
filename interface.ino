@@ -1,3 +1,84 @@
+//Изменения размеров порции в будильниках
+static void timer1_amount_increment_event_cb(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if(code == LV_EVENT_SHORT_CLICKED || code  == LV_EVENT_LONG_PRESSED_REPEAT) {
+        lv_spinbox_increment(ui_timer1_amount);
+        feedTime[0][3]=lv_spinbox_get_value(ui_timer1_amount);
+        refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+    }
+}
+
+static void timer1_amount_decrement_event_cb(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if(code == LV_EVENT_SHORT_CLICKED || code == LV_EVENT_LONG_PRESSED_REPEAT) {
+        lv_spinbox_decrement(ui_timer1_amount);
+         feedTime[0][3]=lv_spinbox_get_value(ui_timer1_amount);
+         refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+    }
+}
+
+static void timer2_amount_increment_event_cb(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if(code == LV_EVENT_SHORT_CLICKED || code  == LV_EVENT_LONG_PRESSED_REPEAT) {
+        lv_spinbox_increment(ui_timer2_amount);
+        feedTime[1][3]=lv_spinbox_get_value(ui_timer2_amount);
+        refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+    }
+}
+
+static void timer2_amount_decrement_event_cb(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if(code == LV_EVENT_SHORT_CLICKED || code == LV_EVENT_LONG_PRESSED_REPEAT) {
+        lv_spinbox_decrement(ui_timer2_amount);
+         feedTime[1][3]=lv_spinbox_get_value(ui_timer2_amount);
+         refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+    }
+}
+
+static void timer3_amount_increment_event_cb(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if(code == LV_EVENT_SHORT_CLICKED || code  == LV_EVENT_LONG_PRESSED_REPEAT) {
+        lv_spinbox_increment(ui_timer3_amount);
+        feedTime[2][3]=lv_spinbox_get_value(ui_timer3_amount);
+        refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+    }
+}
+
+static void timer3_amount_decrement_event_cb(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if(code == LV_EVENT_SHORT_CLICKED || code == LV_EVENT_LONG_PRESSED_REPEAT) {
+        lv_spinbox_decrement(ui_timer3_amount);
+       feedTime[2][3]=lv_spinbox_get_value(ui_timer3_amount);
+         refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+    }
+}
+
+static void timer4_amount_increment_event_cb(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if(code == LV_EVENT_SHORT_CLICKED || code  == LV_EVENT_LONG_PRESSED_REPEAT) {
+        lv_spinbox_increment(ui_timer4_amount);
+        feedTime[3][3]=lv_spinbox_get_value(ui_timer4_amount);
+        refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+    }
+}
+
+static void timer4_amount_decrement_event_cb(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if(code == LV_EVENT_SHORT_CLICKED || code == LV_EVENT_LONG_PRESSED_REPEAT) {
+        lv_spinbox_decrement(ui_timer4_amount);
+         feedTime[3][3]=lv_spinbox_get_value(ui_timer4_amount);
+         refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+    }
+}
+
 
 //Обработка изменения значения слайдера часового пояса
   static void slider_gmt_event_cb(lv_event_t * e)
@@ -180,17 +261,35 @@ void draw_interface()
       lv_roller_set_options(ui_timer1_hour, rollhours, LV_ROLLER_MODE_INFINITE);
       lv_roller_set_selected(ui_timer1_hour, feedTime[0][0], LV_ANIM_OFF);
       lv_obj_align(ui_timer1_hour, LV_ALIGN_TOP_LEFT, 0, 5);
-      lv_obj_set_size(ui_timer1_hour,70,60);
+      lv_obj_set_size(ui_timer1_hour,50,60);
       lv_obj_add_event_cb(ui_timer1_hour, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
        ui_timer1_minute=lv_roller_create(ui_tab2);
       lv_roller_set_visible_row_count(ui_timer1_minute, 2);
       lv_roller_set_options(ui_timer1_minute, rollminutes, LV_ROLLER_MODE_INFINITE);
       lv_roller_set_selected(ui_timer1_minute, feedTime[0][1], LV_ANIM_OFF);
-      lv_obj_set_size(ui_timer1_minute,70,60);
+      lv_obj_set_size(ui_timer1_minute,50,60);
       lv_obj_align_to(ui_timer1_minute, ui_timer1_hour, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
       lv_obj_add_event_cb(ui_timer1_minute, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
+      ui_timer1_amount = lv_spinbox_create(ui_tab2); //Размер порции
+      lv_spinbox_set_range(ui_timer1_amount, 0, 250);
+      lv_spinbox_set_digit_format(ui_timer1_amount, 3, 3);
+      lv_spinbox_set_rollover(ui_timer1_amount,true);
+      lv_obj_set_size(ui_timer1_amount, 40,40);
+      lv_obj_align_to(ui_timer1_amount, ui_timer1_minute, LV_ALIGN_OUT_RIGHT_MID, 50, 0);
+      lv_spinbox_set_value(ui_timer1_amount,feedTime[0][3]);
+      lv_obj_set_style_bg_opa(ui_timer1_amount, 0, LV_PART_CURSOR | LV_PART_SELECTED);
+      lv_obj_t * btn = lv_btn_create(ui_tab2);
+      lv_obj_set_size(btn, 25, 40);
+      lv_obj_align_to(btn, ui_timer1_amount, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
+      lv_obj_set_style_bg_img_src(btn, LV_SYMBOL_PLUS, 0);
+      lv_obj_add_event_cb(btn, timer1_amount_increment_event_cb, LV_EVENT_ALL,  NULL);
+      btn = lv_btn_create(ui_tab2);
+      lv_obj_set_size(btn, 25, 40);
+      lv_obj_align_to(btn, ui_timer1_amount, LV_ALIGN_OUT_LEFT_MID, -5, 0);
+      lv_obj_set_style_bg_img_src(btn, LV_SYMBOL_MINUS, 0);
+      lv_obj_add_event_cb(btn, timer1_amount_decrement_event_cb, LV_EVENT_ALL, NULL);
       ui_timer1_check = lv_checkbox_create(ui_tab2);
-      lv_obj_align_to(ui_timer1_check, ui_timer1_minute, LV_ALIGN_OUT_RIGHT_MID, 15, 0);
+      lv_obj_align_to(ui_timer1_check, ui_timer1_amount, LV_ALIGN_OUT_RIGHT_MID, 50, 0);
       lv_checkbox_set_text(ui_timer1_check, "");
       if (feedTime[0][2]==1) lv_obj_add_state(ui_timer1_check, LV_STATE_CHECKED);
       lv_obj_add_event_cb(ui_timer1_check, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
@@ -200,18 +299,36 @@ void draw_interface()
       lv_roller_set_visible_row_count(ui_timer2_hour, 2);
       lv_roller_set_options(ui_timer2_hour, rollhours, LV_ROLLER_MODE_INFINITE);
       lv_roller_set_selected(ui_timer2_hour, feedTime[1][0], LV_ANIM_OFF);
-      lv_obj_set_size(ui_timer2_hour,70,60);
+      lv_obj_set_size(ui_timer2_hour,50,60);
       lv_obj_align_to(ui_timer2_hour, ui_timer1_hour,  LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
       lv_obj_add_event_cb(ui_timer2_hour, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer2_minute=lv_roller_create(ui_tab2);
       lv_roller_set_visible_row_count(ui_timer2_minute, 2);
       lv_roller_set_options(ui_timer2_minute, rollminutes, LV_ROLLER_MODE_INFINITE);
       lv_roller_set_selected(ui_timer2_minute, feedTime[1][1], LV_ANIM_OFF);
-      lv_obj_set_size(ui_timer2_minute,70,60);
+      lv_obj_set_size(ui_timer2_minute,50,60);
       lv_obj_align_to(ui_timer2_minute,ui_timer2_hour,  LV_ALIGN_OUT_RIGHT_MID, 10, 0);
       lv_obj_add_event_cb(ui_timer2_minute, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
+      ui_timer2_amount = lv_spinbox_create(ui_tab2); //Размер порции
+      lv_spinbox_set_range(ui_timer2_amount, 0, 250);
+      lv_spinbox_set_digit_format(ui_timer2_amount, 3, 3);
+      lv_spinbox_set_rollover(ui_timer2_amount,true);
+      lv_obj_set_size(ui_timer2_amount, 40,40);
+      lv_obj_align_to(ui_timer2_amount, ui_timer2_minute, LV_ALIGN_OUT_RIGHT_MID, 50, 0);
+      lv_spinbox_set_value(ui_timer2_amount,feedTime[1][3]);
+      lv_obj_set_style_bg_opa(ui_timer2_amount, 0, LV_PART_SELECTED | LV_PART_CURSOR);
+      btn = lv_btn_create(ui_tab2);
+      lv_obj_set_size(btn, 25, 40);
+      lv_obj_align_to(btn, ui_timer2_amount, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
+      lv_obj_set_style_bg_img_src(btn, LV_SYMBOL_PLUS, 0);
+      lv_obj_add_event_cb(btn, timer2_amount_increment_event_cb, LV_EVENT_ALL,  NULL);
+      btn = lv_btn_create(ui_tab2);
+      lv_obj_set_size(btn, 25, 40);
+      lv_obj_align_to(btn, ui_timer2_amount, LV_ALIGN_OUT_LEFT_MID, -5, 0);
+      lv_obj_set_style_bg_img_src(btn, LV_SYMBOL_MINUS, 0);
+      lv_obj_add_event_cb(btn, timer2_amount_decrement_event_cb, LV_EVENT_ALL, NULL);
       ui_timer2_check = lv_checkbox_create(ui_tab2);
-      lv_obj_align_to(ui_timer2_check, ui_timer2_minute, LV_ALIGN_OUT_RIGHT_MID, 15, 0);
+      lv_obj_align_to(ui_timer2_check, ui_timer2_amount, LV_ALIGN_OUT_RIGHT_MID, 50, 0);
       lv_checkbox_set_text(ui_timer2_check, "");
       if (feedTime[1][2]==1) lv_obj_add_state(ui_timer2_check, LV_STATE_CHECKED);
       lv_obj_add_event_cb(ui_timer2_check, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
@@ -221,18 +338,36 @@ void draw_interface()
       lv_roller_set_visible_row_count(ui_timer3_hour, 2);
       lv_roller_set_options(ui_timer3_hour, rollhours, LV_ROLLER_MODE_INFINITE);
       lv_roller_set_selected(ui_timer3_hour, feedTime[2][0], LV_ANIM_OFF);
-      lv_obj_set_size(ui_timer3_hour,70,60);
+      lv_obj_set_size(ui_timer3_hour,50,60);
       lv_obj_align_to(ui_timer3_hour, ui_timer2_hour,  LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
       lv_obj_add_event_cb(ui_timer3_hour, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer3_minute=lv_roller_create(ui_tab2);
       lv_roller_set_visible_row_count(ui_timer3_minute, 2);
       lv_roller_set_options(ui_timer3_minute, rollminutes, LV_ROLLER_MODE_INFINITE);
       lv_roller_set_selected(ui_timer3_minute, feedTime[2][1], LV_ANIM_OFF);
-      lv_obj_set_size(ui_timer3_minute,70,60);
+      lv_obj_set_size(ui_timer3_minute,50,60);
       lv_obj_align_to(ui_timer3_minute,ui_timer3_hour,  LV_ALIGN_OUT_RIGHT_MID, 10, 0);
       lv_obj_add_event_cb(ui_timer3_minute, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
+      ui_timer3_amount = lv_spinbox_create(ui_tab2); //Размер порции
+      lv_spinbox_set_range(ui_timer3_amount, 0, 250);
+      lv_spinbox_set_digit_format(ui_timer3_amount, 3, 3);
+      lv_spinbox_set_rollover(ui_timer3_amount,true);
+      lv_obj_set_size(ui_timer3_amount, 40,40);
+      lv_obj_align_to(ui_timer3_amount, ui_timer3_minute, LV_ALIGN_OUT_RIGHT_MID, 50, 0);
+      lv_spinbox_set_value(ui_timer3_amount,feedTime[2][3]);
+      lv_obj_set_style_bg_opa(ui_timer3_amount, 0, LV_PART_CURSOR | LV_PART_SELECTED);
+      btn = lv_btn_create(ui_tab2);
+      lv_obj_set_size(btn, 25, 40);
+      lv_obj_align_to(btn, ui_timer3_amount, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
+      lv_obj_set_style_bg_img_src(btn, LV_SYMBOL_PLUS, 0);
+      lv_obj_add_event_cb(btn, timer3_amount_increment_event_cb, LV_EVENT_ALL,  NULL);
+      btn = lv_btn_create(ui_tab2);
+      lv_obj_set_size(btn, 25, 40);
+      lv_obj_align_to(btn, ui_timer3_amount, LV_ALIGN_OUT_LEFT_MID, -5, 0);
+      lv_obj_set_style_bg_img_src(btn, LV_SYMBOL_MINUS, 0);
+      lv_obj_add_event_cb(btn, timer3_amount_decrement_event_cb, LV_EVENT_ALL, NULL);
       ui_timer3_check = lv_checkbox_create(ui_tab2);
-      lv_obj_align_to(ui_timer3_check, ui_timer3_minute, LV_ALIGN_OUT_RIGHT_MID, 15, 0);
+      lv_obj_align_to(ui_timer3_check, ui_timer3_amount, LV_ALIGN_OUT_RIGHT_MID, 50, 0);
       lv_checkbox_set_text(ui_timer3_check, "");
       if (feedTime[2][2]==1) lv_obj_add_state(ui_timer3_check, LV_STATE_CHECKED);
       lv_obj_add_event_cb(ui_timer3_check, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
@@ -242,18 +377,36 @@ void draw_interface()
       lv_roller_set_visible_row_count(ui_timer4_hour, 2);
       lv_roller_set_options(ui_timer4_hour, rollhours, LV_ROLLER_MODE_INFINITE);
       lv_roller_set_selected(ui_timer4_hour, feedTime[3][0], LV_ANIM_OFF);
-      lv_obj_set_size(ui_timer4_hour,70,60);
+      lv_obj_set_size(ui_timer4_hour,50,60);
       lv_obj_align_to(ui_timer4_hour, ui_timer3_hour,  LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
       lv_obj_add_event_cb(ui_timer4_hour, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer4_minute=lv_roller_create(ui_tab2);
       lv_roller_set_visible_row_count(ui_timer4_minute, 2);
       lv_roller_set_options(ui_timer4_minute, rollminutes, LV_ROLLER_MODE_INFINITE);
       lv_roller_set_selected(ui_timer4_minute, feedTime[3][1], LV_ANIM_OFF);
-      lv_obj_set_size(ui_timer4_minute,70,60);
+      lv_obj_set_size(ui_timer4_minute,50,60);
       lv_obj_align_to(ui_timer4_minute,ui_timer4_hour,  LV_ALIGN_OUT_RIGHT_MID, 10, 0);
       lv_obj_add_event_cb(ui_timer4_minute, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
+      ui_timer4_amount = lv_spinbox_create(ui_tab2); //Размер порции
+      lv_spinbox_set_range(ui_timer4_amount, 0, 250);
+      lv_spinbox_set_digit_format(ui_timer4_amount, 3, 3);
+      lv_spinbox_set_rollover(ui_timer4_amount,true);
+      lv_obj_set_size(ui_timer4_amount, 40,40);
+      lv_obj_align_to(ui_timer4_amount, ui_timer4_minute, LV_ALIGN_OUT_RIGHT_MID, 50, 0);
+      lv_spinbox_set_value(ui_timer4_amount,feedTime[3][3]);
+      lv_obj_set_style_bg_opa(ui_timer4_amount, 0, LV_PART_CURSOR | LV_PART_SELECTED);
+      btn = lv_btn_create(ui_tab2);
+      lv_obj_set_size(btn, 25, 40);
+      lv_obj_align_to(btn, ui_timer4_amount, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
+      lv_obj_set_style_bg_img_src(btn, LV_SYMBOL_PLUS, 0);
+      lv_obj_add_event_cb(btn, timer4_amount_increment_event_cb, LV_EVENT_ALL,  NULL);
+      btn = lv_btn_create(ui_tab2);
+      lv_obj_set_size(btn, 25, 40);
+      lv_obj_align_to(btn, ui_timer4_amount, LV_ALIGN_OUT_LEFT_MID, -5, 0);
+      lv_obj_set_style_bg_img_src(btn, LV_SYMBOL_MINUS, 0);
+      lv_obj_add_event_cb(btn, timer4_amount_decrement_event_cb, LV_EVENT_ALL, NULL);
       ui_timer4_check = lv_checkbox_create(ui_tab2);
-      lv_obj_align_to(ui_timer4_check, ui_timer4_minute, LV_ALIGN_OUT_RIGHT_MID, 15, 0);
+      lv_obj_align_to(ui_timer4_check, ui_timer4_amount, LV_ALIGN_OUT_RIGHT_MID, 50, 0);
       lv_checkbox_set_text(ui_timer4_check, "");
       if (feedTime[3][2]==1) lv_obj_add_state(ui_timer4_check, LV_STATE_CHECKED);
       lv_obj_add_event_cb(ui_timer4_check, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
