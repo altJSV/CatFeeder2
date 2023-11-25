@@ -259,8 +259,10 @@ void setup()
 //Отрисовка интерфейса
   draw_interface();
 
-
- 
+//Инициализация управления подсветкой
+ledcSetup(0, 1000, 8);
+ledcAttachPin(5, 0);
+ledcWrite(0,200);
  
  //Инициализация wifi
  
