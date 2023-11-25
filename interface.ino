@@ -167,7 +167,7 @@ void draw_interface()
 
     ui_remain = lv_label_create(ui_tab1);
     lv_label_set_text(ui_remain, " ");
-    lv_obj_align(ui_remain, LV_ALIGN_TOP_LEFT, 0, 60);
+    lv_obj_align(ui_remain, LV_ALIGN_TOP_LEFT, 0, 70);
 
 
   //Вкладка таймеров

@@ -14,6 +14,7 @@
 #include <PubSubClient.h> //работа по протоколу mqtt
 #include <WebServer.h> //веб интерфейс
 #include <ArduinoJson.h>//библиотека для работы с файлами конфигурации
+#include <GyverHX711.h> //работа с цифровыми весами
 #include <ElegantOTA.h> //OTA обновление
 
 
@@ -35,7 +36,8 @@ int8_t timezone = 3; //часовой пояс
 bool theme = true;  //true темная тема, false светлая
 
 uint16_t lastFeed=0; //время последнего кормления
-unsigned long ota_progress_millis = 0; //прогресс OTA обновления
+
+long tareWeight=250; //вес миски в граммах
 
 //различные параметры и настройки
 #define FEED_SPEED 3000     // задержка между шагами мотора (мкс)
@@ -121,6 +123,7 @@ WiFiManager wm; //экземпляр объекта wifi manager
 WiFiClient esp32Client;
 PubSubClient client(esp32Client);
 WebServer server(80); //поднимаем веб сервер на 80 порту
+GyverHX711 sensor(16, 34, HX_GAIN64_A); //data,clock, коэффициент усиления
 
 //Инициализация таймеров
 GTimer reftime(MS);//часы
