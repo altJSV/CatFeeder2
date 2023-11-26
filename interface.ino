@@ -1,3 +1,51 @@
+//Универсальная функция обработки ввода текста в text_area
+  static void ta_event_cb(lv_event_t * e)
+  {
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * ta = lv_event_get_target(e);
+    lv_obj_t * tv_but = lv_tabview_get_tab_btns(ui_tabview);
+    if(code == LV_EVENT_FOCUSED) {
+        if(lv_indev_get_type(lv_indev_get_act()) != LV_INDEV_TYPE_KEYPAD) {
+            lv_keyboard_set_textarea(kb, ta);
+            lv_obj_set_style_max_height(kb, LV_HOR_RES * 2 / 3, 0);
+            lv_obj_clear_flag(kb, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(tv_but, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_scroll_to_view_recursive(ta, LV_ANIM_OFF);
+        }
+    }
+    else if(code == LV_EVENT_DEFOCUSED) {
+        lv_keyboard_set_textarea(kb, NULL);
+        lv_obj_add_flag(kb, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(tv_but, LV_OBJ_FLAG_HIDDEN);
+        lv_indev_reset(NULL, ta);
+
+    }
+    else if(code == LV_EVENT_READY || code == LV_EVENT_CANCEL) {
+        lv_obj_add_flag(kb, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(tv_but, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_state(ta, LV_STATE_FOCUSED);
+        lv_indev_reset(NULL, ta);   /*сброс состояния текстового поля*/
+    }
+  }
+
+ //Изменение значения токена в текстовом поле
+ static void token_ta_event_cb(lv_event_t * e)
+  {
+  lv_obj_t * ta = lv_event_get_target(e);
+  bot_token=lv_textarea_get_text(ta);
+  bot.setToken(bot_token); // устанавливаем новый токен бота
+  refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+  }
+
+   //Изменение значения chatid в текстовом поле
+ static void chatid_ta_event_cb(lv_event_t * e)
+  {
+  lv_obj_t * ta = lv_event_get_target(e);
+  chatID=lv_textarea_get_text(ta);
+  bot.setChatID(chatID); // устанавливаем новый ID чата
+  refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+  }
+
 //Изменения размеров порции в будильниках
 static void timer1_amount_increment_event_cb(lv_event_t * e)
 {
@@ -107,6 +155,23 @@ static void timer4_amount_decrement_event_cb(lv_event_t * e)
   refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
   } 
 
+//Переключение состояния бота
+  static void tg_bot_switch_event(lv_event_t * e)
+  {
+    lv_obj_t * obj = lv_event_get_target(e);
+        if (lv_obj_has_state(obj, LV_STATE_CHECKED)) 
+        {
+          tg_bot=true;
+        }
+        else
+        {
+          tg_bot=false;
+        }
+  refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+  } 
+
+  
+
 //событие измениния значения таймеров кормления
 static void alarm_roll_event_handler(lv_event_t * e)
 {
@@ -182,7 +247,12 @@ void draw_interface()
       lv_obj_t * ui_set_tab1 = lv_tabview_add_tab(ui_tabview_settings, LV_SYMBOL_DISPLAY);
       lv_obj_t * ui_set_tab2 = lv_tabview_add_tab(ui_tabview_settings, LV_SYMBOL_ACLOCK);
       lv_obj_t * ui_set_tab3 = lv_tabview_add_tab(ui_tabview_settings, LV_SYMBOL_ASCALES);
-      
+      lv_obj_t * ui_set_tab4 = lv_tabview_add_tab(ui_tabview_settings, LV_SYMBOL_TELEGRAM);
+  //Создаем экранную клавиатуру 
+  kb = lv_keyboard_create(lv_scr_act());//создаем экранную клавиатуру
+  lv_obj_align(kb, LV_ALIGN_BOTTOM_MID, 0, 0); //положение на экране
+  lv_obj_add_flag(kb, LV_OBJ_FLAG_HIDDEN);
+  lv_obj_add_flag(kb, LV_OBJ_FLAG_FLOATING);     
   //Панель состояния
     //Иконка Wifi
     ui_status_icons = lv_label_create(ui_tabview);
@@ -196,39 +266,13 @@ void draw_interface()
     lv_label_set_text(ui_status_ip, " ");
     lv_obj_add_flag(ui_status_ip, LV_OBJ_FLAG_FLOATING); 
     lv_obj_add_flag(ui_status_ip, LV_OBJ_FLAG_HIDDEN);
-    /*
-    //Иконка MQTT
-    ui_mqttstatus = lv_label_create(ui_tabview);
-    lv_obj_align(ui_mqttstatus, LV_ALIGN_TOP_RIGHT, -25, 0);
-    lv_label_set_text(ui_mqttstatus, LV_SYMBOL_LOOP);
-    lv_obj_add_flag(ui_mqttstatus, LV_OBJ_FLAG_FLOATING); 
-    lv_obj_add_flag(ui_mqttstatus, LV_OBJ_FLAG_HIDDEN);
-    //Иконка telegram
-    ui_telegramstatus = lv_label_create(ui_tabview);
-    lv_obj_align( ui_telegramstatus, LV_ALIGN_TOP_RIGHT, -50, 0);
-    lv_label_set_text( ui_telegramstatus, LV_SYMBOL_TELEGRAM);
-    lv_obj_add_flag( ui_telegramstatus, LV_OBJ_FLAG_FLOATING); 
-    //lv_obj_add_flag( ui_telegramstatus, LV_OBJ_FLAG_HIDDEN);
-    */
+   
   //Вкладка кормления (ui_tab1)
     //Часы
     ui_clock = lv_label_create(ui_tab1); //часы
     lv_obj_align(ui_clock, LV_ALIGN_TOP_LEFT, 0, 5); //положение на экране
     lv_obj_set_size(ui_clock, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
     lv_obj_set_style_text_font(ui_clock, &digital, 0);
-    //графика
-    /*бегущий кот
-    img_running_cat = lv_gif_create(ui_tab1);
-    lv_gif_set_src(img_running_cat, &runingcat_img);
-    lv_obj_set_pos(img_running_cat, 0, 105);
-    //миска с едой
-    lv_obj_t * img_food_gif = lv_gif_create(ui_tab1);
-    lv_gif_set_src(img_food_gif, &food_img);
-    lv_obj_set_pos(img_food_gif, 195, 115);
-    lv_obj_t * img_line;
-    img_line = lv_line_create(ui_tab1);
-    static lv_point_t line_points[] = { {0, 130}, {220, 130}};
-    lv_line_set_points(img_line, line_points, 2);     /*Set the points*/
 
     //Кнопка кормления
     lv_obj_t * ui_feed_button = lv_btn_create(ui_tab1); // кнопка кормления  
@@ -481,5 +525,52 @@ void draw_interface()
       lv_obj_align_to(ui_gmt_slider_label, ui_set_panel_time_gmt_slider, LV_ALIGN_CENTER, 0, 0);
 
     lv_obj_set_size(ui_set_panel_time, lv_pct(100),LV_SIZE_CONTENT);
+    //lv_obj_align_to(ui_set_panel_time, ui_set_panel_display, LV_ALIGN_OUT_BOTTOM_LEFT,0,5); 
+
+    //Панель настроек часов на вкладке 4
+    lv_obj_t * ui_set_panel_telegram = lv_obj_create(ui_set_tab4);
+      //Название панели
+      lv_obj_t * ui_set_panel_telegram_label = lv_label_create(ui_set_panel_telegram);//метка названия панели
+      lv_obj_align(ui_set_panel_telegram_label, LV_ALIGN_TOP_MID, 0, 0); //Выравниваем по центру вверху
+      lv_label_set_text (ui_set_panel_telegram_label,"Настройки Telegram бота");//Пишем текст метки
+      //Надпись токен
+      lv_obj_t * ui_set_panel_telegram_token_label = lv_label_create(ui_set_panel_telegram);//метка названия панели
+      lv_obj_align(ui_set_panel_telegram_token_label, LV_ALIGN_TOP_LEFT, 0, 20); //Выравниваем по левому краю
+      lv_label_set_text (ui_set_panel_telegram_token_label,"Токен:");//Пишем текст метки
+      //Поле ввода токена
+      lv_obj_t * ui_set_panel_telegram_token_ta = lv_textarea_create(ui_set_panel_telegram);
+      lv_textarea_set_one_line(ui_set_panel_telegram_token_ta, true);
+      lv_textarea_set_text(ui_set_panel_telegram_token_ta, bot_token.c_str());
+      lv_obj_set_width(ui_set_panel_telegram_token_ta, lv_pct(100));
+      lv_obj_align_to(ui_set_panel_telegram_token_ta,ui_set_panel_telegram_token_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10); //положение на экране
+      lv_obj_add_event_cb(ui_set_panel_telegram_token_ta, ta_event_cb, LV_EVENT_ALL, kb);
+      lv_obj_add_event_cb(ui_set_panel_telegram_token_ta, token_ta_event_cb, LV_EVENT_READY, NULL);
+       //Надпись ChatID
+      lv_obj_t * ui_set_panel_telegram_chatid_label = lv_label_create(ui_set_panel_telegram);//метка названия панели
+      lv_obj_align(ui_set_panel_telegram_chatid_label, LV_ALIGN_TOP_LEFT, 0, 20); //Выравниваем по левому краю
+      lv_label_set_text (ui_set_panel_telegram_chatid_label,"ID чата:");//Пишем текст метки
+      lv_obj_align_to(ui_set_panel_telegram_chatid_label,ui_set_panel_telegram_token_ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
+      //Поле ввода ID
+      lv_obj_t * ui_set_panel_telegram_chatid_ta = lv_textarea_create(ui_set_panel_telegram);
+      lv_textarea_set_one_line(ui_set_panel_telegram_chatid_ta, true);
+      lv_textarea_set_text(ui_set_panel_telegram_chatid_ta, chatID.c_str());
+      lv_obj_set_width(ui_set_panel_telegram_chatid_ta, lv_pct(100));
+      lv_obj_align_to(ui_set_panel_telegram_chatid_ta,ui_set_panel_telegram_chatid_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10); //положение на экране
+      lv_obj_add_event_cb(ui_set_panel_telegram_chatid_ta, ta_event_cb, LV_EVENT_ALL, kb);
+      lv_obj_add_event_cb(ui_set_panel_telegram_chatid_ta, chatid_ta_event_cb, LV_EVENT_READY, NULL);
+      
+      //Переключатель бота заголовок
+      lv_obj_t  * ui_set_panel_telegram_bot_label = lv_label_create(ui_set_panel_telegram); //создаем объект заголовок
+      lv_label_set_text(ui_set_panel_telegram_bot_label, "Использовать бота"); //текст
+      lv_obj_align_to(ui_set_panel_telegram_bot_label,ui_set_panel_telegram_chatid_ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
+      //Переключатель бота
+      lv_obj_t * ui_set_panel_telegram_bot_switch = lv_switch_create(ui_set_panel_telegram);
+      lv_obj_add_event_cb(ui_set_panel_telegram_bot_switch, tg_bot_switch_event, LV_EVENT_VALUE_CHANGED, NULL);
+      lv_obj_set_size(ui_set_panel_telegram_bot_switch,32,22);
+      lv_obj_align_to(ui_set_panel_telegram_bot_switch, ui_set_panel_telegram_bot_label, LV_ALIGN_OUT_RIGHT_MID, 30, 0); //положение на экране
+      
+      if (tg_bot){lv_obj_add_state(ui_set_panel_telegram_bot_switch, LV_STATE_CHECKED); } else{lv_obj_clear_state(ui_set_panel_telegram_bot_switch, LV_STATE_CHECKED);}
+
+    lv_obj_set_size(ui_set_panel_telegram, lv_pct(100),LV_SIZE_CONTENT);
     //lv_obj_align_to(ui_set_panel_time, ui_set_panel_display, LV_ALIGN_OUT_BOTTOM_LEFT,0,5); 
   }

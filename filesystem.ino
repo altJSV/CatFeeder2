@@ -31,7 +31,7 @@ bool loadConfiguration(const char *filename) {
         return false;
         }
   //выделяем память под json
-  StaticJsonDocument<1024> doc1;
+  StaticJsonDocument<2048> doc1;
 
   // читаем json
   DeserializationError error = deserializeJson(doc1, file);
@@ -46,11 +46,16 @@ bool loadConfiguration(const char *filename) {
   mqtt_port= (uint16_t)doc1["mqtt_port"];
   const char * mqtt_login_p= doc1["mqtt_login"];
   const char * mqtt_pass_p= doc1["mqtt_pass"];
+  const char * bot_token_p= doc1["token"];
+  const char * chatID_p= doc1["сhatid"];
   feedAmount = (uint8_t)doc1["feed_amount"];
   theme = (bool)doc1["theme"];
+  tg_bot = (bool)doc1["tgbot"];
   mqtt_server=mqtt_server_p;
   mqtt_login=mqtt_login_p;
   mqtt_pass=mqtt_pass_p;
+  bot_token=bot_token_p;
+  chatID=chatID_p;
   //массив данных будильника
   for (byte i = 0; i < 4; i++) 
   {
@@ -78,7 +83,7 @@ bool saveConfiguration(const char *filename)
   }
 
   //Выделяем память под JSON
-  StaticJsonDocument<1024> doc1;
+  StaticJsonDocument<2048> doc1;
   doc1["mqtt_server"] = mqtt_server; //адрес брокера mqtt
   doc1["mqtt_port"] = mqtt_port; //порт mqtt брокера
   doc1["mqtt_login"] = mqtt_login;//mqtt логин
@@ -86,7 +91,9 @@ bool saveConfiguration(const char *filename)
   doc1["feed_amount"] = feedAmount;// размер порции
   doc1["timezone"] = timezone; //часовой пояс
   doc1["theme"] = theme;// тема оформления
-  
+  doc1["token"] = bot_token; //токен телеграм бота
+  doc1["сhatid"] = chatID; //ID чата телеграм бота
+  doc1["tgbot"] = tg_bot;// состояние бота
   //массив данных будильника
   for (byte i = 0; i < 4; i++) 
   {

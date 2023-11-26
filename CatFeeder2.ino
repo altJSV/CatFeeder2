@@ -35,6 +35,8 @@ int8_t timezone = 3; //часовой пояс
 
 //переключатель цветовой темы оформления
 bool theme = true;  //true темная тема, false светлая
+//включение телеграм бота
+bool tg_bot = true;
 
 uint16_t lastFeed=0; //время последнего кормления
 
@@ -57,7 +59,7 @@ long foodWeight=560; //вес еды в миске
 #define LV_SYMBOL_DISPLAY "\xEF\x82\xB7" //монитор
 #define LV_SYMBOL_DCLOCK "\xEF\x82\xB8" //цифровые часы
 #define LV_SYMBOL_BLUETOOTH "\xEF\x8A\x94" //bluetooth
-#define LV_SYMBOL_ASCALES "\xEF\x8A9\x8E" //аналоговые весы
+#define LV_SYMBOL_ASCALES "\xEF\x89\x8E" //аналоговые весы
 #define LV_SYMBOL_TELEGRAM "\xEF\x87\x98" //логотип Telegram
 #define LV_SYMBOL_WEIGHT "\xEF\x97\x8D" //иконка гири
 #define LV_SYMBOL_ACLOCK "\xEF\x80\x97" //аналоговые часы
@@ -96,6 +98,8 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
     //static lv_obj_t * ui_mqttstatus; //статус mqtt
     //static lv_obj_t * ui_telegramstatus; //статус telegram
     static lv_obj_t * ui_status_ip; //ip адрес
+    //Экранная клавиатура
+    static lv_obj_t * kb; //клавиатура
     //Экранные объекты
       //Основной экран
       //Вкладка кормления
@@ -332,7 +336,7 @@ void loop()
   if (WiFi.status() == WL_CONNECTED)
     { 
       status_icons="";
-      status_icons+=LV_SYMBOL_TELEGRAM" ";
+      if (tg_bot) status_icons+=LV_SYMBOL_TELEGRAM" ";
       if (client.connected()) status_icons+=LV_SYMBOL_LOOP" ";
       status_icons+=LV_SYMBOL_WIFI;
       lv_label_set_text(ui_status_icons, status_icons.c_str());
@@ -367,7 +371,7 @@ void loop()
             }
   }
   client.loop(); //чтение состояния топиков MQQT
-  bot.tick(); //поддерживаем соединение с telegram ботом
+  if (tg_bot) bot.tick(); //поддерживаем соединение с telegram ботом
   server.handleClient(); //обработка запросов web интерфейса
 }
 

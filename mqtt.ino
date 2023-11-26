@@ -12,13 +12,11 @@ void MQTT_init(){
       Serial.println("Подключено");
       client.publish("CatFeeder/status","Ok");
       client.subscribe("CatFeeder/feed");
-      //lv_obj_clear_flag(ui_mqttstatus, LV_OBJ_FLAG_HIDDEN);
       }
     else
     {
       Serial.print("Ошибка подключения: ");
       Serial.println(client.state());
-      //lv_obj_add_flag(ui_mqttstatus, LV_OBJ_FLAG_HIDDEN);
       }
   }
   
