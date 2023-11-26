@@ -15,6 +15,7 @@
 #include <WebServer.h> //веб интерфейс
 #include <ArduinoJson.h>//библиотека для работы с файлами конфигурации
 #include <GyverHX711.h> //работа с цифровыми весами
+#include <FastBot.h> //Telegram бот
 #include <ElegantOTA.h> //OTA обновление
 
 
@@ -38,6 +39,7 @@ bool theme = true;  //true темная тема, false светлая
 uint16_t lastFeed=0; //время последнего кормления
 
 long tareWeight=250; //вес миски в граммах
+long foodWeight=560; //вес еды в миске
 
 //различные параметры и настройки
 #define FEED_SPEED 3000     // задержка между шагами мотора (мкс)
@@ -54,8 +56,11 @@ long tareWeight=250; //вес миски в граммах
 #define LV_SYMBOL_CATFOOD "\xEF\x82\xB6"//кошачья еда
 #define LV_SYMBOL_DISPLAY "\xEF\x82\xB7" //монитор
 #define LV_SYMBOL_DCLOCK "\xEF\x82\xB8" //цифровые часы
-#define LV_SYMBOL_BLUETOOTH "\xEF\x82\xB9" //bluetooth
-
+#define LV_SYMBOL_BLUETOOTH "\xEF\x8A\x94" //bluetooth
+#define LV_SYMBOL_ASCALES "\xEF\x8A9\x8E" //аналоговые весы
+#define LV_SYMBOL_TELEGRAM "\xEF\x87\x98" //логотип Telegram
+#define LV_SYMBOL_WEIGHT "\xEF\x97\x8D" //иконка гири
+#define LV_SYMBOL_ACLOCK "\xEF\x80\x97" //аналоговые часы
 
 //Настройка шагового двигателя
 const byte drvPins[] = {32, 33, 25, 26};  // драйвер (фазаА1, фазаА2, фазаВ1, фазаВ2)
@@ -69,6 +74,9 @@ static const uint16_t screenHeight = 240; //высота экрана
 //MQTT настройки
 String mqtt_server = "192.168.1.1"; //ip или http адрес
 int mqtt_port = 1883; //порт
+
+//Иконки статуса
+String status_icons=LV_SYMBOL_WIFI;
 
 //Файл конфигурации
 const char * filename = "/config.json";  // имя файла конфигурации
@@ -84,16 +92,18 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
     static lv_obj_t * ui_tabview; // панель вкладок
     static lv_obj_t * ui_tabview_settings; //панель вкладок настроек
     //Панель состояния
-    static lv_obj_t * ui_wifistatus; //статус wifi
-    static lv_obj_t * ui_mqttstatus; //статус wifi
+    static lv_obj_t * ui_status_icons; //статус wifi
+    //static lv_obj_t * ui_mqttstatus; //статус mqtt
+    //static lv_obj_t * ui_telegramstatus; //статус telegram
     static lv_obj_t * ui_status_ip; //ip адрес
     //Экранные объекты
       //Основной экран
       //Вкладка кормления
       static lv_obj_t * ui_clock; //часы
       static lv_obj_t * ui_label_feedAmount; //размер порции
-      static lv_obj_t * ui_remain; //осталось
-      static lv_obj_t * img_running_cat; //кот на шкале прогресса
+      static lv_obj_t * ui_remain; //осталось времени до выдачи порции
+      static lv_obj_t * ui_food_weight; //вес порции в миске
+      //static lv_obj_t * img_running_cat; //кот на шкале прогресса
       //Вкладка таймеры
       static lv_obj_t * ui_timer1_hour; //слайдер часов будильника 1
       static lv_obj_t * ui_timer1_minute; //слайдер минут будильника 1
@@ -129,7 +139,7 @@ WiFiClient esp32Client;
 PubSubClient client(esp32Client);
 WebServer server(80); //поднимаем веб сервер на 80 порту
 GyverHX711 sensor(16, 34, HX_GAIN64_A); //data,clock, коэффициент усиления
-
+FastBot bot (bot_token);
 //Инициализация таймеров
 GTimer reftime(MS);//часы
 GTimer reflvgl(MS); //обновление экранов LVGL 
@@ -265,13 +275,18 @@ void setup()
   WiFi.onEvent(WiFiGotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
   if(!wm.autoConnect("CatFeeder2","12345678")) {
         Serial.println("Не удалось подкключиться к сети");
-        lv_obj_add_flag(ui_wifistatus, LV_OBJ_FLAG_HIDDEN); 
+        lv_obj_add_flag(ui_status_icons, LV_OBJ_FLAG_HIDDEN); 
         lv_obj_add_flag(ui_status_ip, LV_OBJ_FLAG_HIDDEN); 
     } 
     else {  
         Serial.println("Подключение успешно");
-        lv_obj_clear_flag(ui_wifistatus, LV_OBJ_FLAG_HIDDEN); //Отображение иконки wifi
+        lv_obj_clear_flag(ui_status_icons, LV_OBJ_FLAG_HIDDEN); //Отображение иконки wifi
         lv_obj_clear_flag(ui_status_ip, LV_OBJ_FLAG_HIDDEN); //Показать IP адрес
+        ntp.begin(); //сервис синхронизации времени
+        //подключаем Telegram бота
+        bot.setChatID(chatID); // открываем чат
+        bot.attach(newMsg); //подключаем функцию обработки сообщений
+        bot.sendMessage("Cat Feeder 2 готов к работе!"); //отправляем сообщение о готовности
     } 
   
   //настраиваем пины для шагового двигателя
@@ -279,7 +294,7 @@ void setup()
     
   
   //запуск сервисов
-  ntp.begin(); //сервис синхронизации времени
+  
   ElegantOTA.begin(&server);    // Запуск ElegantOTA
   server_init();//запуск веб сервера
   
@@ -316,14 +331,19 @@ void loop()
   //Проверка статуса wifi
   if (WiFi.status() == WL_CONNECTED)
     { 
-      lv_obj_clear_flag(ui_wifistatus, LV_OBJ_FLAG_HIDDEN);
+      status_icons="";
+      status_icons+=LV_SYMBOL_TELEGRAM" ";
+      if (client.connected()) status_icons+=LV_SYMBOL_LOOP" ";
+      status_icons+=LV_SYMBOL_WIFI;
+      lv_label_set_text(ui_status_icons, status_icons.c_str());
+      lv_obj_clear_flag(ui_status_icons, LV_OBJ_FLAG_HIDDEN);
       lv_obj_clear_flag(ui_status_ip, LV_OBJ_FLAG_HIDDEN);
       ntp.tick(); //синхронизируем время
       if (ntp.synced() && lastFeed==0) lastFeed=ntp.hour()*60 + ntp.minute(); //заполняем время последнего кормления при первом запуске. По умолчанию ставим время первой синхронизации с с ервером времени
     }
   else
     {
-      lv_obj_add_flag(ui_wifistatus, LV_OBJ_FLAG_HIDDEN);
+      lv_obj_add_flag(ui_status_icons, LV_OBJ_FLAG_HIDDEN);
       lv_obj_add_flag(ui_status_ip, LV_OBJ_FLAG_HIDDEN);
     }
   
@@ -347,6 +367,7 @@ void loop()
             }
   }
   client.loop(); //чтение состояния топиков MQQT
+  bot.tick(); //поддерживаем соединение с telegram ботом
   server.handleClient(); //обработка запросов web интерфейса
 }
 

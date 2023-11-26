@@ -180,28 +180,36 @@ void draw_interface()
     //вкладки на экране настроек
     ui_tabview_settings = lv_tabview_create(ui_tab3, LV_DIR_LEFT, 30);
       lv_obj_t * ui_set_tab1 = lv_tabview_add_tab(ui_tabview_settings, LV_SYMBOL_DISPLAY);
-      lv_obj_t * ui_set_tab2 = lv_tabview_add_tab(ui_tabview_settings, LV_SYMBOL_DCLOCK);
-      lv_obj_t * ui_set_tab3 = lv_tabview_add_tab(ui_tabview_settings, LV_SYMBOL_SCALES);
+      lv_obj_t * ui_set_tab2 = lv_tabview_add_tab(ui_tabview_settings, LV_SYMBOL_ACLOCK);
+      lv_obj_t * ui_set_tab3 = lv_tabview_add_tab(ui_tabview_settings, LV_SYMBOL_ASCALES);
       
   //Панель состояния
     //Иконка Wifi
-    ui_wifistatus = lv_label_create(ui_tabview);
-    lv_obj_align(ui_wifistatus, LV_ALIGN_TOP_RIGHT, 0, 0);
-    lv_label_set_text(ui_wifistatus, LV_SYMBOL_WIFI);
-    lv_obj_add_flag(ui_wifistatus, LV_OBJ_FLAG_FLOATING); 
-    lv_obj_add_flag(ui_wifistatus, LV_OBJ_FLAG_HIDDEN);
+    ui_status_icons = lv_label_create(ui_tabview);
+    lv_obj_align(ui_status_icons, LV_ALIGN_TOP_RIGHT, 0, 0);
+    lv_label_set_text(ui_status_icons, LV_SYMBOL_WIFI);
+    lv_obj_add_flag(ui_status_icons, LV_OBJ_FLAG_FLOATING); 
+    lv_obj_add_flag(ui_status_icons, LV_OBJ_FLAG_HIDDEN);
     //IP адрес
     ui_status_ip = lv_label_create(ui_tabview);
     lv_obj_align(ui_status_ip, LV_ALIGN_TOP_LEFT, 0, 0);
     lv_label_set_text(ui_status_ip, " ");
     lv_obj_add_flag(ui_status_ip, LV_OBJ_FLAG_FLOATING); 
     lv_obj_add_flag(ui_status_ip, LV_OBJ_FLAG_HIDDEN);
+    /*
     //Иконка MQTT
     ui_mqttstatus = lv_label_create(ui_tabview);
     lv_obj_align(ui_mqttstatus, LV_ALIGN_TOP_RIGHT, -25, 0);
     lv_label_set_text(ui_mqttstatus, LV_SYMBOL_LOOP);
     lv_obj_add_flag(ui_mqttstatus, LV_OBJ_FLAG_FLOATING); 
     lv_obj_add_flag(ui_mqttstatus, LV_OBJ_FLAG_HIDDEN);
+    //Иконка telegram
+    ui_telegramstatus = lv_label_create(ui_tabview);
+    lv_obj_align( ui_telegramstatus, LV_ALIGN_TOP_RIGHT, -50, 0);
+    lv_label_set_text( ui_telegramstatus, LV_SYMBOL_TELEGRAM);
+    lv_obj_add_flag( ui_telegramstatus, LV_OBJ_FLAG_FLOATING); 
+    //lv_obj_add_flag( ui_telegramstatus, LV_OBJ_FLAG_HIDDEN);
+    */
   //Вкладка кормления (ui_tab1)
     //Часы
     ui_clock = lv_label_create(ui_tab1); //часы
@@ -246,9 +254,13 @@ void draw_interface()
     lv_label_set_text(ui_label_feed_text, LV_SYMBOL_SCALES);
     lv_obj_align_to(ui_label_feed_text, ui_slider_feed_amount, LV_ALIGN_OUT_LEFT_MID, 0, 0);
 
-    ui_remain = lv_label_create(ui_tab1);
-    lv_label_set_text(ui_remain, " ");
+    ui_remain = lv_label_create(ui_tab1); //осталось времени до срабатывания таймера
+    lv_label_set_text(ui_remain, LV_SYMBOL_SANDCLOCK);
     lv_obj_align(ui_remain, LV_ALIGN_TOP_LEFT, 0, 70);
+
+    ui_food_weight = lv_label_create(ui_tab1);
+    lv_label_set_text_fmt(ui_food_weight, LV_SYMBOL_WEIGHT" %d грамм",foodWeight-tareWeight); 
+    lv_obj_align(ui_food_weight, LV_ALIGN_TOP_RIGHT, 0, 70);
 
 
   //Вкладка таймеров
