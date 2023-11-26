@@ -95,8 +95,6 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
     static lv_obj_t * ui_tabview_settings; //панель вкладок настроек
     //Панель состояния
     static lv_obj_t * ui_status_icons; //статус wifi
-    //static lv_obj_t * ui_mqttstatus; //статус mqtt
-    //static lv_obj_t * ui_telegramstatus; //статус telegram
     static lv_obj_t * ui_status_ip; //ip адрес
     //Экранная клавиатура
     static lv_obj_t * kb; //клавиатура
@@ -107,8 +105,7 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
       static lv_obj_t * ui_label_feedAmount; //размер порции
       static lv_obj_t * ui_remain; //осталось времени до выдачи порции
       static lv_obj_t * ui_food_weight; //вес порции в миске
-      //static lv_obj_t * img_running_cat; //кот на шкале прогресса
-      //Вкладка таймеры
+       //Вкладка таймеры
       static lv_obj_t * ui_timer1_hour; //слайдер часов будильника 1
       static lv_obj_t * ui_timer1_minute; //слайдер минут будильника 1
       static lv_obj_t * ui_timer1_check; //активатор будильника 1
