@@ -215,15 +215,16 @@ static void event_scales_calibrate(lv_event_t * e)
   {
   lv_event_code_t code = lv_event_get_code(e);
    if(code == LV_EVENT_CLICKED) 
-   {
-    if (sensor.available()) 
     {
-      tareWeight=sensor.read();
-      sensor.setOffset(tareWeight);
-      lv_label_set_text_fmt (ui_set_panel_scales_tare_label,"Вес пустой миски: %d грамм", tareWeight);//Пишем вес тары
-      refsaveconfigdelay.setInterval(10000);
+      if (sensor.available()) 
+      {
+        tareWeight=sensor.read();
+        sensor.setOffset(tareWeight);
+        lv_label_set_text_fmt (ui_set_panel_scales_tare_label,"Вес пустой миски: %d грамм", tareWeight);//Пишем вес тары
+        refsaveconfigdelay.setInterval(10000);
+      }
     }
- }
+  }
 
 //Функция обработки нажатия кнопки калибровки экрана 
 static void event_calibrate(lv_event_t * e)
@@ -557,6 +558,11 @@ void draw_interface()
       lv_obj_set_size(ui_scales_calibrate_button, lv_pct(100), 30);
       lv_obj_align(ui_scales_calibrate_button, LV_ALIGN_TOP_LEFT, 0, 45);
       //lv_obj_add_event_cb(ui_scales_calibrate_button,  event_scales_calibrate, LV_EVENT_ALL, NULL); //обработчик нажатия кнопки
+      //текст на кнопке калибровки весов
+      lv_obj_t * ui_calibrate_scales_button_text = lv_label_create(ui_scales_calibrate_button);
+      lv_label_set_text(ui_calibrate_scales_button_text, "Калибровка весов");
+      lv_obj_center(ui_calibrate_scales_button_text);
+      lv_obj_set_size(ui_set_panel_scales, lv_pct(100),LV_SIZE_CONTENT);
 
     //Панель настроек часов на вкладке 4
     lv_obj_t * ui_set_panel_telegram = lv_obj_create(ui_set_tab4);

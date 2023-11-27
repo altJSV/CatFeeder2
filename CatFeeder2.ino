@@ -131,7 +131,7 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
 
       //Окно настроек
       static lv_obj_t * ui_gmt_slider_label; //текст на слайдере изменения часового пояса
-      static lv_obj_t * ui_set_panel_scales_tare_label  
+      static lv_obj_t * ui_set_panel_scales_tare_label; //
 
 //Инициализация библиотек
 GyverNTP ntp(timezone); //инициализация работы с ntp, в параметрах часовой пояс
