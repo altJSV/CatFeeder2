@@ -210,7 +210,22 @@ static void event_feed(lv_event_t * e)
     }
  }
 
- //Функция обработки нажатия кнопки калибровки экрана
+//Функция калибровки весов
+static void event_scales_calibrate(lv_event_t * e)
+  {
+  lv_event_code_t code = lv_event_get_code(e);
+   if(code == LV_EVENT_CLICKED) 
+   {
+    if (sensor.available()) 
+    {
+      tareWeight=sensor.read();
+      sensor.setOffset(tareWeight);
+      lv_label_set_text_fmt (ui_set_panel_scales_tare_label,"Вес пустой миски: %d грамм", tareWeight);//Пишем вес тары
+      refsaveconfigdelay.setInterval(10000);
+    }
+ }
+
+//Функция обработки нажатия кнопки калибровки экрана 
 static void event_calibrate(lv_event_t * e)
   {
   lv_event_code_t code = lv_event_get_code(e);
@@ -526,6 +541,22 @@ void draw_interface()
 
     lv_obj_set_size(ui_set_panel_time, lv_pct(100),LV_SIZE_CONTENT);
     //lv_obj_align_to(ui_set_panel_time, ui_set_panel_display, LV_ALIGN_OUT_BOTTOM_LEFT,0,5); 
+
+    //Панель настроек весов на вкладке 3
+    lv_obj_t * ui_set_panel_scales = lv_obj_create(ui_set_tab3);
+      //Название панели
+      lv_obj_t * ui_set_panel_scales_label = lv_label_create(ui_set_panel_scales);//метка названия панели
+      lv_obj_align(ui_set_panel_scales_label, LV_ALIGN_TOP_MID, 0, 0); //Выравниваем по центру вверху
+      lv_label_set_text (ui_set_panel_scales_label,"Калибровка весов");//Пишем текст метки
+      //Надпись вес пустой тары
+      ui_set_panel_scales_tare_label = lv_label_create(ui_set_panel_scales);//метка названия панели
+      lv_obj_align(ui_set_panel_scales_tare_label, LV_ALIGN_TOP_LEFT, 0, 20); //Выравниваем по левому краю
+      lv_label_set_text_fmt (ui_set_panel_scales_tare_label,"Вес пустой миски: %d грамм", tareWeight);//Пишем текст метки
+      //Кнопка калибровки весов
+      lv_obj_t * ui_scales_calibrate_button = lv_btn_create(ui_set_panel_scales); // кнопка кормления  
+      lv_obj_set_size(ui_scales_calibrate_button, lv_pct(100), 30);
+      lv_obj_align(ui_scales_calibrate_button, LV_ALIGN_TOP_LEFT, 0, 45);
+      //lv_obj_add_event_cb(ui_scales_calibrate_button,  event_scales_calibrate, LV_EVENT_ALL, NULL); //обработчик нажатия кнопки
 
     //Панель настроек часов на вкладке 4
     lv_obj_t * ui_set_panel_telegram = lv_obj_create(ui_set_tab4);
