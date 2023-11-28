@@ -10,7 +10,7 @@
             lv_obj_set_style_max_height(kb, LV_HOR_RES * 2 / 3, 0);
             lv_obj_clear_flag(kb, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(tv_but, LV_OBJ_FLAG_HIDDEN);
-            lv_obj_scroll_to_view_recursive(ta, LV_ANIM_OFF);
+            lv_obj_scroll_to_y(ta, 10, LV_ANIM_OFF);
         }
     }
     else if(code == LV_EVENT_DEFOCUSED) {
@@ -43,6 +43,40 @@
   lv_obj_t * ta = lv_event_get_target(e);
   chatID=lv_textarea_get_text(ta);
   bot.setChatID(chatID); // устанавливаем новый ID чата
+  refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+  }
+
+
+//Изменение значения адреса mqtt в текстовом поле
+ static void mqttadress_ta_event_cb(lv_event_t * e)
+  {
+  lv_obj_t * ta = lv_event_get_target(e);
+  mqtt_server=lv_textarea_get_text(ta);
+  refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+  }
+
+   //Изменение значения mqtt порта в текстовом поле
+ static void mqttport_ta_event_cb(lv_event_t * e)
+  {
+  lv_obj_t * ta = lv_event_get_target(e);
+  String portnum=lv_textarea_get_text(ta);
+  mqtt_port=portnum.toInt();
+  refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+  }
+
+  //Изменение значения логина mqtt в текстовом поле
+ static void mqttlogin_ta_event_cb(lv_event_t * e)
+  {
+  lv_obj_t * ta = lv_event_get_target(e);
+  mqtt_login=lv_textarea_get_text(ta);
+  refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+  }
+
+   //Изменение значения логина mqtt в текстовом поле
+ static void mqttpass_ta_event_cb(lv_event_t * e)
+  {
+  lv_obj_t * ta = lv_event_get_target(e);
+  mqtt_pass=(int)lv_textarea_get_text(ta);
   refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
   }
 
@@ -170,7 +204,21 @@ static void timer4_amount_decrement_event_cb(lv_event_t * e)
   refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
   } 
 
-  
+  //Переключение mqtt
+  static void usemqtt_switch_event(lv_event_t * e)
+  {
+    lv_obj_t * obj = lv_event_get_target(e);
+        if (lv_obj_has_state(obj, LV_STATE_CHECKED)) 
+        {
+          usemqtt=true;
+          MQTT_init();
+        }
+        else
+        {
+          usemqtt=false;
+        }
+  refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+  } 
 
 //событие измениния значения таймеров кормления
 static void alarm_roll_event_handler(lv_event_t * e)
@@ -264,6 +312,7 @@ void draw_interface()
       lv_obj_t * ui_set_tab2 = lv_tabview_add_tab(ui_tabview_settings, LV_SYMBOL_ACLOCK);
       lv_obj_t * ui_set_tab3 = lv_tabview_add_tab(ui_tabview_settings, LV_SYMBOL_ASCALES);
       lv_obj_t * ui_set_tab4 = lv_tabview_add_tab(ui_tabview_settings, LV_SYMBOL_TELEGRAM);
+      lv_obj_t * ui_set_tab5 = lv_tabview_add_tab(ui_tabview_settings, LV_SYMBOL_LOOP);
   //Создаем экранную клавиатуру 
   kb = lv_keyboard_create(lv_scr_act());//создаем экранную клавиатуру
   lv_obj_align(kb, LV_ALIGN_BOTTOM_MID, 0, 0); //положение на экране
@@ -552,7 +601,7 @@ void draw_interface()
       //Надпись вес пустой тары
       ui_set_panel_scales_tare_label = lv_label_create(ui_set_panel_scales);//метка названия панели
       lv_obj_align(ui_set_panel_scales_tare_label, LV_ALIGN_TOP_LEFT, 0, 20); //Выравниваем по левому краю
-      lv_label_set_text_fmt (ui_set_panel_scales_tare_label,"Вес пустой миски: %d грамм", tareWeight);//Пишем текст метки
+      lv_label_set_text_fmt (ui_set_panel_scales_tare_label,"Вес миски: %d грамм", tareWeight);//Пишем текст метки
       //Кнопка калибровки весов
       lv_obj_t * ui_scales_calibrate_button = lv_btn_create(ui_set_panel_scales); // кнопка кормления  
       lv_obj_set_size(ui_scales_calibrate_button, lv_pct(100), 30);
@@ -564,7 +613,7 @@ void draw_interface()
       lv_obj_center(ui_calibrate_scales_button_text);
       lv_obj_set_size(ui_set_panel_scales, lv_pct(100),LV_SIZE_CONTENT);
 
-    //Панель настроек часов на вкладке 4
+    //Панель настроек телеграм бота на вкладке 4
     lv_obj_t * ui_set_panel_telegram = lv_obj_create(ui_set_tab4);
       //Название панели
       lv_obj_t * ui_set_panel_telegram_label = lv_label_create(ui_set_panel_telegram);//метка названия панели
@@ -610,4 +659,77 @@ void draw_interface()
 
     lv_obj_set_size(ui_set_panel_telegram, lv_pct(100),LV_SIZE_CONTENT);
     //lv_obj_align_to(ui_set_panel_time, ui_set_panel_display, LV_ALIGN_OUT_BOTTOM_LEFT,0,5); 
+
+    //Панель настроек mqtt на вкладке 5
+    lv_obj_t * ui_set_panel_mqtt = lv_obj_create(ui_set_tab5);
+      //Название панели
+      lv_obj_t * ui_set_panel_mqtt_label = lv_label_create(ui_set_panel_mqtt);//метка названия панели
+      lv_obj_align(ui_set_panel_mqtt_label, LV_ALIGN_TOP_MID, 0, 0); //Выравниваем по центру вверху
+      lv_label_set_text (ui_set_panel_mqtt_label,"Настройки MQTT");//Пишем текст метки
+      
+      //Переключатель mqtt заголовок
+      lv_obj_t  * ui_set_panel_usemqtt_label = lv_label_create(ui_set_panel_mqtt); //создаем объект заголовок
+      lv_label_set_text(ui_set_panel_usemqtt_label, "Использовать MQTT"); //текст
+      lv_obj_align(ui_set_panel_usemqtt_label,LV_ALIGN_TOP_LEFT, 0, 20); //положение на экране
+      //Переключатель MQTT
+      lv_obj_t * ui_set_panel_usemqtt_switch = lv_switch_create(ui_set_panel_mqtt);
+      lv_obj_add_event_cb(ui_set_panel_usemqtt_switch, usemqtt_switch_event, LV_EVENT_VALUE_CHANGED, NULL);
+      lv_obj_set_size(ui_set_panel_usemqtt_switch,32,22);
+      lv_obj_align_to(ui_set_panel_usemqtt_switch, ui_set_panel_usemqtt_label, LV_ALIGN_OUT_RIGHT_MID, 30, 0); //положение на экране
+      if (usemqtt){lv_obj_add_state(ui_set_panel_usemqtt_switch, LV_STATE_CHECKED); } else{lv_obj_clear_state(ui_set_panel_usemqtt_switch, LV_STATE_CHECKED);}
+      //Надпись адрес
+      lv_obj_t * ui_set_panel_mqtt_adress_label = lv_label_create(ui_set_panel_mqtt);//метка названия панели
+      lv_obj_align_to(ui_set_panel_mqtt_adress_label, ui_set_panel_usemqtt_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
+      lv_label_set_text (ui_set_panel_mqtt_adress_label,"Адрес брокера:");//Пишем текст метки
+      //Поле ввода адреса
+      lv_obj_t * ui_set_panel_mqtt_adress_ta = lv_textarea_create(ui_set_panel_mqtt);
+      lv_textarea_set_one_line(ui_set_panel_mqtt_adress_ta, true);
+      lv_textarea_set_text(ui_set_panel_mqtt_adress_ta, mqtt_server.c_str());
+      lv_obj_set_width(ui_set_panel_mqtt_adress_ta, lv_pct(100));
+      lv_obj_align_to(ui_set_panel_mqtt_adress_ta,ui_set_panel_mqtt_adress_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10); //положение на экране
+      lv_obj_add_event_cb(ui_set_panel_mqtt_adress_ta, ta_event_cb, LV_EVENT_ALL, kb);
+      lv_obj_add_event_cb(ui_set_panel_mqtt_adress_ta, mqttadress_ta_event_cb, LV_EVENT_READY, NULL);
+       //Надпись порт
+      lv_obj_t * ui_set_panel_mqtt_port_label = lv_label_create(ui_set_panel_mqtt);//метка названия панели
+      lv_obj_align(ui_set_panel_mqtt_port_label, LV_ALIGN_TOP_LEFT, 0, 20); //Выравниваем по левому краю
+      lv_label_set_text (ui_set_panel_mqtt_port_label,"Порт:");//Пишем текст метки
+      lv_obj_align_to(ui_set_panel_mqtt_port_label,ui_set_panel_mqtt_adress_ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
+      //Поле ввода порта
+      lv_obj_t * ui_set_panel_mqtt_port_ta = lv_textarea_create(ui_set_panel_mqtt);
+      lv_textarea_set_one_line(ui_set_panel_mqtt_port_ta, true);
+      lv_textarea_set_text(ui_set_panel_mqtt_port_ta, String(mqtt_port).c_str());
+      lv_textarea_set_accepted_chars(ui_set_panel_mqtt_port_ta, "0123456789");
+      lv_textarea_set_max_length(ui_set_panel_mqtt_port_ta, 5);
+      lv_obj_set_width(ui_set_panel_mqtt_port_ta, lv_pct(100));
+      lv_obj_align_to(ui_set_panel_mqtt_port_ta,ui_set_panel_mqtt_port_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10); //положение на экране
+      lv_obj_add_event_cb(ui_set_panel_mqtt_port_ta, ta_event_cb, LV_EVENT_ALL, kb);
+      lv_obj_add_event_cb(ui_set_panel_mqtt_port_ta, mqttport_ta_event_cb, LV_EVENT_READY, NULL);
+      //Надпись логин
+      lv_obj_t * ui_set_panel_mqtt_login_label = lv_label_create(ui_set_panel_mqtt);//метка названия панели
+      lv_obj_align_to(ui_set_panel_mqtt_login_label, ui_set_panel_mqtt_port_ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
+      lv_label_set_text (ui_set_panel_mqtt_login_label,"Логин:");//Пишем текст метки
+      //Поле ввода логина
+      lv_obj_t * ui_set_panel_mqtt_login_ta = lv_textarea_create(ui_set_panel_mqtt);
+      lv_textarea_set_one_line(ui_set_panel_mqtt_login_ta, true);
+      lv_textarea_set_text(ui_set_panel_mqtt_login_ta, mqtt_login.c_str());
+      lv_obj_set_width(ui_set_panel_mqtt_login_ta, lv_pct(100));
+      lv_obj_align_to(ui_set_panel_mqtt_login_ta,ui_set_panel_mqtt_login_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10); //положение на экране
+      lv_obj_add_event_cb(ui_set_panel_mqtt_login_ta, ta_event_cb, LV_EVENT_ALL, kb);
+      lv_obj_add_event_cb(ui_set_panel_mqtt_login_ta, mqttlogin_ta_event_cb, LV_EVENT_READY, NULL);
+      //Надпись пароль
+      lv_obj_t * ui_set_panel_mqtt_pass_label = lv_label_create(ui_set_panel_mqtt);//метка названия панели
+      lv_obj_align_to(ui_set_panel_mqtt_pass_label, ui_set_panel_mqtt_login_ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
+      lv_label_set_text (ui_set_panel_mqtt_pass_label,"Пароль:");//Пишем текст метки
+      //Поле ввода пароля
+      lv_obj_t * ui_set_panel_mqtt_pass_ta = lv_textarea_create(ui_set_panel_mqtt);
+      lv_textarea_set_one_line(ui_set_panel_mqtt_pass_ta, true);
+      lv_textarea_set_password_mode(ui_set_panel_mqtt_pass_ta, true);
+      lv_textarea_set_text(ui_set_panel_mqtt_pass_ta, mqtt_pass.c_str());
+      lv_obj_set_width(ui_set_panel_mqtt_pass_ta, lv_pct(100));
+      lv_obj_align_to(ui_set_panel_mqtt_pass_ta,ui_set_panel_mqtt_pass_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10); //положение на экране
+      lv_obj_add_event_cb(ui_set_panel_mqtt_pass_ta, ta_event_cb, LV_EVENT_ALL, kb);
+      lv_obj_add_event_cb(ui_set_panel_mqtt_pass_ta, mqttpass_ta_event_cb, LV_EVENT_READY, NULL);
+      
+
+    lv_obj_set_size(ui_set_panel_mqtt, lv_pct(100),LV_SIZE_CONTENT);
   }

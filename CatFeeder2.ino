@@ -74,6 +74,7 @@ static const uint16_t screenHeight = 240; //высота экрана
 
 
 //MQTT настройки
+bool usemqtt = true;
 String mqtt_server = "192.168.1.1"; //ip или http адрес
 int mqtt_port = 1883; //порт
 
@@ -323,7 +324,7 @@ void WiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info){
   lv_label_set_text(ui_status_ip,ipString.c_str());
   Serial.println("IP address: ");
   Serial.println(ip);
-  MQTT_init();//Подключение к MQTT брокеру
+  if (usemqtt) MQTT_init();//Подключение к MQTT брокеру
 }
 /**** КОНЕЦ БЛОКА ФУНКЦИЙ ****/
 
@@ -368,7 +369,7 @@ void loop()
                 }
             }
   }
-  client.loop(); //чтение состояния топиков MQQT
+  if (usemqtt) client.loop(); //чтение состояния топиков MQQT
   if (tg_bot) bot.tick(); //поддерживаем соединение с telegram ботом
   server.handleClient(); //обработка запросов web интерфейса
 }

@@ -49,9 +49,10 @@ bool loadConfiguration(const char *filename) {
   const char * bot_token_p= doc1["token"];
   const char * chatID_p= doc1["сhatid"];
   feedAmount = (uint8_t)doc1["feed_amount"];
-  //tareWeight = (long)doc1["tare"];
+  tareWeight = (long)doc1["tare"];
   theme = (bool)doc1["theme"];
   tg_bot = (bool)doc1["tgbot"];
+  usemqtt = (bool)doc1["usemqtt"];
   mqtt_server=mqtt_server_p;
   mqtt_login=mqtt_login_p;
   mqtt_pass=mqtt_pass_p;
@@ -85,6 +86,7 @@ bool saveConfiguration(const char *filename)
 
   //Выделяем память под JSON
   StaticJsonDocument<2048> doc1;
+  doc1["use_mqtt"] = usemqtt; //состояние переключателя использования mqtt
   doc1["mqtt_server"] = mqtt_server; //адрес брокера mqtt
   doc1["mqtt_port"] = mqtt_port; //порт mqtt брокера
   doc1["mqtt_login"] = mqtt_login;//mqtt логин
@@ -95,7 +97,7 @@ bool saveConfiguration(const char *filename)
   doc1["theme"] = theme;// тема оформления
   doc1["token"] = bot_token; //токен телеграм бота
   doc1["сhatid"] = chatID; //ID чата телеграм бота
-  doc1["tgbot"] = tg_bot;// состояние бота
+  doc1["tgbot"] = tg_bot;// состояние переключателя использования бота
   //массив данных будильника
   for (byte i = 0; i < 4; i++) 
   {
