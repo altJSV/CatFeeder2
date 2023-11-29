@@ -258,6 +258,76 @@ static void event_feed(lv_event_t * e)
     }
  }
 
+static void ui_stepwindow_btn_close_event_handler(lv_event_t * e)
+{
+    lv_obj_del(ui_stepwindow);
+}
+
+ //Функция обработки нажатия кнопки настроек шагового двигателя
+static void step_motor_setup_window_open(lv_event_t * e)
+  {
+  lv_event_code_t code = lv_event_get_code(e);
+   if(code == LV_EVENT_CLICKED) 
+   {
+    window_setup_motor();
+    }
+ }
+
+ //отрисовка интерфейса окна настрорек шаговика
+void window_setup_motor()
+{
+  //Отрисовываем интерфейс окна настроек
+  //Окно контейнер
+    ui_stepwindow = lv_win_create(lv_scr_act(), 30);
+    lv_win_add_title(ui_stepwindow, "Настройка шагового мотора");
+    lv_obj_t * ui_stepwindow_btn_close = lv_win_add_btn(ui_stepwindow, LV_SYMBOL_CLOSE, 30);
+    lv_obj_add_event_cb(ui_stepwindow_btn_close, ui_stepwindow_btn_close_event_handler, LV_EVENT_CLICKED, NULL);
+    lv_obj_t * step_windows_cont = lv_win_get_content(ui_stepwindow);  //контейнер для содержимого окна
+    //содержимое окна
+    //Надпись Шагов вперед
+      lv_obj_t * ui_step_window_fwdsteps_label = lv_label_create(step_windows_cont);//метка названия панели
+      lv_obj_align(ui_step_window_fwdsteps_label, LV_ALIGN_TOP_LEFT, 0, 5); //Выравниваем по левому краю
+      lv_label_set_text (ui_step_window_fwdsteps_label,"Шагов вперед:");//Пишем текст метки
+      //Слайдер изменения колличества шагов вперед
+      lv_obj_t * ui_step_window_fwdstep_slider = lv_slider_create(step_windows_cont);
+      lv_obj_set_size(ui_step_window_fwdstep_slider, lv_pct(100), 20);
+      lv_obj_align_to(ui_step_window_fwdstep_slider, ui_step_window_fwdsteps_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
+      lv_slider_set_range(ui_step_window_fwdstep_slider, 0 , 200);
+      lv_slider_set_value(ui_step_window_fwdstep_slider, fwd_steps, LV_ANIM_OFF);
+      //lv_obj_add_event_cb(ui_step_window_fwdstep_slider, fwdstep_slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+      //Надпись Шагов назад
+      lv_obj_t * ui_step_window_bcksteps_label = lv_label_create(step_windows_cont);//метка названия панели
+      lv_obj_align_to(ui_step_window_bcksteps_label, ui_step_window_fwdstep_slider, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 30); //Выравниваем по левому краю
+      lv_label_set_text (ui_step_window_bcksteps_label,"Шагов назад:");//Пишем текст метки
+      //Слайдер изменения колличества шагов назад
+      lv_obj_t * ui_step_window_bckstep_slider = lv_slider_create(step_windows_cont);
+      lv_obj_set_size(ui_step_window_bckstep_slider, lv_pct(100), 20);
+      lv_obj_align_to(ui_step_window_bckstep_slider, ui_step_window_bcksteps_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
+      lv_slider_set_range(ui_step_window_bckstep_slider, 0 , 200);
+      lv_slider_set_value(ui_step_window_bckstep_slider, bck_steps, LV_ANIM_OFF);
+      //lv_obj_add_event_cb(ui_step_window_bckstep_slider, bckstep_slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+      //Надпись Скорость
+      lv_obj_t * ui_step_window_speed_label = lv_label_create(step_windows_cont);//метка названия панели
+      lv_obj_align_to(ui_step_window_speed_label, ui_step_window_bckstep_slider, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 30); //Выравниваем по левому краю
+      lv_label_set_text (ui_step_window_speed_label,"Скорость вращения:");//Пишем текст метки
+      //Слайдер изменения скорости
+      lv_obj_t * ui_step_window_speed_slider = lv_slider_create(step_windows_cont);
+      lv_obj_set_size(ui_step_window_speed_slider, lv_pct(100), 20);
+      lv_obj_align_to(ui_step_window_speed_slider, ui_step_window_speed_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
+      lv_slider_set_range(ui_step_window_speed_slider, 0 , 400);
+      lv_slider_set_value(ui_step_window_speed_slider, step_speed, LV_ANIM_OFF);
+      //lv_obj_add_event_cb(ui_step_window_bckstep_slider, bckstep_slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+      //Кнопка тест
+      lv_obj_t * ui_step_window_test_button = lv_btn_create(step_windows_cont); // кнопка кормления  
+      lv_obj_set_size(ui_step_window_test_button, lv_pct(100), 40);
+      lv_obj_align_to(ui_step_window_test_button, ui_step_window_speed_slider, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 30); //Выравниваем по левому краю
+      //lv_obj_add_event_cb(ui_step_window_test_button, event_feed, LV_EVENT_ALL, NULL); //обработчик нажатия кнопки
+      lv_obj_t * ui_step_window_test_button_label=lv_label_create(ui_step_window_test_button);//Надпись на кнопке
+      lv_label_set_text(ui_step_window_test_button_label, "Тест двигателя");
+      lv_obj_center(ui_step_window_test_button_label);
+
+}
+
 //Функция калибровки весов
 static void event_scales_calibrate(lv_event_t * e)
   {
@@ -296,6 +366,7 @@ static void event_calibrate(lv_event_t * e)
 
 void draw_interface()
   {
+    LV_IMG_DECLARE(step_icon); //иконка шагового двигателя
   //Установка цветового оформления
   lv_theme_default_init(NULL, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_CYAN), theme, &mainfont14);   
   //Создаем экранные объекты
@@ -338,6 +409,13 @@ void draw_interface()
     lv_obj_align(ui_clock, LV_ALIGN_TOP_LEFT, 0, 5); //положение на экране
     lv_obj_set_size(ui_clock, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
     lv_obj_set_style_text_font(ui_clock, &digital, 0);
+
+    //кнопка настройки шагового двигателя
+    lv_obj_t * ui_stepmotor_setup_btn = lv_imgbtn_create(ui_tab1);
+    lv_imgbtn_set_src(ui_stepmotor_setup_btn, LV_IMGBTN_STATE_RELEASED, NULL, &step_icon, NULL);
+    lv_obj_align(ui_stepmotor_setup_btn, LV_ALIGN_TOP_RIGHT, 0, 12);
+    lv_obj_set_size(ui_stepmotor_setup_btn, 48, 48);
+    lv_obj_add_event_cb(ui_stepmotor_setup_btn, step_motor_setup_window_open, LV_EVENT_CLICKED, NULL);
 
     //Кнопка кормления
     lv_obj_t * ui_feed_button = lv_btn_create(ui_tab1); // кнопка кормления  

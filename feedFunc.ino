@@ -38,7 +38,7 @@ void feed(uint16_t amount)
     lv_label_set_text_fmt(ui_feed_progress_bar_label,"%d", i*100/amount);
     lv_event_send(ui_feed_progress_bar, LV_EVENT_REFRESH, NULL);
     lv_timer_handler();
-    oneRev();
+    //oneRev();
   }  
   motorrun=false;
   //disableMotor();//выключаем мотор

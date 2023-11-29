@@ -44,6 +44,10 @@ uint16_t lastFeed=0; //время последнего кормления
 long tareWeight=250; //вес миски в граммах
 long foodWeight=560; //вес еды в миске
 
+uint8_t fwd_steps=60; //шагов вперед
+uint8_t bck_steps=20; //шагов назад
+uint16_t step_speed = 100; //скорость вращения
+
 //различные параметры и настройки
 #define FEED_SPEED 3000     // задержка между шагами мотора (мкс)
 #define STEPS_FRW 60        // шаги вперёд
@@ -91,6 +95,7 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
 //объекты интерфейса LVGL
     //Контейнеры
     static lv_obj_t * ui_feedwindow; // окно кормления
+    static lv_obj_t * ui_stepwindow; //окно настроек шаговика 
     static lv_obj_t * ui_otawindow; // окно кормления
     static lv_obj_t * ui_tabview; // панель вкладок
     static lv_obj_t * ui_tabview_settings; //панель вкладок настроек
