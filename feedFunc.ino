@@ -1,6 +1,7 @@
 //отрисовка интерфейса кормления
-void prefid()
+void prefid(uint8_t feedA)
 {
+  feedAmount=feedA;
   //Объявляем графические ресурсы
   LV_IMG_DECLARE(feed_cat_img); //гифка с едой
   //Отрисовываем интерфейс окна кормления и запускаем таймер
@@ -22,45 +23,43 @@ void prefid()
     lv_label_set_text_fmt(ui_feed_progress_bar_label,"%d", (feedAmount/100) * lv_bar_get_value(ui_feed_progress_bar));
     lv_obj_set_style_text_color(ui_feed_progress_bar_label,lv_palette_main(LV_PALETTE_CYAN),0);
     lv_obj_align_to(ui_feed_progress_bar_label, ui_feed_progress_bar, LV_ALIGN_CENTER, 0, 0);
-    reffeedtime.setInterval(100); //запускаем таймер для подгрузки окна кормления
     
+    reffeedtime.setInterval(100); //запускаем таймер для подгрузки окна кормления
 }
 
 
 //Запуск кормления
-void feed() 
+void feed(uint16_t amount) 
 { 
-  for (int i = 0; i < feedAmount; i++) 
+  motorrun=true;
+  for (int i = 0; i < amount; i++) 
   {
     lv_bar_set_value(ui_feed_progress_bar, i, LV_ANIM_OFF); //заполняем шкалы прогресса
-    lv_label_set_text_fmt(ui_feed_progress_bar_label,"%d", i*100/feedAmount);
+    lv_label_set_text_fmt(ui_feed_progress_bar_label,"%d", i*100/amount);
     lv_event_send(ui_feed_progress_bar, LV_EVENT_REFRESH, NULL);
     lv_timer_handler();
     oneRev();
   }  
-  disableMotor();//выключаем мотор
+  motorrun=false;
+  //disableMotor();//выключаем мотор
   lastFeed=ntp.hour()*60 + ntp.minute();
   lv_obj_del(ui_feedwindow);
   
 }
 
-// выключаем ток на мотор
-void disableMotor() {
-  for (byte i = 0; i < 4; i++) digitalWrite(drvPins[i], 0);
-}
-
 //крутим мотор
 void oneRev() {
-  for (int i = 0; i < STEPS_BKW; i++) runMotor(-1);
-  for (int i = 0; i < STEPS_FRW; i++) runMotor(1);
-}
-
-const byte steps[] = {0b1010, 0b0110, 0b0101, 0b1001};
-void runMotor(int8_t dir) {
-  static byte step = 0;
-  for (byte i = 0; i < 4; i++) digitalWrite(drvPins[i], bitRead(steps[step & 0b11], i));
-  delayMicroseconds(FEED_SPEED);
-  step += dir;
+  stepper.setTarget(STEPS_FRW,RELATIVE);
+  while (stepper.tick())
+    {
+      //ждем пока мотор придет к заданной позиции
+    }
+    stepper.setTarget(-STEPS_BKW,RELATIVE);
+  while (stepper.tick())
+    {
+      //ждем пока мотор придет к заданной позиции
+    }
+  
 }
 
 //Функция подсчета времени до ближайшего кормления

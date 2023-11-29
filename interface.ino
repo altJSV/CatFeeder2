@@ -254,7 +254,7 @@ static void event_feed(lv_event_t * e)
   lv_event_code_t code = lv_event_get_code(e);
    if(code == LV_EVENT_CLICKED) 
    {
-    prefid();
+    prefid(feedAmountSet);
     }
  }
 
@@ -289,8 +289,8 @@ static void event_calibrate(lv_event_t * e)
    static void slider_feedamount_event_cb(lv_event_t * e)
     {
       lv_obj_t * slider = lv_event_get_target(e);
-      feedAmount=(int)lv_slider_get_value(slider);
-      lv_label_set_text_fmt(ui_label_feedAmount,"%d грам", feedAmount);
+      feedAmountSet=(int)lv_slider_get_value(slider);
+      lv_label_set_text_fmt(ui_label_feedAmount,"%d грам", feedAmountSet);
       refsaveconfigdelay.setInterval(10000);
     }
 
@@ -303,7 +303,7 @@ void draw_interface()
   //Контейнеры
     ui_tabview = lv_tabview_create(lv_scr_act(), LV_DIR_BOTTOM, 30); //создаем панель вкладок
       //Создаем вкладки и присваиваем им отображаемые имена
-      lv_obj_t * ui_tab1 = lv_tabview_add_tab(ui_tabview, "Кормление");
+      lv_obj_t * ui_tab1 = lv_tabview_add_tab(ui_tabview, "Основной");
       lv_obj_t * ui_tab2 = lv_tabview_add_tab(ui_tabview, "Таймеры");
       lv_obj_t * ui_tab3 = lv_tabview_add_tab(ui_tabview, "Настройки");
     //вкладки на экране настроек
@@ -351,12 +351,12 @@ void draw_interface()
     lv_obj_t * ui_slider_feed_amount = lv_slider_create(ui_tab1);
     lv_obj_set_size(ui_slider_feed_amount, lv_pct(90), 20);
     lv_slider_set_range(ui_slider_feed_amount, 50 , 250);
-    lv_slider_set_value(ui_slider_feed_amount, feedAmount, LV_ANIM_OFF);
+    lv_slider_set_value(ui_slider_feed_amount, feedAmountSet, LV_ANIM_OFF);
     lv_obj_align_to(ui_slider_feed_amount, ui_feed_button, LV_ALIGN_TOP_RIGHT, 0, -45);
     lv_obj_add_event_cb(ui_slider_feed_amount, slider_feedamount_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
   
     ui_label_feedAmount = lv_label_create(ui_tab1);
-    lv_label_set_text_fmt(ui_label_feedAmount,"%d грамм", feedAmount);
+    lv_label_set_text_fmt(ui_label_feedAmount,"%d грамм", feedAmountSet);
     lv_obj_align_to(ui_label_feedAmount, ui_slider_feed_amount, LV_ALIGN_CENTER, 0, 0);
 
     lv_obj_t * ui_label_feed_text = lv_label_create(ui_tab1);

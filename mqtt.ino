@@ -40,11 +40,11 @@ void MQTTcallback(char* topic, byte* payload, unsigned int length)
   command=message.substring(0,4);
   
  
- if (command=="feed"){ feed();
+ if (command=="feed"){ prefid(feedAmountSet);
                   client.publish("CatFeeder/feed","CMD OK");
  }
  if (command=="feam"){  param=message.substring(4).toInt();
-                  feedAmount=param;
+                  feedAmountSet=param;
                   client.publish("CatFeeder/feed","CMD OK");
  }
  /*                 

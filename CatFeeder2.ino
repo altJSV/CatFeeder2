@@ -16,20 +16,21 @@
 #include <ArduinoJson.h>//библиотека для работы с файлами конфигурации
 #include <GyverHX711.h> //работа с цифровыми весами
 #include <FastBot.h> //Telegram бот
+#include <GyverStepper.h> //,библиотека шагового двигателя
 #include <ElegantOTA.h> //OTA обновление
 
 
 
 //Объявление глобальных переменных и массивов
 uint8_t feedTime[4][4] = {
-  {7, 0, 1,250},       // часы, минуты. НЕ НАЧИНАТЬ ЧИСЛО С НУЛЯ
+  {7, 0, 1,250},       // часы, минуты, флаг активности таймераб размер порции
   {12, 0, 1,200},
   {17, 0, 1,250},
   {21, 0, 1,150},
 };
 
-int feedAmount = 250; //размер порции
-
+uint8_t feedAmountSet = 250; //размер порции на слайдере
+uint8_t feedAmount = 250; //размер порции на слайдере
 int8_t timezone = 3; //часовой пояс
 
 
@@ -45,8 +46,8 @@ long foodWeight=560; //вес еды в миске
 
 //различные параметры и настройки
 #define FEED_SPEED 3000     // задержка между шагами мотора (мкс)
-#define STEPS_FRW 19        // шаги вперёд
-#define STEPS_BKW 12        // шаги назад
+#define STEPS_FRW 60        // шаги вперёд
+#define STEPS_BKW 20        // шаги назад
 
 #define FORMAT_SPIFFS_IF_FAILED true //форматирование файловой системы при ошибке инициализации
 #define CALIBRATION_FILE "/TouchCalData" 
@@ -65,8 +66,7 @@ long foodWeight=560; //вес еды в миске
 #define LV_SYMBOL_ACLOCK "\xEF\x80\x97" //аналоговые часы
 
 //Настройка шагового двигателя
-const byte drvPins[] = {32, 33, 25, 26};  // драйвер (фазаА1, фазаА2, фазаВ1, фазаВ2)
-
+bool motorrun = false; //мотор включен или выключен
 
 //Параметры экрана
 static const uint16_t screenWidth = 320; //ширина экрана
@@ -143,6 +143,7 @@ PubSubClient client(esp32Client);
 WebServer server(80); //поднимаем веб сервер на 80 порту
 GyverHX711 sensor(16, 34, HX_GAIN64_A); //data,clock, коэффициент усиления
 FastBot bot (bot_token);
+GStepper<STEPPER4WIRE> stepper(200, 26,25,32,33); //шагов на полный оборот двигателя, фаза 1, фаза 2, фаза 3, фаза 4 (смотреть схему в документации)
 //Инициализация таймеров
 GTimer reftime(MS);//часы
 GTimer reflvgl(MS); //обновление экранов LVGL 
@@ -234,7 +235,9 @@ void touch_calibrate(bool rewrite)
 void setup() 
 {
   Serial.begin( 115200 ); //открытие серийного порта
-
+  stepper.setRunMode(FOLLOW_POS);
+  stepper.setMaxSpeed(100);
+  stepper.setAcceleration(0);
   //Настройки экрана  
   tft.init(); // инициализируем дисплей
   tft.setRotation (1); 
@@ -291,10 +294,6 @@ void setup()
         bot.attach(newMsg); //подключаем функцию обработки сообщений
         bot.sendMessage("Cat Feeder 2 готов к работе!"); //отправляем сообщение о готовности
     } 
-  
-  //настраиваем пины для шагового двигателя
-  for (byte i = 0; i < 4; i++) pinMode(drvPins[i], OUTPUT);   // пины выходы
-    
   
   //запуск сервисов
   
@@ -354,7 +353,7 @@ void loop()
   if (reflvgl.isReady()) { lv_timer_handler();} //Обновляем экран
   if (reftime.isReady()) {if (lv_tabview_get_tab_act(ui_tabview)==0) {lv_label_set_text(ui_clock, ntp.timeString().c_str());}} //обновляем занчение часов на экране
   if (refremain.isReady()){feedRemain();} //Отображение времени оставшегося до кормления
-  if (reffeedtime.isReady()) {reffeedtime.stop();feed();}//ожидание загрузки экрана кормления и запуск функции
+  if (reffeedtime.isReady()) {reffeedtime.stop();feed(feedAmount);}//ожидание загрузки экрана кормления и запуск функции
   if (refsaveconfigdelay.isReady()) {refsaveconfigdelay.stop();saveConfiguration("/config.json");} //Обновляем экран
   if (refchecktime.isReady()) //проверка таймера кормления
       {
@@ -365,12 +364,13 @@ void loop()
                 {//исключаем двойной запуск кормления при срабатывании таймера
                   prevMin = ntp.minute();
                   for (byte i = 0; i < sizeof(feedTime) / 2; i++)    // проверяем массив с расписанием
-                  if (feedTime[i][0] == ntp.hour() && feedTime[i][1] == ntp.minute() &&feedTime[i][2] == 1) prefid();
+                  if (feedTime[i][0] == ntp.hour() && feedTime[i][1] == ntp.minute() &&feedTime[i][2] == 1) prefid(feedTime[i][3]);
                 }
             }
   }
   if (usemqtt) client.loop(); //чтение состояния топиков MQQT
   if (tg_bot) bot.tick(); //поддерживаем соединение с telegram ботом
+  if (motorrun) stepper.tick();
   server.handleClient(); //обработка запросов web интерфейса
 }
 
