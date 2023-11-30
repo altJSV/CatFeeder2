@@ -33,6 +33,8 @@ uint8_t feedAmountSet = 250; //размер порции на слайдере
 uint8_t feedAmount = 250; //размер порции на слайдере
 int8_t timezone = 3; //часовой пояс
 
+//Яркость подсветки экрана
+uint8_t bright_level=250; 
 
 //переключатель цветовой темы оформления
 bool theme = true;  //true темная тема, false светлая
@@ -52,6 +54,7 @@ float step_speed = 100; //скорость вращения
 
 #define FORMAT_SPIFFS_IF_FAILED true //форматирование файловой системы при ошибке инициализации
 #define CALIBRATION_FILE "/TouchCalData" 
+#define TFT_BACKLIGHT 27 //пин подсветки экрана
 
 //добавляем вывод новых символов
 #define LV_SYMBOL_SANDCLOCK "\xEF\x82\xB3" //песочные часы
@@ -129,8 +132,9 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
       static lv_obj_t * ui_feed_progress_bar; //полоса прогресса кормления
       static lv_obj_t * ui_feed_progress_bar_label; //текст на полосе прогресса кормления
 
-
       //Окно настроек
+      static lv_obj_t * ui_set_panel_display_bright_slider; //слайдер изменения ярккости подсветки экрана
+      static lv_obj_t * ui_backlight_slider_label; //текст на слайдере яркости подсветки экрана
       static lv_obj_t * ui_gmt_slider_label; //текст на слайдере изменения часового пояса
       static lv_obj_t * ui_set_panel_scales_tare_label; //
 
@@ -146,11 +150,12 @@ WiFiManager wm; //экземпляр объекта wifi manager
 WiFiClient esp32Client;
 PubSubClient client(esp32Client);
 WebServer server(80); //поднимаем веб сервер на 80 порту
-GyverHX711 sensor(16, 34, HX_GAIN64_A); //data,clock, коэффициент усиления
+GyverHX711 sensor(16, 13, HX_GAIN128_A); //data,clock, коэффициент усиления
 FastBot bot (bot_token);
 GStepper<STEPPER4WIRE> stepper(200, 26,25,32,33); //шагов на полный оборот двигателя, фаза 1, фаза 2, фаза 3, фаза 4 (смотреть схему в документации)
 //Инициализация таймеров
 GTimer reftime(MS);//часы
+GTimer refscale(MS);//взвешивание миски
 GTimer reflvgl(MS); //обновление экранов LVGL 
 GTimer refremain(MS); //таймер обновления времени до кормления 
 GTimer reffeedtime(MS); //таймер времени до запуска кормления
@@ -310,9 +315,14 @@ void setup()
   refremain.setInterval(10000);//обновление времени на экране 30000 мс или 30 секунд
   reflvgl.setInterval(30);//обновление экрана LVGL 30 мс
   refchecktime.setInterval(500);//раз в полсекунды
+  refscale.setInterval(10000);//взвешивание миски разв 10 секунд
   refsaveconfigdelay.stop();
-  ledcSetup(0, 2500, 8);
-  ledcAttachPin(27, 0);
+  pinMode(TFT_BACKLIGHT,OUTPUT);//Переключаем пин подсветки на передачу данных
+  analogWrite(TFT_BACKLIGHT,bright_level);
+  //ledcSetup(0, 5000, 8);
+  //ledcAttachPin(TFT_BACKLIGHT, 0);
+  //ledcWrite(0, bright_level); //устанавливаем значение подсветки по умолчанию 250
+  //sensor.setOffset(tareWeight);//установка оффсета весов
   }
 
 /**** ВТОРОЙ БЛОК ФУНКЦИЙ ****/
@@ -358,6 +368,15 @@ void loop()
   if (reftime.isReady()) {if (lv_tabview_get_tab_act(ui_tabview)==0) {lv_label_set_text(ui_clock, ntp.timeString().c_str());}} //обновляем занчение часов на экране
   if (refremain.isReady()){feedRemain();} //Отображение времени оставшегося до кормления
   if (reffeedtime.isReady()) {reffeedtime.stop();feed(feedAmount);}//ожидание загрузки экрана кормления и запуск функции
+  //Измерение веса корма
+  if (refscale.isReady()) 
+    {
+      if (sensor.available()) 
+      {
+        foodWeight=sensor.read();
+        lv_label_set_text_fmt(ui_food_weight, LV_SYMBOL_WEIGHT" %d грамм",(foodWeight-tareWeight)/1000); 
+      }
+    }
   if (refsaveconfigdelay.isReady()) {refsaveconfigdelay.stop();saveConfiguration("/config.json");} //Обновляем экран
   if (refchecktime.isReady()) //проверка таймера кормления
       {
@@ -375,6 +394,8 @@ void loop()
   if (usemqtt) client.loop(); //чтение состояния топиков MQQT
   if (tg_bot) bot.tick(); //поддерживаем соединение с telegram ботом
   server.handleClient(); //обработка запросов web интерфейса
+  //ledcWrite(0, bright_level); //устанавливаем значение подсветки по умолчанию 250
+
 }
 
 

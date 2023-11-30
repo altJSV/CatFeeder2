@@ -50,6 +50,7 @@ bool loadConfiguration(const char *filename) {
   const char * chatID_p= doc1["сhatid"];
   feedAmountSet = (uint8_t)doc1["feed_amount"];
   tareWeight = (long)doc1["tare"];
+  bright_level = (uint8_t)doc1["bright_level"];
   theme = (bool)doc1["theme"];
   tg_bot = (bool)doc1["tgbot"];
   usemqtt = (bool)doc1["use_mqtt"];
@@ -94,6 +95,7 @@ bool saveConfiguration(const char *filename)
   doc1["mqtt_port"] = mqtt_port; //порт mqtt брокера
   doc1["mqtt_login"] = mqtt_login;//mqtt логин
   doc1["mqtt_pass"] = mqtt_pass; //mqtt пароль
+  doc1["bright_level"] = bright_level; //яркость подсветки экрана
   doc1["feed_amount"] = feedAmountSet;// размер порции
   doc1["tare"] = tareWeight;// вес пустой миски
   doc1["timezone"] = timezone; //часовой пояс

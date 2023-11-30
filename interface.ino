@@ -1,3 +1,15 @@
+//Обработка изменения значения слайдера яркости экрана
+  static void slider_brightness_event_cb(lv_event_t * e)
+  {
+    lv_obj_t * slider = lv_event_get_target(e);
+    lv_label_set_text_fmt(ui_backlight_slider_label, "%d%", (int)lv_slider_get_value(slider));
+    lv_obj_align_to(ui_backlight_slider_label, slider, LV_ALIGN_CENTER, 0, 0);
+    bright_level=(int)lv_slider_get_value(slider);
+    analogWrite(TFT_BACKLIGHT,bright_level);
+    //ledcWrite(0, bright_level);
+    refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+  }
+
 //Универсальная функция обработки ввода текста в text_area
   static void ta_event_cb(lv_event_t * e)
   {
@@ -387,8 +399,8 @@ static void event_scales_calibrate(lv_event_t * e)
       if (sensor.available()) 
       {
         tareWeight=sensor.read();
-        sensor.setOffset(tareWeight);
-        lv_label_set_text_fmt (ui_set_panel_scales_tare_label,"Вес пустой миски: %d грамм", tareWeight);//Пишем вес тары
+        Serial.println(tareWeight);
+        lv_label_set_text_fmt (ui_set_panel_scales_tare_label,"Вес миски: %d грамм", tareWeight/1000);//Пишем вес тары
         refsaveconfigdelay.setInterval(10000);
       }
     }
@@ -494,9 +506,9 @@ void draw_interface()
     ui_remain = lv_label_create(ui_tab1); //осталось времени до срабатывания таймера
     lv_label_set_text(ui_remain, LV_SYMBOL_SANDCLOCK);
     lv_obj_align(ui_remain, LV_ALIGN_TOP_LEFT, 0, 70);
-
+    //вес корма
     ui_food_weight = lv_label_create(ui_tab1);
-    lv_label_set_text_fmt(ui_food_weight, LV_SYMBOL_WEIGHT" %d грамм",foodWeight-tareWeight); 
+    lv_label_set_text_fmt(ui_food_weight, LV_SYMBOL_WEIGHT" %d грамм",(foodWeight-tareWeight)/1000); 
     lv_obj_align(ui_food_weight, LV_ALIGN_TOP_RIGHT, 0, 70);
 
 
@@ -680,10 +692,26 @@ void draw_interface()
       lv_label_set_text(ui_calibrate_button_text, "Калибровка экрана");
       lv_obj_center(ui_calibrate_button_text);
       
+      //Надпись настройка яркости
+      lv_obj_t * ui_set_panel_display_bright_label = lv_label_create(ui_set_panel_display);//метка названия панели
+      lv_obj_align_to(ui_set_panel_display_bright_label, ui_calibrate_button, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //Выравниваем по левому краю
+      lv_label_set_text (ui_set_panel_display_bright_label,"Яркость дисплея");//Пишем текст метки
+      //Слайдер изменения яркости
+      ui_set_panel_display_bright_slider = lv_slider_create(ui_set_panel_display);
+      lv_obj_set_size(ui_set_panel_display_bright_slider, lv_pct(100), 20);
+      lv_obj_align_to(ui_set_panel_display_bright_slider, ui_set_panel_display_bright_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
+      lv_slider_set_range(ui_set_panel_display_bright_slider, 1 , 255);
+      lv_slider_set_value(ui_set_panel_display_bright_slider, bright_level, LV_ANIM_OFF);
+      lv_obj_add_event_cb(ui_set_panel_display_bright_slider, slider_brightness_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+      //текст на слайдере изменения яркости
+      ui_backlight_slider_label = lv_label_create(ui_set_panel_display);
+      lv_label_set_text_fmt(ui_backlight_slider_label, "%d%", (int)lv_slider_get_value(ui_set_panel_display_bright_slider));
+      lv_obj_align_to(ui_backlight_slider_label,ui_set_panel_display_bright_slider, LV_ALIGN_CENTER, 0, 0);
+
       //Переключение светлой и темной темы
       lv_obj_t  * ui_set_display_theme_label = lv_label_create(ui_set_panel_display); //создаем объект заголовок
       lv_label_set_text(ui_set_display_theme_label, "Темная тема"); //текст
-      lv_obj_align_to(ui_set_display_theme_label,ui_calibrate_button, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
+      lv_obj_align_to(ui_set_display_theme_label,ui_set_panel_display_bright_slider, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
       //Переключатель светлой и тёмной темы
       lv_obj_t * ui_set_display_theme_switch = lv_switch_create(ui_set_panel_display);
       lv_obj_add_event_cb(ui_set_display_theme_switch, theme_switch_event, LV_EVENT_VALUE_CHANGED, NULL);
@@ -729,12 +757,12 @@ void draw_interface()
       //Надпись вес пустой тары
       ui_set_panel_scales_tare_label = lv_label_create(ui_set_panel_scales);//метка названия панели
       lv_obj_align(ui_set_panel_scales_tare_label, LV_ALIGN_TOP_LEFT, 0, 20); //Выравниваем по левому краю
-      lv_label_set_text_fmt (ui_set_panel_scales_tare_label,"Вес миски: %d грамм", tareWeight);//Пишем текст метки
+      lv_label_set_text_fmt (ui_set_panel_scales_tare_label,"Вес миски: %d грамм", tareWeight/1000);//Пишем текст метки
       //Кнопка калибровки весов
       lv_obj_t * ui_scales_calibrate_button = lv_btn_create(ui_set_panel_scales); // кнопка кормления  
       lv_obj_set_size(ui_scales_calibrate_button, lv_pct(100), 30);
       lv_obj_align(ui_scales_calibrate_button, LV_ALIGN_TOP_LEFT, 0, 45);
-      //lv_obj_add_event_cb(ui_scales_calibrate_button,  event_scales_calibrate, LV_EVENT_ALL, NULL); //обработчик нажатия кнопки
+      lv_obj_add_event_cb(ui_scales_calibrate_button,  event_scales_calibrate, LV_EVENT_ALL, NULL); //обработчик нажатия кнопки
       //текст на кнопке калибровки весов
       lv_obj_t * ui_calibrate_scales_button_text = lv_label_create(ui_scales_calibrate_button);
       lv_label_set_text(ui_calibrate_scales_button_text, "Калибровка весов");
