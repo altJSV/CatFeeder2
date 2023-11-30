@@ -31,7 +31,7 @@ void prefid(uint8_t feedA)
 //Запуск кормления
 void feed(uint16_t amount) 
 { 
-  motorrun=true;
+  stepper.setMaxSpeed(step_speed);
   for (int i = 0; i < amount; i++) 
   {
     lv_bar_set_value(ui_feed_progress_bar, i, LV_ANIM_OFF); //заполняем шкалы прогресса
@@ -40,7 +40,6 @@ void feed(uint16_t amount)
     lv_timer_handler();
     //oneRev();
   }  
-  motorrun=false;
   //disableMotor();//выключаем мотор
   lastFeed=ntp.hour()*60 + ntp.minute();
   lv_obj_del(ui_feedwindow);
@@ -49,12 +48,12 @@ void feed(uint16_t amount)
 
 //крутим мотор
 void oneRev() {
-  stepper.setTarget(STEPS_FRW,RELATIVE);
+    stepper.setTarget(-1*bck_steps,RELATIVE);//крутим назад
   while (stepper.tick())
     {
       //ждем пока мотор придет к заданной позиции
     }
-    stepper.setTarget(-STEPS_BKW,RELATIVE);
+    stepper.setTarget(fwd_steps,RELATIVE);//крутим вперед
   while (stepper.tick())
     {
       //ждем пока мотор придет к заданной позиции

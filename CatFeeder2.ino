@@ -44,14 +44,11 @@ uint16_t lastFeed=0; //время последнего кормления
 long tareWeight=250; //вес миски в граммах
 long foodWeight=560; //вес еды в миске
 
+//Параметры шагового двигателя
 uint8_t fwd_steps=60; //шагов вперед
 uint8_t bck_steps=20; //шагов назад
-uint16_t step_speed = 100; //скорость вращения
+float step_speed = 100; //скорость вращения
 
-//различные параметры и настройки
-#define FEED_SPEED 3000     // задержка между шагами мотора (мкс)
-#define STEPS_FRW 60        // шаги вперёд
-#define STEPS_BKW 20        // шаги назад
 
 #define FORMAT_SPIFFS_IF_FAILED true //форматирование файловой системы при ошибке инициализации
 #define CALIBRATION_FILE "/TouchCalData" 
@@ -69,8 +66,6 @@ uint16_t step_speed = 100; //скорость вращения
 #define LV_SYMBOL_WEIGHT "\xEF\x97\x8D" //иконка гири
 #define LV_SYMBOL_ACLOCK "\xEF\x80\x97" //аналоговые часы
 
-//Настройка шагового двигателя
-bool motorrun = false; //мотор включен или выключен
 
 //Параметры экрана
 static const uint16_t screenWidth = 320; //ширина экрана
@@ -138,6 +133,11 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
       //Окно настроек
       static lv_obj_t * ui_gmt_slider_label; //текст на слайдере изменения часового пояса
       static lv_obj_t * ui_set_panel_scales_tare_label; //
+
+      //Окно настроек шагового двигателя
+      static lv_obj_t * ui_step_window_fwdstep_slider_label;//надаись на слайдере шагов вперед
+      static lv_obj_t * ui_step_window_bckstep_slider_label;//надаись на слайдере шагов вперед
+      static lv_obj_t * ui_step_window_speed_slider_label;//надаись на слайдере шагов вперед
 
 //Инициализация библиотек
 GyverNTP ntp(timezone); //инициализация работы с ntp, в параметрах часовой пояс
@@ -241,7 +241,6 @@ void setup()
 {
   Serial.begin( 115200 ); //открытие серийного порта
   stepper.setRunMode(FOLLOW_POS);
-  stepper.setMaxSpeed(100);
   stepper.setAcceleration(0);
   //Настройки экрана  
   tft.init(); // инициализируем дисплей
@@ -375,7 +374,6 @@ void loop()
   }
   if (usemqtt) client.loop(); //чтение состояния топиков MQQT
   if (tg_bot) bot.tick(); //поддерживаем соединение с telegram ботом
-  if (motorrun) stepper.tick();
   server.handleClient(); //обработка запросов web интерфейса
 }
 

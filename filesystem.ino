@@ -52,12 +52,15 @@ bool loadConfiguration(const char *filename) {
   tareWeight = (long)doc1["tare"];
   theme = (bool)doc1["theme"];
   tg_bot = (bool)doc1["tgbot"];
-  usemqtt = (bool)doc1["usemqtt"];
+  usemqtt = (bool)doc1["use_mqtt"];
   mqtt_server=mqtt_server_p;
   mqtt_login=mqtt_login_p;
   mqtt_pass=mqtt_pass_p;
   bot_token=bot_token_p;
   chatID=chatID_p;
+  fwd_steps=(uint8_t)doc1["fwdsteps"];// шаги вперед
+  bck_steps=(uint8_t)doc1["bcksteps"];// шагов назад
+  step_speed=(float)doc1["stepspeed"];// скорость шагов в секунду
   //массив данных будильника
   for (byte i = 0; i < 4; i++) 
   {
@@ -98,6 +101,9 @@ bool saveConfiguration(const char *filename)
   doc1["token"] = bot_token; //токен телеграм бота
   doc1["сhatid"] = chatID; //ID чата телеграм бота
   doc1["tgbot"] = tg_bot;// состояние переключателя использования бота
+  doc1["fwdsteps"] = fwd_steps;// шаги вперед
+  doc1["bcksteps"] = bck_steps;// шагов назад
+  doc1["stepspeed"] = step_speed;// скорость шагов в секунду
   //массив данных будильника
   for (byte i = 0; i < 4; i++) 
   {
