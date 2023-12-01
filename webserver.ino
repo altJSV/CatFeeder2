@@ -4,6 +4,9 @@ void server_init()
    //обработчики http запросов
    server.on("/",handle_main);
    server.on("/mqttsetting",handle_mqtt_setting);
+   server.on("/tgsetting",handle_tg_setting);
+   server.on("//stepsetting",handle_step_setting);
+   
    //запускаем сервер
    server.begin();
 }
@@ -21,9 +24,11 @@ void handle_main()
   page+="<style>";
   page+=".icon-block {position: fixed; top: 1%; right: 2%;}";
   page+=".mainblock {display: flex; width: 60%; color: white; margin: 10px auto 10px auto; flex-direction: column; align-items: center; justify-content: center; background: Lightcyan;}";
-  page+=".headerblock {display: flex; width: 90%; color: white; margin: 10px auto 10px auto; padding: 0; flex-direction: column; align-items: center; justify-content: center; background: Dodgerblue;}";
-  page+=".infoblock {display: flex; width: 90%; color: white; margin: 10px auto 10px auto; flex-direction: column; align-items: center; justify-content: center; background: Forestgreen; }";
-  page+=".warningblock {display: flex; width: 90%; color: white; margin: 10px auto 10px auto; flex-direction: column; align-items: center; justify-content: center; background: Crimson; border-radius: 10px 10px 0 0;}";
+  page+=".contentblock {width: 90%; margin: 10px auto; background-color: Skyblue; color:black; border-radius:10px;}";
+  page+=".title { background-color: Dodgerblue; color: white;margin: 0; padding: 10px; box-sizing: border-box; border-radius: 10px 10px 0 0}";
+  page+=".infotitle { background-color: Forestgreen; color: white; margin: 0; padding: 10px; box-sizing: border-box;}";
+  page+=".warningtitle { background-color: Crimson; color: white; margin: 0; padding: 10px; box-sizing: border-box;}";
+  page+=".content { background-color: Lightcyan; color: black; margin: 0; padding: 10px; border-radius:10px;}";
   page+=".main {display:block; margin:auto; color: black; background: 	Skyblue; padding: 10px; font-size: 16px; font-family: sans-serif; font-weight: 700;}"; 
   page+=".inputs {padding:10px; border-radius:10px; margin: 10px auto;}";
   page+=".buttons {padding:10px;border-radius:10px; background: Dodgerblue; color: white; margin: 10px auto;}";
@@ -38,6 +43,15 @@ void handle_main()
   page+=".slider::-webkit-slider-thumb {-webkit-appearance: none; appearance: none; width: 25px; height: 25px; background: Dodgerblue; cursor: pointer;}";
   page+=".slider::-moz-range-thumb {width: 25px; height: 25px; background: Dodgerblue; cursor: pointer;}";  
   page+=".icon{fill: #000000;}";
+  page+=".checkbox-apple {position: relative; width: 50px; height: 25px; margin: 20px; webkit-user-select: none; -moz-user-select: none;-ms-user-select: none; user-select: none;}";
+  page+=".checkbox-apple label {position: absolute; top: 0; left: 0; width: 50px; height: 25px; border-radius: 50px; background: linear-gradient(to bottom, #b3b3b3, #e6e6e6); cursor: pointer; transition: all 0.3s ease;}";
+  page+=".checkbox-apple label:after {content: ''; position: absolute; top: 1px; left: 1px; width: 23px; height: 23px; border-radius: 50%; background-color: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); transition: all 0.3s ease;}";
+  page+=".checkbox-apple input[type='checkbox']:checked + label {background: linear-gradient(to bottom, #005b98, #1e90ff);}";
+  page+=".checkbox-apple input[type='checkbox']:checked + label:after {transform: translateX(25px);}";
+  page+=".checkbox-apple label:hover {background: linear-gradient(to bottom, #b3b3b3, #e6e6e6);}";
+  page+=".checkbox-apple label:hover:after {box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);}";
+  page+=".checkbox-apple input {opacity: 0;width: 0; height: 0;}";
+  page+=".yep {position: absolute;top: 0;left: 0;width: 50px;height: 25px;}";
   page+="</style>";
 
   //скрипты
@@ -56,15 +70,33 @@ void handle_main()
 
   //Блоки данных
   page+="<div class='mainblock'>"; //основной контейнер
+  
+  //Параметры шагового двигателя
+  page+="<div class='contentblock'>";
+  page+="<h2 class='title'><center>Параметры шагового двигателя</center></h2>";
+  page+="<form method='get' action='/stepsetting'>";
+  page+="&nbsp;&nbsp;Шагов вперед:<br><input name='fwd_steps' type='range' class='slider' min='0' max='200' step='1' width='100%' align='center' value='"+String(fwd_steps)+"'><br>";
+  page+="&nbsp;&nbsp;Шагов назад<br><input name='bck_steps' type='range' class='slider' min='0' max='200' step='1' width='100%' align='center' value='"+String(bck_steps)+"'><br>";
+  page+="&nbsp;&nbsp;Скорость вращения<br><input name='step_speed' type='range' class='slider' min='0' max='400' step='1' width='100%' align='center' value='"+String(step_speed)+"'><br>";
+  page+="&nbsp;&nbsp;<input class='buttons'  type='submit'></form>";
+  page+="</div>";
   //MQTT
-  page+="<div class='headerblock'>";
-  page+="<div style='display:flex'><h2>Параметры подключения к MQTT брокеру</h2></div>";
-  page+="<div class='main'>";
-  page+="<p><form method='get' action='/mqttsetting'><label>Сервер: <input class='inputs' type='text' name='server'  length=32 value='"+mqtt_server+"'>&nbsp;</label>";
-  page+="<label>Порт: <input class='inputs' name='port' type='number' length=64 value='"+String(mqtt_port)+"'>&nbsp;&nbsp;</label>";
-  page+="<label>Логин: <input class='inputs' type='text' name='login'  length=32 value='"+mqtt_login+"'>&nbsp;</label><label>Пароль: <input class='inputs' name='pass' type='password' length=64 value='"+mqtt_pass+"'>&nbsp;&nbsp;</label>";
-  page+="<input class='buttons'  type='submit'></form></p>";
-  page+="</div></div>";
+  page+="<div class='contentblock'>";
+  page+="<h2 class='title'><center>Параметры подключения к MQTT брокеру</center></h2>";
+  page+="<form method='get' action='/mqttsetting'>&nbsp;&nbsp;<label>Сервер: <input class='inputs' type='text' name='server'  length=32 value='"+mqtt_server+"'>&nbsp;</label><br>";
+  page+="&nbsp;&nbsp;<label>Порт: <input class='inputs' name='port' type='number' length=6 value='"+String(mqtt_port)+"'>&nbsp;&nbsp;</label><br>";
+  page+="&nbsp;&nbsp;<label>Логин: <input class='inputs' type='text' name='login'  length=32 value='"+mqtt_login+"'>&nbsp;</label><br>&nbsp;&nbsp;<label>Пароль: <input class='inputs' name='pass' type='password' length=64 value='"+mqtt_pass+"'>&nbsp;&nbsp;</label><br>";
+  page+="&nbsp;&nbsp;<input class='buttons'  type='submit'></form>";
+  page+="</div>";
+  //telegram
+  page+="<div class='contentblock'>";
+  page+="<h2 class='title'><center>Параметры подключения к Telegram боту</center></h2>";
+  page+="<form method='get' action='/tgsetting'>";
+  page+="<br>&nbsp;&nbsp;Использовать бота: <span class='checkbox-apple'><input class='yep' type='checkbox' id='tgbot' name='tg_bot' value='"+String(tg_bot)+"'><label for='tgbot'></label></span><br><br>";
+  page+="&nbsp;&nbsp;<label>Токен: <input class='inputs' type='text' name='token'  length=40 value='"+bot_token+"'>&nbsp;</label><br>";
+  page+="&nbsp;&nbsp;<label>ID чата: <input class='inputs' name='chatid' type='number' length=10 value='"+chatID+"'>&nbsp;&nbsp;</label><br>";
+  page+="&nbsp;&nbsp;<input class='buttons'  type='submit'></form>";
+  page+="</div>";
 
   page+="<a href='#' class='links'>Статистика</a>";
   //Завершающий код
@@ -98,3 +130,48 @@ void handle_mqtt_setting()
     }
 }
 
+//Применение настроек телеграм бота
+void handle_tg_setting()
+{
+  bot_token = server.arg("token");
+  chatID = server.arg("chatid");
+  tg_bot = server.arg("tg_bot").toInt();
+  String page;
+  int statusCode;
+  if (saveConfiguration("/config.json"))
+    {
+      page="{'Успешно':'Cохранено в память устройства.'}";
+      statusCode = 200;
+    }
+    else
+    {
+    page = "{'Ошибка':'404 не найдено'}";
+        statusCode = 404;
+        Serial.println("Отправляем 404");
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(statusCode, "application/json", page);
+    }
+}
+
+//Применение настроек шагового двигателя
+void handle_step_setting()
+{
+  fwd_steps = server.arg("fwd_steps").toInt();;
+  bck_steps = server.arg("bck_steps").toInt();
+  step_speed = server.arg("step_speed").toInt();
+  String page;
+  int statusCode;
+  if (saveConfiguration("/config.json"))
+    {
+      page="{'Успешно':'Cохранено в память устройства.'}";
+      statusCode = 200;
+    }
+    else
+    {
+    page = "{'Ошибка':'404 не найдено'}";
+        statusCode = 404;
+        Serial.println("Отправляем 404");
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(statusCode, "application/json", page);
+    }
+}
