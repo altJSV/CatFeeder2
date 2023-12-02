@@ -488,7 +488,7 @@ void draw_interface()
     lv_label_set_text(ui_feed_btn_label, "Покормить "LV_SYMBOL_CATFOOD );
     lv_obj_center(ui_feed_btn_label);
     //Размер порции
-    lv_obj_t * ui_slider_feed_amount = lv_slider_create(ui_tab1);
+    ui_slider_feed_amount = lv_slider_create(ui_tab1);
     lv_obj_set_size(ui_slider_feed_amount, lv_pct(90), 20);
     lv_slider_set_range(ui_slider_feed_amount, 50 , 250);
     lv_slider_set_value(ui_slider_feed_amount, feedAmountSet, LV_ANIM_OFF);

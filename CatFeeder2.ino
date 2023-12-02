@@ -109,6 +109,7 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
       static lv_obj_t * ui_label_feedAmount; //размер порции
       static lv_obj_t * ui_remain; //осталось времени до выдачи порции
       static lv_obj_t * ui_food_weight; //вес порции в миске
+      static lv_obj_t * ui_slider_feed_amount;//слайдер размера порции
        //Вкладка таймеры
       static lv_obj_t * ui_timer1_hour; //слайдер часов будильника 1
       static lv_obj_t * ui_timer1_minute; //слайдер минут будильника 1
