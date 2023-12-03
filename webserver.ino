@@ -166,9 +166,11 @@ void handle_tg_setting()
     page = "{'Ошибка':'404 не найдено'}";
         statusCode = 404;
         Serial.println("Отправляем 404");
-        server.sendHeader("Access-Control-Allow-Origin", "*");
-        server.send(statusCode, "application/json", page);
     }
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.send(statusCode, "application/json", page);
+    server.sendHeader("Location", "/",true);   //редирект на главную
+    server.send(302, "text/plane","");
 }
 
 //Применение настроек шагового двигателя
@@ -189,9 +191,11 @@ void handle_step_setting()
     page = "{'Ошибка':'404 не найдено'}";
         statusCode = 404;
         Serial.println("Отправляем 404");
-        server.sendHeader("Access-Control-Allow-Origin", "*");
-        server.send(statusCode, "application/json", page);
     }
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.send(statusCode, "application/json", page);
+    server.sendHeader("Location", "/",true);   //редирект на главную
+    server.send(302, "text/plane","");
 }
 
 //Выдача корма
@@ -207,13 +211,17 @@ void handle_feed()
       lv_slider_set_value(ui_slider_feed_amount, feedAmountSet, LV_ANIM_OFF);
       lv_label_set_text_fmt(ui_label_feedAmount,"%d грамм", feedAmountSet);
       prefid(feedAmountSet);
+      page="{'Успешно':'Cохранено в память устройства.'}";
+      statusCode = 200;
     }
     else
     {
     page = "{'Ошибка':'404 не найдено'}";
         statusCode = 404;
         Serial.println("Отправляем 404");
-        server.sendHeader("Access-Control-Allow-Origin", "*");
-        server.send(statusCode, "application/json", page);
     }
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.send(statusCode, "application/json", page);
+    server.sendHeader("Location", "/",true);   //редирект на главную
+    server.send(302, "text/plane","");
 }
