@@ -30,7 +30,7 @@ void handle_main()
   page+=".warningtitle { background-color: Crimson; color: white; margin: 0; padding: 10px; box-sizing: border-box;}";
   page+=".content { background-color: Lightcyan; color: black; margin: 0; padding: 10px; border-radius:10px;}";
   page+=".main {display:block; margin:auto; color: black; background: 	Skyblue; padding: 10px; font-size: 16px; font-family: sans-serif; font-weight: 700;}"; 
-  page+=".inputs {padding:10px; border-radius:10px; margin: 10px auto;}";
+  page+=".inputs {padding:10px; border-radius:10px; margin: 10px auto; background: #d3d3d3}";
   page+=".buttons {padding:10px;border-radius:10px; background: Dodgerblue; color: white; text-decoration: none; font-size: 16px; font-family: sans-serif; font-weight: 700; align-items: center; justify-content: center; margin: 10px auto 10px auto; display: flex; width: 98%; border-style:hidden}";
   page+=".links {padding:10px;border-radius:10px; background: Sandybrown; color: white; text-decoration: none; font-size: 16px; font-family: sans-serif; font-weight: 700; align-items: center; justify-content: center; margin: 10px auto 10px auto; display: flex; width: 88%; }";
   page+=".select-css {width: 100%; display: block; font-size: 16px; font-family: sans-serif; font-weight: 700; color: #444; line-height: 1.3; padding: .6em 1.4em .5em .8em; width: 100%; max-width: 100%;";
@@ -116,6 +116,11 @@ void handle_main()
   page+="</div>";
 
   page+="<a href='#' class='links'>Статистика</a>";
+
+  //Блок иконок
+  page+="<div class='icon-block'><a href='/update'><svg class='icon' width='50' height='50' fill='none' xmlns='http://www.w3.org/2000/svg'>";
+  page+="<g id='SVGRepo_bgCarrier' stroke-width='0'></g><g id='SVGRepo_tracerCarrier' stroke-linecap='round' stroke-linejoin='round'></g><g id='SVGRepo_iconCarrier'><path id='primary' d='M6,5H16a2,2,0,0,1,2,2v7' style='fill: none; stroke: #000000; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;'></path><path id='primary-2' data-name='primary' d='M18,19H8a2,2,0,0,1-2-2V10' style='fill: none; stroke: #000000; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;'></path><polyline id='primary-3' data-name='primary' points='15 11 18 14 21 11' style='fill: none; stroke: #000000; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;'></polyline><polyline id='primary-4' data-name='primary' points='9 13 6 10 3 13' style='fill: none; stroke: #000000; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;'></polyline></g></svg>";
+  page+="</a> </div>";
   //Завершающий код
   page+="</div>";
   page+="</body>";
@@ -135,8 +140,10 @@ void handle_mqtt_setting()
   int statusCode;
   if (saveConfiguration("/config.json"))
     {
-      page="{'Успешно':'Cохранено в память устройства.'}";
-      statusCode = 200;
+      //page="{'Успешно':'Cохранено в память устройства.'}";
+      //statusCode = 200;
+      server.sendHeader("Location", "/",true);   //редирект на главную
+      server.send(302, "text/plane","");
     }
     else
     {
@@ -158,19 +165,20 @@ void handle_tg_setting()
   int statusCode;
   if (saveConfiguration("/config.json"))
     {
-      page="{'Успешно':'Cохранено в память устройства.'}";
-      statusCode = 200;
+       server.sendHeader("Location", "/",true);   //редирект на главную
+      server.send(302, "text/plane","");
+      //page="{'Успешно':'Cохранено в память устройства.'}";
+      //statusCode = 200;
     }
     else
     {
     page = "{'Ошибка':'404 не найдено'}";
         statusCode = 404;
         Serial.println("Отправляем 404");
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(statusCode, "application/json", page);
     }
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.send(statusCode, "application/json", page);
-    server.sendHeader("Location", "/",true);   //редирект на главную
-    server.send(302, "text/plane","");
+    
 }
 
 //Применение настроек шагового двигателя
@@ -183,19 +191,22 @@ void handle_step_setting()
   int statusCode;
   if (saveConfiguration("/config.json"))
     {
-      page="{'Успешно':'Cохранено в память устройства.'}";
-      statusCode = 200;
+      server.sendHeader("Location", "/",true);   //редирект на главную
+      server.send(302, "text/plane","");
+      //page="{'Успешно':'Cохранено в память устройства.'}";
+      //statusCode = 200;
     }
     else
     {
     page = "{'Ошибка':'404 не найдено'}";
         statusCode = 404;
         Serial.println("Отправляем 404");
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(statusCode, "application/json", page);
     }
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.send(statusCode, "application/json", page);
-    server.sendHeader("Location", "/",true);   //редирект на главную
-    server.send(302, "text/plane","");
+    //server.sendHeader("Access-Control-Allow-Origin", "*");
+    //server.send(statusCode, "application/json", page);
+    
 }
 
 //Выдача корма
@@ -206,22 +217,23 @@ void handle_feed()
   int statusCode;
   if (saveConfiguration("/config.json"))
     {
-      page="{'Успешно':'Cохранено в память устройства.'}";
-      statusCode = 200;
+      //page="{'Успешно':'Cохранено в память устройства.'}";
+      //statusCode = 200;
       lv_slider_set_value(ui_slider_feed_amount, feedAmountSet, LV_ANIM_OFF);
       lv_label_set_text_fmt(ui_label_feedAmount,"%d грамм", feedAmountSet);
       prefid(feedAmountSet);
-      page="{'Успешно':'Cохранено в память устройства.'}";
-      statusCode = 200;
+      server.sendHeader("Location", "/",true);   //редирект на главную
+      server.send(302, "text/plane","");
     }
     else
     {
     page = "{'Ошибка':'404 не найдено'}";
         statusCode = 404;
         Serial.println("Отправляем 404");
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(statusCode, "application/json", page);
     }
-    server.sendHeader("Access-Control-Allow-Origin", "*");
-    server.send(statusCode, "application/json", page);
-    server.sendHeader("Location", "/",true);   //редирект на главную
-    server.send(302, "text/plane","");
+    //server.sendHeader("Access-Control-Allow-Origin", "*");
+    //server.send(statusCode, "application/json", page);
+    
 }
