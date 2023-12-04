@@ -2,15 +2,37 @@
 void server_init()
 {
    //обработчики http запросов
-   server.on("/",handle_main);
-   server.on("/mqttsetting",handle_mqtt_setting);
-   server.on("/tgsetting",handle_tg_setting);
-   server.on("/stepsetting",handle_step_setting);
-   server.on("/feed",handle_feed);
+   server.on("/",handle_main);//главный экран
+   server.on("/mqttsetting",handle_mqtt_setting);//сохранение настроек mqtt
+   server.on("/tgsetting",handle_tg_setting);//сохранение настроек телеграм бота
+   server.on("/stepsetting",handle_step_setting);//сохранение настроек шагового двигателя
+   server.on("/feed",handle_feed);//выдача корма
+   server.on("/description.xml", HTTP_GET, []() {SSDP.schema(server.client());}); //вывод информации об устройстве в сетевом окружении
    //запускаем сервер
    server.begin();
 }
 
+//Запуск сетевого обнаружения
+void SSDP_init()
+{
+  SSDP.setSchemaURL("description.xml"); //xml с конфигурацией
+        SSDP.setHTTPPort(80);
+        SSDP.setName("CatFeeder2");
+        SSDP.setSerialNumber("000412202301");//серийный номер устройства
+        SSDP.setURL("/");//url главной страницы
+        SSDP.setModelName("CatFeeder 2 2023");//Название модели
+        SSDP.setModelDescription("Умная кормушка для домашних животных");//описание
+        SSDP.setModelNumber("1.1.0");//Номер модели
+        SSDP.setModelURL("https://github.com/altJSV/CatFeeder2");
+        SSDP.setManufacturer("Project A.L.T");//производитель
+        SSDP.setManufacturerURL("https://projectalt.ru");//сайт производителя
+        SSDP.setDeviceType("upnp:rootdevice"); //тип устройства
+        SSDP.setServerName("SSDPServer/1.0");//Имя сервера
+        SSDP.setUUID("5581f8da-dc3f-4b18-b499-583d7ffb698f");//уникальный идентификатор устройства. Для генерации воспользуйтесь сайтом https://www.uuidgenerator.net/
+        bool result = SSDP.begin();
+        Serial.print("SSSDP status: ");
+        Serial.println(result);
+}
 //Главная страница веб интерфейса
 void handle_main()
 {
