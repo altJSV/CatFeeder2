@@ -26,9 +26,9 @@ void SSDP_init()
         SSDP.setModelURL("https://github.com/altJSV/CatFeeder2");
         SSDP.setManufacturer("Project A.L.T");//производитель
         SSDP.setManufacturerURL("https://projectalt.ru");//сайт производителя
-        SSDP.setDeviceType("upnp:rootdevice"); //тип устройства
-        SSDP.setServerName("SSDPServer/1.0");//Имя сервера
-        SSDP.setUUID("5581f8da-dc3f-4b18-b499-583d7ffb698f");//уникальный идентификатор устройства. Для генерации воспользуйтесь сайтом https://www.uuidgenerator.net/
+        SSDP.setDeviceType("rootdevice"); //тип устройства
+        //SSDP.setServerName("SSDPServer/1.0");//Имя сервера
+        //SSDP.setUUID("5581f8da-dc3f-4b18-b499-583d7ffb698f");//уникальный идентификатор устройства. Для генерации воспользуйтесь сайтом https://www.uuidgenerator.net/
         bool result = SSDP.begin();
         Serial.print("SSSDP status: ");
         Serial.println(result);
