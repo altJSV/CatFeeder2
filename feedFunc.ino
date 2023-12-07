@@ -43,7 +43,6 @@ void feed(uint16_t amount)
   //disableMotor();//выключаем мотор
   lastFeed=ntp.hour()*60 + ntp.minute();
   lv_obj_del(ui_feedwindow);
-  ё
 }
 
 //крутим мотор

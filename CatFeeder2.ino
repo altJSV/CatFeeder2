@@ -13,7 +13,6 @@
 #include <WiFiClient.h> //работа с wif соединением
 #include <PubSubClient.h> //работа по протоколу mqtt
 #include <WebServer.h> //веб интерфейс
-#include <ESP32SSDP.h> //сетевое обнаружение
 #include <WiFiUdp.h>//поддержка широковещательных рассылок
 #include <ArduinoJson.h>//библиотека для работы с файлами конфигурации
 #include <GyverHX711.h> //работа с цифровыми весами
@@ -311,7 +310,6 @@ void setup()
   
   ElegantOTA.begin(&server);    // Запуск ElegantOTA
   server_init();//запуск веб сервера
-  SSDP_init();//запуск ssdp сервиса
 
   //Установка значений таймеров
   reftime.setInterval(1000);//обновление времени на экране 1000 мс или 1 секунда
