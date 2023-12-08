@@ -18,7 +18,10 @@
 #include <GyverHX711.h> //работа с цифровыми весами
 #include <FastBot.h> //Telegram бот
 #include <GyverStepper.h> //,библиотека шагового двигателя
-#include <ElegantOTA.h> //OTA обновление
+//#include <ElegantOTA.h> //OTA обновление
+#include <Update.h> //OTA обновления
+#include <WiFiServer.h>
+#include "webpages.h"
 
 
 
@@ -69,7 +72,20 @@ float step_speed = 100; //скорость вращения
 #define LV_SYMBOL_TELEGRAM "\xEF\x87\x98" //логотип Telegram
 #define LV_SYMBOL_WEIGHT "\xEF\x97\x8D" //иконка гири
 #define LV_SYMBOL_ACLOCK "\xEF\x80\x97" //аналоговые часы
+#define FILEBUFSIZ 4096
 
+#define FILESYSTYPE 1 
+#ifndef WM_PORTALTIMEOUT
+  #define WM_PORTALTIMEOUT 180
+#endif
+#define FILESYS SPIFFS
+  char fsName[] = "SPIFFS";
+  String logStr = "Старт сессии:\n";
+char tempBuf[256];
+File fsUploadFile;
+bool fsFound = false;
+void fsList(void);
+bool initFS(bool format, bool force);
 
 //Параметры экрана
 static const uint16_t screenWidth = 320; //ширина экрана
@@ -95,7 +111,7 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
     //Контейнеры
     static lv_obj_t * ui_feedwindow; // окно кормления
     static lv_obj_t * ui_stepwindow; //окно настроек шаговика 
-    static lv_obj_t * ui_otawindow; // окно кормления
+    //static lv_obj_t * ui_otawindow; // окно кормления
     static lv_obj_t * ui_tabview; // панель вкладок
     static lv_obj_t * ui_tabview_settings; //панель вкладок настроек
     //Панель состояния
@@ -308,7 +324,7 @@ void setup()
   
   //запуск сервисов
   
-  ElegantOTA.begin(&server);    // Запуск ElegantOTA
+  //ElegantOTA.begin(&server);    // Запуск ElegantOTA
   server_init();//запуск веб сервера
 
   //Установка значений таймеров
