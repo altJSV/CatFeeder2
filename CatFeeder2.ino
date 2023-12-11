@@ -49,6 +49,8 @@ uint16_t lastFeed=0; //время последнего кормления
 
 long tareWeight=250; //вес миски в граммах
 long foodWeight=560; //вес еды в миске
+float scales_param=191.7; //коэффициент взвешивания
+uint16_t scales_control_weight=30;
 
 //Параметры шагового двигателя
 uint8_t fwd_steps=60; //шагов вперед
@@ -110,7 +112,8 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
 //объекты интерфейса LVGL
     //Контейнеры
     static lv_obj_t * ui_feedwindow; // окно кормления
-    static lv_obj_t * ui_stepwindow; //окно настроек шаговика 
+    static lv_obj_t * ui_stepwindow; //окно настроек шаговика
+    static lv_obj_t * ui_scaleswindow; //окно настроек шаговика 
     //static lv_obj_t * ui_otawindow; // окно кормления
     static lv_obj_t * ui_tabview; // панель вкладок
     static lv_obj_t * ui_tabview_settings; //панель вкладок настроек
@@ -154,12 +157,16 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
       static lv_obj_t * ui_set_panel_display_bright_slider; //слайдер изменения ярккости подсветки экрана
       static lv_obj_t * ui_backlight_slider_label; //текст на слайдере яркости подсветки экрана
       static lv_obj_t * ui_gmt_slider_label; //текст на слайдере изменения часового пояса
-      static lv_obj_t * ui_set_panel_scales_tare_label; //
+      static lv_obj_t * ui_set_panel_scales_coef_label; //коэффициент весов
 
       //Окно настроек шагового двигателя
       static lv_obj_t * ui_step_window_fwdstep_slider_label;//надаись на слайдере шагов вперед
       static lv_obj_t * ui_step_window_bckstep_slider_label;//надаись на слайдере шагов вперед
       static lv_obj_t * ui_step_window_speed_slider_label;//надаись на слайдере шагов вперед
+
+      //Окно калибровки весов
+      lv_obj_t * ui_scales_window_param_label; //калибровочный коэффициент
+      lv_obj_t * ui_scales_window_weight; //спинбокс калибровочного веса
 
 //Инициализация библиотек
 GyverNTP ntp(timezone); //инициализация работы с ntp, в параметрах часовой пояс
@@ -168,7 +175,7 @@ WiFiManager wm; //экземпляр объекта wifi manager
 WiFiClient esp32Client;
 PubSubClient client(esp32Client);
 WebServer server(80); //поднимаем веб сервер на 80 порту
-GyverHX711 sensor(16, 13, HX_GAIN128_A); //data,clock, коэффициент усиления
+GyverHX711 sensor(16, 13, HX_GAIN64_A); //data,clock, коэффициент усиления
 FastBot bot (bot_token);
 GStepper<STEPPER4WIRE> stepper(200, 26,25,32,33); //шагов на полный оборот двигателя, фаза 1, фаза 2, фаза 3, фаза 4 (смотреть схему в документации)
 //Инициализация таймеров
@@ -392,7 +399,9 @@ void loop()
       if (sensor.available()) 
       {
         foodWeight=sensor.read();
-        lv_label_set_text_fmt(ui_food_weight, LV_SYMBOL_WEIGHT" %d грамм",(foodWeight-tareWeight)/1000); 
+        foodWeight=(foodWeight-tareWeight)/scales_param;
+        lv_label_set_text_fmt(ui_food_weight, LV_SYMBOL_WEIGHT" %d грамм",foodWeight);
+        Serial.println(foodWeight); 
       }
     }
   if (refsaveconfigdelay.isReady()) {refsaveconfigdelay.stop();saveConfiguration("/config.json");} //Обновляем экран

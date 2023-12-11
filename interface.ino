@@ -307,10 +307,36 @@ static void event_test_motor(lv_event_t * e)
     }
  }
 
+//Закрытие окна настроек шагового двигателя
 static void ui_stepwindow_btn_close_event_handler(lv_event_t * e)
 {
     refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
     lv_obj_del(ui_stepwindow);//Закрываем окно
+}
+
+//Закрытие окна настроек калибровки весов
+static void ui_scaleswindow_btn_close_event_handler(lv_event_t * e)
+{
+    refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+    lv_obj_del(ui_scaleswindow);//Закрываем окно
+}
+
+static void scales_weight_increment_event_cb(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if(code == LV_EVENT_SHORT_CLICKED || code  == LV_EVENT_LONG_PRESSED_REPEAT) {
+        lv_spinbox_increment(ui_scales_window_weight);
+        scales_control_weight=lv_spinbox_get_value(ui_scales_window_weight);
+    }
+}
+
+static void scales_weight_decrement_event_cb(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if(code == LV_EVENT_SHORT_CLICKED || code == LV_EVENT_LONG_PRESSED_REPEAT) {
+        lv_spinbox_decrement(ui_scales_window_weight);
+         scales_control_weight=lv_spinbox_get_value(ui_scales_window_weight);
+    }
 }
 
  //Функция обработки нажатия кнопки настроек шагового двигателя
@@ -322,6 +348,24 @@ static void step_motor_setup_window_open(lv_event_t * e)
     window_setup_motor();
     }
  }
+
+ //Функция калибровки коэффициента взвешивания
+static void event_scales_calibrate_param(lv_event_t * e)
+  {
+  long curWeight;
+  lv_event_code_t code = lv_event_get_code(e);
+   if(code == LV_EVENT_CLICKED) 
+    {
+      if (sensor.available()) 
+      {
+        curWeight=sensor.read();
+        curWeight-=tareWeight;
+        Serial.println(curWeight);
+        scales_param=curWeight/scales_control_weight;
+        lv_label_set_text_fmt (ui_scales_window_param_label,"Коэффициент: %.2f",scales_param);//Пишем текст метки
+      }
+    }
+  }
 
  //отрисовка интерфейса окна настрорек шаговика
 void window_setup_motor()
@@ -390,21 +434,73 @@ void window_setup_motor()
 
 }
 
-//Функция калибровки весов
+//Окно калибровки весов
+void window_scales_calibrate()
+{
+  //Отрисовываем интерфейс окна калибровки
+  //Окно контейнер
+    ui_scaleswindow = lv_win_create(lv_scr_act(), 30);
+    lv_win_add_title(ui_scaleswindow, "Калибровка весов");
+    lv_obj_t * ui_scaleswindow_btn_close = lv_win_add_btn(ui_scaleswindow, LV_SYMBOL_CLOSE, 30);
+    lv_obj_add_event_cb(ui_scaleswindow_btn_close, ui_scaleswindow_btn_close_event_handler, LV_EVENT_CLICKED, NULL);
+    lv_obj_t * scales_windows_cont = lv_win_get_content(ui_scaleswindow);  //контейнер для содержимого окна
+    //содержимое окна
+    //Надпись 1 шаг
+      lv_obj_t * ui_scales_window_weight_label = lv_label_create(scales_windows_cont);//метка названия панели
+      lv_obj_align(ui_scales_window_weight_label, LV_ALIGN_TOP_LEFT, 0, 5); //Выравниваем по левому краю
+      lv_label_set_text (ui_scales_window_weight_label,"1. Установите вес для калибровки:");//Пишем текст метки
+      ui_scales_window_weight = lv_spinbox_create(scales_windows_cont); //Размер порции
+      lv_spinbox_set_range(ui_scales_window_weight, 0, 1000);
+      lv_spinbox_set_rollover(ui_scales_window_weight,true);
+      lv_spinbox_set_digit_format(ui_scales_window_weight, 4, 4);
+      lv_obj_set_size(ui_scales_window_weight, 100,40);
+      lv_obj_align(ui_scales_window_weight,  LV_ALIGN_TOP_LEFT, 40, 25);
+      lv_spinbox_set_value(ui_scales_window_weight, scales_control_weight);
+      lv_obj_set_style_bg_opa(ui_timer4_amount, 0, LV_PART_CURSOR | LV_PART_SELECTED);
+      lv_obj_t * btn = lv_btn_create(scales_windows_cont);
+      lv_obj_set_size(btn, 25, 40);
+      lv_obj_align_to(btn, ui_scales_window_weight, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
+      lv_obj_set_style_bg_img_src(btn, LV_SYMBOL_PLUS, 0);
+      lv_obj_add_event_cb(btn, scales_weight_increment_event_cb, LV_EVENT_ALL,  NULL);
+      btn = lv_btn_create(scales_windows_cont);
+      lv_obj_set_size(btn, 25, 40);
+      lv_obj_align_to(btn, ui_scales_window_weight, LV_ALIGN_OUT_LEFT_MID, -5, 0);
+      lv_obj_set_style_bg_img_src(btn, LV_SYMBOL_MINUS, 0);
+      lv_obj_add_event_cb(btn, scales_weight_decrement_event_cb, LV_EVENT_ALL, NULL);
+      //Шаг второй
+      lv_obj_t * ui_scales_window_calibrate_label = lv_label_create(scales_windows_cont);//метка названия панели
+      lv_obj_align(ui_scales_window_calibrate_label, LV_ALIGN_TOP_LEFT, 0, 75); //Выравниваем по левому краю
+      lv_label_set_text (ui_scales_window_calibrate_label,"2. Положите вес и нажмите кнопку:");//Пишем текст метки
+      //Кнопка калибровать
+      lv_obj_t * ui_scales_window_calibrate_button = lv_btn_create(scales_windows_cont); // кнопка кормления  
+      lv_obj_set_size(ui_scales_window_calibrate_button, lv_pct(100), 40);
+      lv_obj_align_to(ui_scales_window_calibrate_button, ui_scales_window_calibrate_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //Выравниваем по левому краю
+      lv_obj_add_event_cb(ui_scales_window_calibrate_button, event_scales_calibrate_param, LV_EVENT_ALL, NULL); //обработчик нажатия кнопки
+      lv_obj_t * ui_scales_window_calibrate_button_label=lv_label_create(ui_scales_window_calibrate_button);//Надпись на кнопке
+      lv_label_set_text(ui_scales_window_calibrate_button_label, "Калибровать");
+      lv_obj_center(ui_scales_window_calibrate_button_label);
+      ui_scales_window_param_label = lv_label_create(scales_windows_cont);//метка названия панели
+      lv_obj_align_to(ui_scales_window_param_label, ui_scales_window_calibrate_button, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //Выравниваем по левому краю
+      lv_label_set_text_fmt (ui_scales_window_param_label,"Коэффициент: %.2f",scales_param);//Пишем текст метки
+}
+
+
+
+//Функция обработки нажатия кнопки калибровки весов
 static void event_scales_calibrate(lv_event_t * e)
   {
   lv_event_code_t code = lv_event_get_code(e);
    if(code == LV_EVENT_CLICKED) 
+   {
+    while (sensor.available()==false)
     {
-      if (sensor.available()) 
-      {
-        tareWeight=sensor.read();
-        Serial.println(tareWeight);
-        lv_label_set_text_fmt (ui_set_panel_scales_tare_label,"Вес миски: %d грамм", tareWeight/1000);//Пишем вес тары
-        refsaveconfigdelay.setInterval(10000);
-      }
+      Serial.println("Waiting...");
+      delay(10);
     }
-  }
+    tareWeight=sensor.read();
+    window_scales_calibrate();
+    }
+ }
 
 //Функция обработки нажатия кнопки калибровки экрана 
 static void event_calibrate(lv_event_t * e)
@@ -415,7 +511,6 @@ static void event_calibrate(lv_event_t * e)
     touch_calibrate(true);
     }
  }
-
 
 //Изменение значения размера порции на экране
    static void slider_feedamount_event_cb(lv_event_t * e)
@@ -508,7 +603,7 @@ void draw_interface()
     lv_obj_align(ui_remain, LV_ALIGN_TOP_LEFT, 0, 70);
     //вес корма
     ui_food_weight = lv_label_create(ui_tab1);
-    lv_label_set_text_fmt(ui_food_weight, LV_SYMBOL_WEIGHT" %d грамм",(foodWeight-tareWeight)/1000); 
+    lv_label_set_text_fmt(ui_food_weight, LV_SYMBOL_WEIGHT" %d грамм",foodWeight); 
     lv_obj_align(ui_food_weight, LV_ALIGN_TOP_RIGHT, 0, 70);
 
 
@@ -755,9 +850,9 @@ void draw_interface()
       lv_obj_align(ui_set_panel_scales_label, LV_ALIGN_TOP_MID, 0, 0); //Выравниваем по центру вверху
       lv_label_set_text (ui_set_panel_scales_label,"Калибровка весов");//Пишем текст метки
       //Надпись вес пустой тары
-      ui_set_panel_scales_tare_label = lv_label_create(ui_set_panel_scales);//метка названия панели
-      lv_obj_align(ui_set_panel_scales_tare_label, LV_ALIGN_TOP_LEFT, 0, 20); //Выравниваем по левому краю
-      lv_label_set_text_fmt (ui_set_panel_scales_tare_label,"Вес миски: %d грамм", tareWeight/1000);//Пишем текст метки
+      ui_set_panel_scales_coef_label = lv_label_create(ui_set_panel_scales);//метка названия панели
+      lv_obj_align(ui_set_panel_scales_coef_label, LV_ALIGN_TOP_LEFT, 0, 20); //Выравниваем по левому краю
+      lv_label_set_text_fmt (ui_set_panel_scales_coef_label,"Коэффициент: %.2f", scales_param);//Пишем текст метки
       //Кнопка калибровки весов
       lv_obj_t * ui_scales_calibrate_button = lv_btn_create(ui_set_panel_scales); // кнопка кормления  
       lv_obj_set_size(ui_scales_calibrate_button, lv_pct(100), 30);

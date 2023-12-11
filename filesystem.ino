@@ -50,6 +50,7 @@ bool loadConfiguration(const char *filename) {
   const char * chatID_p= doc1["сhatid"];
   feedAmountSet = (uint8_t)doc1["feed_amount"];
   tareWeight = (long)doc1["tare"];
+  scales_param = (float)doc1["scales_param"];
   bright_level = (uint8_t)doc1["bright_level"];
   theme = (bool)doc1["theme"];
   tg_bot = (bool)doc1["tgbot"];
@@ -98,6 +99,7 @@ bool saveConfiguration(const char *filename)
   doc1["bright_level"] = bright_level; //яркость подсветки экрана
   doc1["feed_amount"] = feedAmountSet;// размер порции
   doc1["tare"] = tareWeight;// вес пустой миски
+  doc1["scales_param"] = scales_param;// вес пустой миски
   doc1["timezone"] = timezone; //часовой пояс
   doc1["theme"] = theme;// тема оформления
   doc1["token"] = bot_token; //токен телеграм бота
