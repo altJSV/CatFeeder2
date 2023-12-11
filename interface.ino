@@ -362,10 +362,22 @@ static void event_scales_calibrate_param(lv_event_t * e)
         curWeight-=tareWeight;
         Serial.println(curWeight);
         scales_param=curWeight/scales_control_weight;
-        lv_label_set_text_fmt (ui_scales_window_param_label,"Коэффициент: %.2f",scales_param);//Пишем текст метки
+        lv_label_set_text_fmt (ui_scales_window_param_label,"К: %.2f   Температура: %.1f ºС",scales_param,temp_cal);//Пишем текст метки
       }
     }
   }
+
+// Определяем функцию для вычисления коэффициента коррекции
+float getCorrectionFactor(float T) {
+  // Коэффициенты для полинома третьей степени, подобранного по данным из статьи
+  float a = -0.000000014;
+  float b = 0.000003;
+  float c = -0.0002;
+  float d = 0.9998;
+  // Вычисляем коэффициент коррекции по формуле
+  float correctionFactor = a * pow(T - temp_cal, 3) + b * pow(T - temp_cal, 2) + c * (T - temp_cal) + d;
+  return correctionFactor;
+}
 
  //отрисовка интерфейса окна настрорек шаговика
 void window_setup_motor()
@@ -474,14 +486,14 @@ void window_scales_calibrate()
       //Кнопка калибровать
       lv_obj_t * ui_scales_window_calibrate_button = lv_btn_create(scales_windows_cont); // кнопка кормления  
       lv_obj_set_size(ui_scales_window_calibrate_button, lv_pct(100), 40);
-      lv_obj_align_to(ui_scales_window_calibrate_button, ui_scales_window_calibrate_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //Выравниваем по левому краю
+      lv_obj_align_to(ui_scales_window_calibrate_button, ui_scales_window_calibrate_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 15); //Выравниваем по левому краю
       lv_obj_add_event_cb(ui_scales_window_calibrate_button, event_scales_calibrate_param, LV_EVENT_ALL, NULL); //обработчик нажатия кнопки
       lv_obj_t * ui_scales_window_calibrate_button_label=lv_label_create(ui_scales_window_calibrate_button);//Надпись на кнопке
       lv_label_set_text(ui_scales_window_calibrate_button_label, "Калибровать");
       lv_obj_center(ui_scales_window_calibrate_button_label);
-      ui_scales_window_param_label = lv_label_create(scales_windows_cont);//метка названия панели
+      ui_scales_window_param_label = lv_label_create(scales_windows_cont);//метка коэффициента
       lv_obj_align_to(ui_scales_window_param_label, ui_scales_window_calibrate_button, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //Выравниваем по левому краю
-      lv_label_set_text_fmt (ui_scales_window_param_label,"Коэффициент: %.2f",scales_param);//Пишем текст метки
+      lv_label_set_text_fmt (ui_scales_window_param_label,"К: %.2f   Температура: %.1f ºС",scales_param,temp_cal);//Пишем текст метки
 }
 
 
@@ -498,6 +510,7 @@ static void event_scales_calibrate(lv_event_t * e)
       delay(10);
     }
     tareWeight=sensor.read();
+    temp_cal = dht.readTemperature();
     window_scales_calibrate();
     }
  }
@@ -605,6 +618,14 @@ void draw_interface()
     ui_food_weight = lv_label_create(ui_tab1);
     lv_label_set_text_fmt(ui_food_weight, LV_SYMBOL_WEIGHT" %d грамм",foodWeight); 
     lv_obj_align(ui_food_weight, LV_ALIGN_TOP_RIGHT, 0, 70);
+
+    ui_temp_label = lv_label_create(ui_tab1); //температура
+    lv_label_set_text_fmt(ui_temp_label, "Температура: %.1f ºС",temperature);
+    lv_obj_align_to(ui_temp_label, ui_remain, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 2);
+
+    ui_humid_label = lv_label_create(ui_tab1); //осталось времени до срабатывания таймера
+    lv_label_set_text_fmt(ui_humid_label, "Влаж: %.1f%",humidity);
+    lv_obj_align_to(ui_humid_label, ui_food_weight, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 2);
 
 
   //Вкладка таймеров

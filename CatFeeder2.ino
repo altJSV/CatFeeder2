@@ -20,7 +20,8 @@
 #include <GyverStepper.h> //,библиотека шагового двигателя
 //#include <ElegantOTA.h> //OTA обновление
 #include <Update.h> //OTA обновления
-#include <WiFiServer.h>
+#include <WiFiServer.h> //веб интерфейс и OTA
+#include "DHT.h"// библиотека для работы с dht сенсором
 #include "webpages.h"
 
 
@@ -57,10 +58,18 @@ uint8_t fwd_steps=60; //шагов вперед
 uint8_t bck_steps=20; //шагов назад
 float step_speed = 100; //скорость вращения
 
+//Температура и влажность
+float temperature;
+float humidity;
+float temp_cal=25.0; //температура калибровки тензодатчика
 
 #define FORMAT_SPIFFS_IF_FAILED true //форматирование файловой системы при ошибке инициализации
 #define CALIBRATION_FILE "/TouchCalData" 
 #define TFT_BACKLIGHT 27 //пин подсветки экрана
+// Определяем пин и тип датчика температуры DHT22
+
+#define DHT_PIN 14
+#define DHT_TYPE DHT22
 
 //добавляем вывод новых символов
 #define LV_SYMBOL_SANDCLOCK "\xEF\x82\xB3" //песочные часы
@@ -114,7 +123,6 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
     static lv_obj_t * ui_feedwindow; // окно кормления
     static lv_obj_t * ui_stepwindow; //окно настроек шаговика
     static lv_obj_t * ui_scaleswindow; //окно настроек шаговика 
-    //static lv_obj_t * ui_otawindow; // окно кормления
     static lv_obj_t * ui_tabview; // панель вкладок
     static lv_obj_t * ui_tabview_settings; //панель вкладок настроек
     //Панель состояния
@@ -129,6 +137,8 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
       static lv_obj_t * ui_label_feedAmount; //размер порции
       static lv_obj_t * ui_remain; //осталось времени до выдачи порции
       static lv_obj_t * ui_food_weight; //вес порции в миске
+      static lv_obj_t * ui_temp_label; //температура
+      static lv_obj_t * ui_humid_label; //влажность
       static lv_obj_t * ui_slider_feed_amount;//слайдер размера порции
        //Вкладка таймеры
       static lv_obj_t * ui_timer1_hour; //слайдер часов будильника 1
@@ -165,8 +175,8 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
       static lv_obj_t * ui_step_window_speed_slider_label;//надаись на слайдере шагов вперед
 
       //Окно калибровки весов
-      lv_obj_t * ui_scales_window_param_label; //калибровочный коэффициент
-      lv_obj_t * ui_scales_window_weight; //спинбокс калибровочного веса
+      static lv_obj_t * ui_scales_window_param_label; //калибровочный коэффициент
+      static lv_obj_t * ui_scales_window_weight; //спинбокс калибровочного веса
 
 //Инициализация библиотек
 GyverNTP ntp(timezone); //инициализация работы с ntp, в параметрах часовой пояс
@@ -177,6 +187,7 @@ PubSubClient client(esp32Client);
 WebServer server(80); //поднимаем веб сервер на 80 порту
 GyverHX711 sensor(16, 13, HX_GAIN64_A); //data,clock, коэффициент усиления
 FastBot bot (bot_token);
+DHT dht(DHT_PIN, DHT_TYPE); // Создаем объект DHT
 GStepper<STEPPER4WIRE> stepper(200, 26,25,32,33); //шагов на полный оборот двигателя, фаза 1, фаза 2, фаза 3, фаза 4 (смотреть схему в документации)
 //Инициализация таймеров
 GTimer reftime(MS);//часы
@@ -333,7 +344,10 @@ void setup()
   
   //ElegantOTA.begin(&server);    // Запуск ElegantOTA
   server_init();//запуск веб сервера
-
+  //Запуск сервиса DHT
+  pinMode(DHT_PIN, INPUT);
+  dht.begin();
+ 
   //Установка значений таймеров
   reftime.setInterval(1000);//обновление времени на экране 1000 мс или 1 секунда
   refremain.setInterval(10000);//обновление времени на экране 30000 мс или 30 секунд
@@ -396,10 +410,18 @@ void loop()
   //Измерение веса корма
   if (refscale.isReady()) 
     {
+      temperature = dht.readTemperature();
+      lv_label_set_text_fmt(ui_temp_label, "Температура: %.1f ºС",temperature);
+      humidity = dht.readHumidity();
+      lv_label_set_text_fmt(ui_humid_label, "Влаж: %.1f%",humidity);
       if (sensor.available()) 
       {
         foodWeight=sensor.read();
-        foodWeight=(foodWeight-tareWeight)/scales_param;
+        float correctionFactor = getCorrectionFactor(temperature);
+        foodWeight=(foodWeight-tareWeight);
+        Serial.println(correctionFactor);
+        Serial.println(foodWeight/scales_param);
+        foodWeight=(foodWeight*correctionFactor)/scales_param;
         lv_label_set_text_fmt(ui_food_weight, LV_SYMBOL_WEIGHT" %d грамм",foodWeight);
         Serial.println(foodWeight); 
       }
