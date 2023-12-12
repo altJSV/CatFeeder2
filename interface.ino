@@ -600,11 +600,11 @@ void draw_interface()
     lv_obj_set_size(ui_slider_feed_amount, lv_pct(90), 20);
     lv_slider_set_range(ui_slider_feed_amount, 50 , 250);
     lv_slider_set_value(ui_slider_feed_amount, feedAmountSet, LV_ANIM_OFF);
-    lv_obj_align_to(ui_slider_feed_amount, ui_feed_button, LV_ALIGN_TOP_RIGHT, 0, -45);
+    lv_obj_align_to(ui_slider_feed_amount, ui_feed_button, LV_ALIGN_TOP_RIGHT, 0, -40);
     lv_obj_add_event_cb(ui_slider_feed_amount, slider_feedamount_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
   
     ui_label_feedAmount = lv_label_create(ui_tab1);
-    lv_label_set_text_fmt(ui_label_feedAmount,"%d грамм", feedAmountSet);
+    lv_label_set_text_fmt(ui_label_feedAmount,"%d гр.", feedAmountSet);
     lv_obj_align_to(ui_label_feedAmount, ui_slider_feed_amount, LV_ALIGN_CENTER, 0, 0);
 
     lv_obj_t * ui_label_feed_text = lv_label_create(ui_tab1);
@@ -620,11 +620,11 @@ void draw_interface()
     lv_obj_align(ui_food_weight, LV_ALIGN_TOP_RIGHT, 0, 70);
 
     ui_temp_label = lv_label_create(ui_tab1); //температура
-    lv_label_set_text_fmt(ui_temp_label, "Температура: %.1f ºС",temperature);
+    lv_label_set_text_fmt(ui_temp_label, LV_SYMBOL_TEMP" %.1f °С",temperature);
     lv_obj_align_to(ui_temp_label, ui_remain, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 2);
 
     ui_humid_label = lv_label_create(ui_tab1); //осталось времени до срабатывания таймера
-    lv_label_set_text_fmt(ui_humid_label, "Влаж: %.1f%",humidity);
+    lv_label_set_text_fmt(ui_humid_label, LV_SYMBOL_HUMID" %.1f%%",humidity);
     lv_obj_align_to(ui_humid_label, ui_food_weight, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 2);
 
 

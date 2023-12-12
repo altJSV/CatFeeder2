@@ -21,6 +21,7 @@
 //#include <ElegantOTA.h> //OTA обновление
 #include <Update.h> //OTA обновления
 #include <WiFiServer.h> //веб интерфейс и OTA
+#include <ESPmDNS.h>//локальный DNS сервер
 #include "DHT.h"// библиотека для работы с dht сенсором
 #include "webpages.h"
 
@@ -48,8 +49,8 @@ bool tg_bot = true;
 
 uint16_t lastFeed=0; //время последнего кормления
 
-long tareWeight=250; //вес миски в граммах
-long foodWeight=560; //вес еды в миске
+long tareWeight=0; //вес миски в граммах
+long foodWeight=0; //вес еды в миске
 float scales_param=191.7; //коэффициент взвешивания
 uint16_t scales_control_weight=30;
 
@@ -83,6 +84,8 @@ float temp_cal=25.0; //температура калибровки тензод�
 #define LV_SYMBOL_TELEGRAM "\xEF\x87\x98" //логотип Telegram
 #define LV_SYMBOL_WEIGHT "\xEF\x97\x8D" //иконка гири
 #define LV_SYMBOL_ACLOCK "\xEF\x80\x97" //аналоговые часы
+#define LV_SYMBOL_TEMP "\xEF\x9D\xAB" //иконка температуры
+#define LV_SYMBOL_HUMID"\xEF\x9D\xB3" //иконка влажности
 #define FILEBUFSIZ 4096
 
 #define FILESYSTYPE 1 
@@ -341,8 +344,10 @@ void setup()
     } 
   
   //запуск сервисов
-  
-  //ElegantOTA.begin(&server);    // Запуск ElegantOTA
+  // DNS
+  if (!MDNS.begin("catfeeder2")) Serial.println("Ошибка открытия MDNS!");   
+  else
+    Serial.println("mDNS запущен. имя хоста = http://catfeeder2.local");
   server_init();//запуск веб сервера
   //Запуск сервиса DHT
   pinMode(DHT_PIN, INPUT);
@@ -357,10 +362,6 @@ void setup()
   refsaveconfigdelay.stop();
   pinMode(TFT_BACKLIGHT,OUTPUT);//Переключаем пин подсветки на передачу данных
   analogWrite(TFT_BACKLIGHT,bright_level);
-  //ledcSetup(0, 5000, 8);
-  //ledcAttachPin(TFT_BACKLIGHT, 0);
-  //ledcWrite(0, bright_level); //устанавливаем значение подсветки по умолчанию 250
-  //sensor.setOffset(tareWeight);//установка оффсета весов
   }
 
 /**** ВТОРОЙ БЛОК ФУНКЦИЙ ****/
@@ -411,9 +412,9 @@ void loop()
   if (refscale.isReady()) 
     {
       temperature = dht.readTemperature();
-      lv_label_set_text_fmt(ui_temp_label, "Температура: %.1f ºС",temperature);
+      lv_label_set_text_fmt(ui_temp_label, LV_SYMBOL_TEMP" %.1f °С",temperature);
       humidity = dht.readHumidity();
-      lv_label_set_text_fmt(ui_humid_label, "Влаж: %.1f%",humidity);
+      lv_label_set_text_fmt(ui_humid_label, LV_SYMBOL_HUMID" %.1f%%",humidity);
       if (sensor.available()) 
       {
         foodWeight=sensor.read();
@@ -443,7 +444,6 @@ void loop()
   if (usemqtt) client.loop(); //чтение состояния топиков MQQT
   if (tg_bot) bot.tick(); //поддерживаем соединение с telegram ботом
   server.handleClient(); //обработка запросов web интерфейса
-  //ledcWrite(0, bright_level); //устанавливаем значение подсветки по умолчанию 250
 
 }
 

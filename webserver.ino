@@ -479,7 +479,7 @@ void handleFileman() {
   page+="<style>";
   page+=".icon-block {position: fixed; top: 1%; right: 2%;}";
   page+=".mainblock {display: flex; width: 60%; color: white; margin: 10px auto 10px auto; padding:20px; flex-direction: column; align-items: center; justify-content: center; background: Lightcyan;}";
-  page+=".contentblock {width: 90%; margin: 10px auto; background-color: Skyblue; color:black; border-radius:10px;}";
+  page+=".contentblock {width: 90%; margin: 10px auto; background-color: Skyblue; color:black; border-radius:10px; font-size: 16px; font-family: sans-serif; font-weight: 700;}";
   page+=".title { background-color: Dodgerblue; color: white;margin: 0; padding: 10px; box-sizing: border-box; border-radius: 10px 10px 0 0}";
   page+=".infotitle { background-color: Forestgreen; color: white; margin: 0; padding: 10px; box-sizing: border-box;}";
   page+=".warningtitle { background-color: Crimson; color: white; margin: 0; padding: 10px; box-sizing: border-box;}";
