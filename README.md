@@ -67,6 +67,7 @@
 * [2 безголовых винта M3x2mm](https://aliexpress.ru/item/1005005451331078.html?sku_id=12000033135491590&spm=a2g2w.productlist.search_results.3.24bb5c860kHUHe) 
 * [Модуль DHT22](https://aliexpress.ru/item/33037061522.html?spm=a2g2w.cart.cart_split.2.146a4aa6KI8d1V&sku_id=12000032670222589&_ga=2.182953190.1322727573.1702322662-786537644.1642186627)
 * Качественный блок питания 5В 3А. Например [такой](https://www.ozon.ru/product/blok-pitaniya-5v-3a-micro-usb-dlya-raspberry-pi-3-i-pi-2-novaya-plata-422415562/) 
+* Пластиковый квадратный пищевой контейнер с шириной основания 96 мм. Например [такой](https://www.ozon.ru/product/konteyner-vakuumnyy-dlya-edy-dd-style-hranenie-1200-ml-1-sht-994520444/?avtc=1&avte=2&avts=1702385033)
 
 Далее, в соответствии со схемой, подключаем все компоненты.
 

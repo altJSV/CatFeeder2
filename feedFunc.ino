@@ -31,15 +31,48 @@ void prefid(uint8_t feedA)
 //Запуск кормления
 void feed(uint16_t amount) 
 { 
+  while (sensor.available()==false)
+    {
+      Serial.println("Waiting...");
+      delay(10);
+    }
+  long  curWeight=sensor.read(); //вычисляем текущий вес
   stepper.setMaxSpeed(step_speed);
-  for (int i = 0; i < amount; i++) 
+  long maxWeight=curWeight+(amount*scales_param);//максимальный вес
+  long minWeight=curWeight;
+  long lastWeight=0; //последнее значение веса
+  uint8_t i=0; //значение на прогресс баре
+  uint8_t errorCount=0;//счетчик ошибок
+  while (curWeight<maxWeight)//основной цикл
+    {
+      i=map(curWeight,minWeight,maxWeight,0,100);
+      lv_bar_set_value(ui_feed_progress_bar, i, LV_ANIM_OFF); //заполняем шкалы прогресса
+      lv_label_set_text_fmt(ui_feed_progress_bar_label,"%d%%", i);
+      lv_event_send(ui_feed_progress_bar, LV_EVENT_REFRESH, NULL);
+      lv_timer_handler();
+      oneRev();
+      lastWeight=curWeight;//запоминаем предыдущее значение веса
+      if (sensor.available()) {curWeight=sensor.read();} //вычисляем текущий вес
+      if (curWeight<=lastWeight) errorCount+=1; else errorCount=0;//если текущий вес не изменился увеличиваем счетчик ошибок
+      Serial.printf("last=%d, cur=%d, error=%d /n",lastWeight,curWeight,errorCount);
+      if (errorCount>10) //счетчик ошибок превысил пороговое значение
+        {
+          if (tg_bot) bot.sendMessage("Корм не подается! Проверьте наличие корма в бункере и вращение шнека!");
+          lastFeed=ntp.hour()*60 + ntp.minute();
+          lv_obj_del(ui_feedwindow);
+          return; //выход из цикла
+        }
+    }
+  /*for (int i = 0; i < amount; i++) 
   {
     lv_bar_set_value(ui_feed_progress_bar, i, LV_ANIM_OFF); //заполняем шкалы прогресса
     lv_label_set_text_fmt(ui_feed_progress_bar_label,"%d", i*100/amount);
     lv_event_send(ui_feed_progress_bar, LV_EVENT_REFRESH, NULL);
     lv_timer_handler();
     oneRev();
-  }  
+  } 
+  */
+
   //disableMotor();//выключаем мотор
   lastFeed=ntp.hour()*60 + ntp.minute();
   lv_obj_del(ui_feedwindow);
@@ -92,9 +125,4 @@ uint16_t curtime=ntp.hour()*60 + ntp.minute(); //Текущее время в м
             
         } 
         lv_label_set_text_fmt(ui_remain, LV_SYMBOL_SANDCLOCK" %dч. %dм.",(int)mintime/60, mintime%60); 
-    /*Движение котика по шкале
-    if (lastFeed>alarmtime) {alarmtime=lastFeed+(1440-lastFeed)+alarmtime;}
-    
-    uint8_t x_cat=map(alarmtime-mintime,lastFeed,alarmtime,0,160);//вычисляем координату х котика на шкале
-    lv_obj_set_x(img_running_cat,x_cat);*/
 }
