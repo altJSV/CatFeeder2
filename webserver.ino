@@ -79,7 +79,7 @@ void handle_main()
   page+="<div class='contentblock'>";
   page+="<h2 class='title'><center>Выдача корма</center></h2>";
   page+="<form method='get' action='/feed'>";
-  page+="&nbsp;&nbsp;Размер порции: <span id='feedamount_text'>"+String(feedAmountSet)+"</span> грамм<br><center><input name='feedamount' id='feedamount' type='range' class='slider' min='0' max='250' step='1' onchange='showSliderValue(id)' value='"+String(feedAmountSet)+"'></center><br>";
+  page+="&nbsp;&nbsp;Размер порции: <span id='feedamount_text'>"+String(feedAmountSet)+"</span> грамм<br><center><input name='feedamount' id='feedamount' type='range' class='slider' min='0' max='60' step='1' onchange='showSliderValue(id)' value='"+String(feedAmountSet)+"'></center><br>";
   page+="&nbsp;&nbsp;<input class='bigbuttons'  type='submit' value='Выдать корм'></form>";
   page+="</div>";
   //Параметры шагового двигателя

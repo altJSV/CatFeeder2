@@ -648,7 +648,7 @@ void draw_interface()
       lv_obj_align_to(ui_timer1_minute, ui_timer1_hour, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
       lv_obj_add_event_cb(ui_timer1_minute, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer1_amount = lv_spinbox_create(ui_tab2); //Размер порции
-      lv_spinbox_set_range(ui_timer1_amount, 0, 60);
+      lv_spinbox_set_range(ui_timer1_amount, 1, 60);
       lv_spinbox_set_digit_format(ui_timer1_amount, 3, 3);
       lv_spinbox_set_rollover(ui_timer1_amount,true);
       lv_obj_set_size(ui_timer1_amount, 40,40);
@@ -687,7 +687,7 @@ void draw_interface()
       lv_obj_align_to(ui_timer2_minute,ui_timer2_hour,  LV_ALIGN_OUT_RIGHT_MID, 10, 0);
       lv_obj_add_event_cb(ui_timer2_minute, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer2_amount = lv_spinbox_create(ui_tab2); //Размер порции
-      lv_spinbox_set_range(ui_timer2_amount, 0, 60);
+      lv_spinbox_set_range(ui_timer2_amount, 1, 60);
       lv_spinbox_set_digit_format(ui_timer2_amount, 3, 3);
       lv_spinbox_set_rollover(ui_timer2_amount,true);
       lv_obj_set_size(ui_timer2_amount, 40,40);
@@ -726,7 +726,7 @@ void draw_interface()
       lv_obj_align_to(ui_timer3_minute,ui_timer3_hour,  LV_ALIGN_OUT_RIGHT_MID, 10, 0);
       lv_obj_add_event_cb(ui_timer3_minute, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer3_amount = lv_spinbox_create(ui_tab2); //Размер порции
-      lv_spinbox_set_range(ui_timer3_amount, 0, 60);
+      lv_spinbox_set_range(ui_timer3_amount, 1, 60);
       lv_spinbox_set_digit_format(ui_timer3_amount, 3, 3);
       lv_spinbox_set_rollover(ui_timer3_amount,true);
       lv_obj_set_size(ui_timer3_amount, 40,40);
@@ -765,7 +765,7 @@ void draw_interface()
       lv_obj_align_to(ui_timer4_minute,ui_timer4_hour,  LV_ALIGN_OUT_RIGHT_MID, 10, 0);
       lv_obj_add_event_cb(ui_timer4_minute, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer4_amount = lv_spinbox_create(ui_tab2); //Размер порции
-      lv_spinbox_set_range(ui_timer4_amount, 0, 60);
+      lv_spinbox_set_range(ui_timer4_amount, 1, 60);
       lv_spinbox_set_digit_format(ui_timer4_amount, 3, 3);
       lv_spinbox_set_rollover(ui_timer4_amount,true);
       lv_obj_set_size(ui_timer4_amount, 40,40);
