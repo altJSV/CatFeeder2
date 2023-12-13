@@ -598,7 +598,7 @@ void draw_interface()
     //Размер порции
     ui_slider_feed_amount = lv_slider_create(ui_tab1);
     lv_obj_set_size(ui_slider_feed_amount, lv_pct(90), 20);
-    lv_slider_set_range(ui_slider_feed_amount, 50 , 250);
+    lv_slider_set_range(ui_slider_feed_amount, 1 , 60);
     lv_slider_set_value(ui_slider_feed_amount, feedAmountSet, LV_ANIM_OFF);
     lv_obj_align_to(ui_slider_feed_amount, ui_feed_button, LV_ALIGN_TOP_RIGHT, 0, -40);
     lv_obj_add_event_cb(ui_slider_feed_amount, slider_feedamount_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
@@ -648,7 +648,7 @@ void draw_interface()
       lv_obj_align_to(ui_timer1_minute, ui_timer1_hour, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
       lv_obj_add_event_cb(ui_timer1_minute, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer1_amount = lv_spinbox_create(ui_tab2); //Размер порции
-      lv_spinbox_set_range(ui_timer1_amount, 0, 250);
+      lv_spinbox_set_range(ui_timer1_amount, 0, 60);
       lv_spinbox_set_digit_format(ui_timer1_amount, 3, 3);
       lv_spinbox_set_rollover(ui_timer1_amount,true);
       lv_obj_set_size(ui_timer1_amount, 40,40);
@@ -687,7 +687,7 @@ void draw_interface()
       lv_obj_align_to(ui_timer2_minute,ui_timer2_hour,  LV_ALIGN_OUT_RIGHT_MID, 10, 0);
       lv_obj_add_event_cb(ui_timer2_minute, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer2_amount = lv_spinbox_create(ui_tab2); //Размер порции
-      lv_spinbox_set_range(ui_timer2_amount, 0, 250);
+      lv_spinbox_set_range(ui_timer2_amount, 0, 60);
       lv_spinbox_set_digit_format(ui_timer2_amount, 3, 3);
       lv_spinbox_set_rollover(ui_timer2_amount,true);
       lv_obj_set_size(ui_timer2_amount, 40,40);
@@ -726,7 +726,7 @@ void draw_interface()
       lv_obj_align_to(ui_timer3_minute,ui_timer3_hour,  LV_ALIGN_OUT_RIGHT_MID, 10, 0);
       lv_obj_add_event_cb(ui_timer3_minute, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer3_amount = lv_spinbox_create(ui_tab2); //Размер порции
-      lv_spinbox_set_range(ui_timer3_amount, 0, 250);
+      lv_spinbox_set_range(ui_timer3_amount, 0, 60);
       lv_spinbox_set_digit_format(ui_timer3_amount, 3, 3);
       lv_spinbox_set_rollover(ui_timer3_amount,true);
       lv_obj_set_size(ui_timer3_amount, 40,40);
@@ -765,7 +765,7 @@ void draw_interface()
       lv_obj_align_to(ui_timer4_minute,ui_timer4_hour,  LV_ALIGN_OUT_RIGHT_MID, 10, 0);
       lv_obj_add_event_cb(ui_timer4_minute, alarm_roll_event_handler, LV_EVENT_ALL, NULL);
       ui_timer4_amount = lv_spinbox_create(ui_tab2); //Размер порции
-      lv_spinbox_set_range(ui_timer4_amount, 0, 250);
+      lv_spinbox_set_range(ui_timer4_amount, 0, 60);
       lv_spinbox_set_digit_format(ui_timer4_amount, 3, 3);
       lv_spinbox_set_rollover(ui_timer4_amount,true);
       lv_obj_set_size(ui_timer4_amount, 40,40);

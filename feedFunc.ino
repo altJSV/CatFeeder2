@@ -50,12 +50,12 @@ void feed(uint16_t amount)
       lv_label_set_text_fmt(ui_feed_progress_bar_label,"%d%%", i);
       lv_event_send(ui_feed_progress_bar, LV_EVENT_REFRESH, NULL);
       lv_timer_handler();
-      //oneRev();
+      oneRev();
       lastWeight=curWeight;//запоминаем предыдущее значение веса
       if (sensor.available()) {curWeight=sensor.read();} //вычисляем текущий вес
       if (curWeight<=lastWeight) errorCount+=1; else errorCount=0;//если текущий вес не изменился увеличиваем счетчик ошибок
       Serial.printf("last=%d, cur=%d, error=%d /n",lastWeight,curWeight,errorCount);
-      if (errorCount>10) //счетчик ошибок превысил пороговое значение
+      if (errorCount>5) //счетчик ошибок превысил пороговое значение
         {
           if (tg_bot) bot.sendMessage("Корм не подается! Проверьте наличие корма в бункере и вращение шнека!");
           lastFeed=ntp.hour()*60 + ntp.minute();
