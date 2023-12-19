@@ -6,6 +6,7 @@ void server_init()
    server.on("/mqttsetting",handle_mqtt_setting);//сохранение настроек mqtt
    server.on("/tgsetting",handle_tg_setting);//сохранение настроек телеграм бота
    server.on("/stepsetting",handle_step_setting);//сохранение настроек шагового двигателя
+   server.on("/alarmsetting",handle_alarm_setting);//сохранение настроек будильников
    server.on("/feed",handle_feed);//выдача корма
    server.on("/fileman", HTTP_GET, handleFileman);
   server.on("/update", HTTP_POST, []() {
@@ -91,13 +92,35 @@ void handle_main()
   page+="&nbsp;&nbsp;Скорость вращения: <span id='step_speed_text'>"+String(step_speed)+"</span><br><center><input id='step_speed' name='step_speed' type='range' class='slider' min='0' max='400' step='1'  onchange='showSliderValue(id)' value='"+String(step_speed)+"'></center><br>";
   page+="&nbsp;&nbsp;<input class='bigbuttons'  type='submit'></form>";
   page+="</div>";
+
+  //Параметры будильников
+  page+="<div class='contentblock'>";
+  page+="<h2 class='title'><center>Параметры будильников</center></h2>";
+  page+="<form method='get' action='/alarmsetting'>";
+  for (byte i = 0; i < 4; i++) 
+  {
+    String alarmnumber=String(i);
+    page+="&nbsp;&nbsp;Будильник "+alarmnumber+":&nbsp;&nbsp; <input class='inputs' type='time' name='alarm"+alarmnumber+"'  length='6' value='";
+    if (feedTime[i][0]<10) page+="0";
+    page+=String(feedTime[i][0])+":";
+    if (feedTime[i][1]<10) page+="0";
+    page+=String(feedTime[i][1])+"'>&nbsp;";
+    page+="Размер порции: &nbsp; <input class='inputs' name='asize"+alarmnumber+"' type='number' min='1' max='60' length='2' value='"+String(feedTime[i][3])+"'>&nbsp;";
+    page+="<span class='checkbox-apple'><input class='yep' type='checkbox' name='alarmcheck"+alarmnumber+"' id='alarmcheck"+alarmnumber+"' ";
+    if (feedTime[i][2]==1) page+="checked";
+    page+="><label for='alarmcheck"+alarmnumber+"'></label></span><br>";
+  }
+  
+  page+="&nbsp;&nbsp;<input class='bigbuttons'  type='submit'></form>";
+  page+="</div>";
+
   //MQTT
   page+="<div class='contentblock'>";
   page+="<h2 class='title'><center>Параметры подключения к MQTT брокеру</center></h2>";
   page+="<form method='get' action='/mqttsetting'>";
   page+="<br>&nbsp;&nbsp;Использовать MQTT: <span class='checkbox-apple'><input class='yep' type='checkbox' id='usemqtt' name='usemqtt' ";
   if (usemqtt) page+="checked";
-  page+="><label for='tgbot'></label></span><br><br>";
+  page+="><label for='usemqtt'></label></span><br><br>";
   page+="&nbsp;&nbsp;<label>Сервер: <input class='inputs' type='text' name='server'  length=32 value='"+mqtt_server+"'>&nbsp;</label><br>";
   page+="&nbsp;&nbsp;<label>Порт: <input class='inputs' name='port' type='number' length=6 value='"+String(mqtt_port)+"'>&nbsp;&nbsp;</label><br>";
   page+="&nbsp;&nbsp;<label>Логин: <input class='inputs' type='text' name='login'  length=32 value='"+mqtt_login+"'>&nbsp;</label><br>&nbsp;&nbsp;<label>Пароль: <input class='inputs' name='pass' type='password' length=64 value='"+mqtt_pass+"'>&nbsp;&nbsp;</label><br>";
@@ -107,9 +130,9 @@ void handle_main()
   page+="<div class='contentblock'>";
   page+="<h2 class='title'><center>Параметры подключения к Telegram боту</center></h2>";
   page+="<form method='get' action='/tgsetting'>";
-  page+="<br>&nbsp;&nbsp;Использовать бота: <span class='checkbox-apple'><input class='yep' type='checkbox' id='tgbot' name='tg_bot' ";
+  page+="<br>&nbsp;&nbsp;Использовать бота: <span class='checkbox-apple'><input class='yep' type='checkbox' id='tg_bot' name='tg_bot' ";
   if (tg_bot) page+="checked";
-  page+="><label for='tgbot'></label></span><br><br>";
+  page+="><label for='tg_bot'></label></span><br><br>";
   page+="&nbsp;&nbsp;<label>Токен: <input class='inputs' type='text' name='token'  length=40 value='"+bot_token+"'>&nbsp;</label><br>";
   page+="&nbsp;&nbsp;<label>ID чата: <input class='inputs' name='chatid' type='number' length=10 value='"+chatID+"'>&nbsp;&nbsp;</label><br>";
   page+="&nbsp;&nbsp;<input class='bigbuttons'  type='submit'></form>";
@@ -131,7 +154,7 @@ void handle_mqtt_setting()
   mqtt_port = server.arg("port").toInt();
   mqtt_login = server.arg("login");
   mqtt_pass = server.arg("pass");
-  usemqtt = server.arg("usemqtt").toInt();
+  if (server.arg("usemqtt")=="on")  usemqtt=1; else usemqtt=0;
   String page;
   int statusCode;
   if (saveConfiguration("/config.json"))
@@ -156,7 +179,7 @@ void handle_tg_setting()
 {
   bot_token = server.arg("token");
   chatID = server.arg("chatid");
-  tg_bot = server.arg("tg_bot").toInt();
+  if (server.arg("tg_bot")=="on")  tg_bot=1; else tg_bot=0;
   String page;
   int statusCode;
   if (saveConfiguration("/config.json"))
@@ -175,6 +198,34 @@ void handle_tg_setting()
         server.send(statusCode, "application/json", page);
     }
     
+}
+
+void handle_alarm_setting() { 
+  String Time="";              
+  for (byte i=0; i<4; i++){
+    Time=server.arg("alarm"+String (i));
+     feedTime[i][0]=Time.substring(0,2).toInt();
+     feedTime[i][1]=Time.substring(3,5).toInt();
+     if (server.arg("alarmcheck"+String (i))=="on") feedTime[i][2]=1; else feedTime[i][2]=0;
+     feedTime[i][3]=server.arg("asize"+String (i)).toInt(); 
+  }
+  String page;
+  int statusCode;
+  if (saveConfiguration("/config.json"))
+    {
+       server.sendHeader("Location", "/",true);   //редирект на главную
+      server.send(302, "text/plane","");
+      //page="{'Успешно':'Cохранено в память устройства.'}";
+      //statusCode = 200;
+    }
+    else
+    {
+    page = "{'Ошибка':'404 не найдено'}";
+        statusCode = 404;
+        Serial.println("Отправляем 404");
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(statusCode, "application/json", page);
+    }
 }
 
 //Применение настроек шагового двигателя

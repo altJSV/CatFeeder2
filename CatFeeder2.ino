@@ -23,7 +23,7 @@
 #include <WiFiServer.h> //веб интерфейс и OTA
 #include <ESPmDNS.h>//локальный DNS сервер
 #include "DHT.h"// библиотека для работы с dht сенсором
-#include "webpages.h"
+#include "webpages.h" //различные скрипты html код
 
 
 

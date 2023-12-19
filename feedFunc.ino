@@ -56,28 +56,19 @@ void feed(uint16_t amount)
       if (sensor.available()) {curWeight=sensor.read();} //вычисляем текущий вес
       if (curWeight<=lastWeight) errorCount+=1; else errorCount=0;//если текущий вес не изменился увеличиваем счетчик ошибок
       Serial.printf("last=%d, cur=%d, error=%d /n",lastWeight,curWeight,errorCount);
-      if (errorCount>5) //счетчик ошибок превысил пороговое значение
+      if (errorCount>3) //счетчик ошибок превысил пороговое значение
         {
           if (tg_bot) bot.sendMessage("Корм не подается! Проверьте наличие корма в бункере и вращение шнека!");
           lastFeed=ntp.hour()*60 + ntp.minute();
           lv_obj_del(ui_feedwindow);
+          stepper.disable();//выключаем двигатель
           return; //выход из цикла
         }
     }
-  /*for (int i = 0; i < amount; i++) 
-  {
-    lv_bar_set_value(ui_feed_progress_bar, i, LV_ANIM_OFF); //заполняем шкалы прогресса
-    lv_label_set_text_fmt(ui_feed_progress_bar_label,"%d", i*100/amount);
-    lv_event_send(ui_feed_progress_bar, LV_EVENT_REFRESH, NULL);
-    lv_timer_handler();
-    oneRev();
-  } 
-  */
-
-  //disableMotor();//выключаем мотор
+  
   lastFeed=ntp.hour()*60 + ntp.minute();
   lv_obj_del(ui_feedwindow);
-  stepper.disable();
+  stepper.disable();//выключаем двигатель
 }
 
 //крутим мотор
