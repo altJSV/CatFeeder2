@@ -38,6 +38,7 @@ void feed(uint16_t amount)
     }
   long  curWeight=sensor.read(); //вычисляем текущий вес
   stepper.setMaxSpeed(step_speed);
+  stepper.enable();
   long maxWeight=curWeight+(amount*scales_param);//максимальный вес
   long minWeight=curWeight;
   long lastWeight=0; //последнее значение веса
@@ -76,6 +77,7 @@ void feed(uint16_t amount)
   //disableMotor();//выключаем мотор
   lastFeed=ntp.hour()*60 + ntp.minute();
   lv_obj_del(ui_feedwindow);
+  stepper.disable();
 }
 
 //крутим мотор

@@ -303,7 +303,9 @@ static void event_test_motor(lv_event_t * e)
    if(code == LV_EVENT_CLICKED) 
     {
     stepper.setMaxSpeed(step_speed);
+    stepper.enable();
     oneRev();
+    stepper.disable();
     }
  }
 
