@@ -49,6 +49,7 @@ void handle_main()
   //Заголовки html
   String page = "<!DOCTYPE HTML><html>";
   page+="<head>";
+  page+=favincon;
   page+="<title>Панель управления Cat Feeder 2</title>";
   page+="<meta name='viewport' content='width=device-width, initial-scale=1'>";
   page+="<meta charset='UTF-8'>";
@@ -447,8 +448,10 @@ void handleFileman() {
   char fileName[128];
   File file;
 	String path = "", bText = "", bName = "", bMode ="";
-  String page = "";
-  // check arguments
+  String page = "<!DOCTYPE HTML><html>";
+  page+="<head>";
+  page+=favincon;
+  // Проверка аргументов функции
   if(server.hasArg("mode"))
   {
     bMode = server.arg("mode");
@@ -456,7 +459,7 @@ void handleFileman() {
       foundMode = true;
     Serial.printf("Mode %s\n",bMode.c_str());
   }
-  if(server.hasArg("dir"))// {server.send(500, "text/plain", "BAD ARGS"); return;}  
+  if(server.hasArg("dir"))
 		path = server.arg("dir");
 	else
 		path ="/";
@@ -480,16 +483,16 @@ void handleFileman() {
     foundSaveBut = true;
   }
 
-  // write
+  // запись
   if(foundName && foundText && bMode == "save")
   {
-    Serial.println("something to save");
+    Serial.println("Сохраняем");
     file = FILESYS.open(bName, "w");
     if(file)
     {
       file.write((uint8_t *)bText.c_str(), bText.length());
       file.close();
-      logStr += "Saved ";
+      logStr += "Сохранено";
       logStr += bName;
       logStr +="\n";
     }  
@@ -497,10 +500,9 @@ void handleFileman() {
   
   File dir = FILESYS.open(path.c_str());
   if(!dir)
-	  Serial.printf("Directory [%s]not found", path.c_str());
+	  Serial.printf("Папка [%s]не найдена", path.c_str());
 	else if(!dir.isDirectory())
-        Serial.println(" - not a directory");
-	//path = String();
+        Serial.println(" - не папка");
   
   page+="<title>Файловый менеджер Cat Feeder 2</title>";
   page+="<meta name='viewport' content='width=device-width, initial-scale=1'>";
@@ -525,7 +527,7 @@ void handleFileman() {
    page+="<div class='contentblock'>";
    page+= "<h2 class='title'><center>Загрузка файлов</center></h2>";
    page+="<form action='/edit' method='post' enctype='multipart/form-data'><BR>"; // use post for PUT /edit server handler
-   page+= "Имя: <input class='buttons' type='file' name='data' required>&nbsp;&nbsp;";
+   page+= "&nbsp;&nbsp;Имя: <input class='buttons' type='file' name='data' required>&nbsp;&nbsp;";
    page+= "Путь: <input type='text' class='inputs' name='path' value='/'>";
    page+= "<input type='hidden' name='mode' value='upload'>";
    page+= "<button class='buttons'>Загрузить</button>";
@@ -536,14 +538,15 @@ void handleFileman() {
    page+="<div class='contentblock'>";
    page+= "<h2 class='title'><center>Файловая система</center></h2>";
 	File entry;
+  page+="&nbsp;&nbsp;Содержимое файловой системы:<br>";
+  page+="<table border='1'><tr>";
   while(entry = dir.openNextFile())
   {  
-	  bool isDir = entry.isDirectory(); // single level for SPIFFS, possibly not true for LittleFS
-   // page += (isDir) ? "dir:" : "file: ";
-   // page += "\t";
+	  page+="<td>";
+    bool isDir = entry.isDirectory(); // проверяем является ли текущий элемент папкой
 		if(isDir) 
 		{
-			page += "<a href=/main?dir=/" ;
+			page += "<a href=/fileman?dir=/" ;
 			page +=  entry.name(); 
 			page +=  ">";
 		}
@@ -553,27 +556,28 @@ void handleFileman() {
 		  page += "</a>";
 		page += " (";
     page += String(entry.size());
-		page += ")&nbsp;&nbsp;";
-    // edit
-    page += "<a href=/fileman?mode=edit&nameSave="; 
+		page += ")</td>";
+    // редактирование
+    page += "<td><a href=/fileman?mode=edit&nameSave="; 
     if(fileName[0] != '\\' && fileName[0] != '/') // avoid double \ or / in filename (on some OS)
    	 page += path;
     page += String(entry.name());
-    page += ">Изменить</a>&nbsp;&nbsp;";
-    // delete
-    page += "<a href=/delete?file="; 
+    page += ">Изменить</a></td>";
+    // удаление
+    page += "<td><a href=/delete?file="; 
     if(fileName[0] != '\\' && fileName[0] != '/') // avoid double \ or / in filename (on some OS)
 	page += path;
     page += String(entry.name());
-    page += ">Удалить</a><BR>";
+    page += ">Удалить</a></td></tr>";
     entry.close();
-  }	
-   // edit form - text, filename and submit
+  }
+  page+="</table>";	
+   // форма редактирования
    page += "<div><form action='/fileman' method='get'><textarea class='textareas' name=editBlock id=editBlock rows='30' cols='60'>";
   
    if(bMode = "edit")
    {
-      // read file and insert content
+      // читаем файл и вставляем содержимое
       file = FILESYS.open(bName.c_str(), "r");
       if(file)
       {        
@@ -583,7 +587,6 @@ void handleFileman() {
         file.close();        
         filebuf[readlen] = '\0';
         page += filebuf;
-        //Serial.printf("read len %i, text [%s]\n",readlen, filebuf);
         logStr += (foundSaveBut) ? "Сохранение " : "Редактирование ";
         logStr += bName;
         logStr +="\n";   
@@ -591,14 +594,14 @@ void handleFileman() {
    }
    page += "</textarea></div>\n";
    page += "<input type=hidden name='mode' value='save'>";
-   page += "Имя файла: <input class='inputs' type=text value='";
+   page += "&nbsp;&nbsp;Имя файла: <input class='inputs' type=text value='";
    if(bMode = "edit")
      page += bName;        
    page += "' name=nameSave id=nameSave> <input type=submit class='buttons' name=saveBut onclick=saveFile() value='Сохранить'></form></div>\n";
    //Лог
    page+="<div class='contentblock'>";
    page+= "<h2 class='title'><center>Лог действий</center></h2>";
-   page += "Лог: <form><textarea class='textareas' name=log id=log rows='5' cols='85'>";
+   page += "&nbsp;&nbsp;Лог: <form><textarea class='textareas' name=log id=log rows='5' cols='85'>";
    page += logStr;
    page += "</textarea></form>";
    page += "<BR><a class='links' href='/fileman'>Перезагрузить страницу</a>";
@@ -608,7 +611,6 @@ void handleFileman() {
    page += "</div></body>";
    page += edit_script;
    page+="</html>";
-  //server.send(200, "text/json", page);
 	server.send(200, "text/html", page);
 }
 
@@ -621,21 +623,20 @@ bool initFS(bool format = false, bool force = false)
    if(!format)
      return fsFound;
      
-  // format
+  // Форматирование
 	if(!fsFound || force) 
 	{      
-    Serial.println(F("Formatting FS."));
+    Serial.println(F("Форматирование ФС."));
 	  if(FILESYS.format()) 
     {
 			  if(FILESYS.begin())
         {
-          Serial.println(F("Format complete."));
+          Serial.println(F("Форматирование окончено."));
           return true;
         }
     }      
-    Serial.println(F("Format failed."));
+    Serial.println(F("Ошибка форматирования."));
     return false;              
-	}
-	//fsList();			
-  return false; // shouldn't get here
+	}	
+  return false; 
 }
