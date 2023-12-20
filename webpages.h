@@ -43,7 +43,7 @@
 //код стилей страницы
 const char* styleHTML = 
 "<style>"
-  ".icon-block {position: fixed; top: 1%; right: 2%;}"
+  ".icon-block {position: fixed; top: 1%; right: 2%; font-size: 16px; font-family: sans-serif; font-weight: 700; align-items: center; justify-content: center;}"
   ".mainblock {display: flex; width: 60%; color: white; margin: 10px auto 10px auto; padding:20px; flex-direction: column; align-items: center; justify-content: center; background: Lightcyan;}"
   ".contentblock {width: 90%; margin: 10px auto; background-color: Skyblue; color:black; border-radius:10px; font-size: 16px; font-family: sans-serif; font-weight: 700;}"
   ".title { background-color: Dodgerblue; color: white;margin: 0; padding: 10px; box-sizing: border-box; border-radius: 10px 10px 0 0}"

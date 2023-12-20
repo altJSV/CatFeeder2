@@ -118,7 +118,7 @@ void handle_main()
   page+="<div class='contentblock'>";
   page+="<h2 class='title'><center>Параметры подключения к MQTT брокеру</center></h2>";
   page+="<form method='get' action='/mqttsetting'>";
-  page+="<br>&nbsp;&nbsp;Использовать MQTT: <span class='checkbox-apple'><input class='yep' type='checkbox' id='usemqtt' name='usemqtt' ";
+  page+="<br>&nbsp;&nbsp;MQTT: <span class='checkbox-apple'><input class='yep' type='checkbox' id='usemqtt' name='usemqtt' ";
   if (usemqtt) page+="checked";
   page+="><label for='usemqtt'></label></span><br><br>";
   page+="&nbsp;&nbsp;<label>Сервер: <input class='inputs' type='text' name='server'  length=32 value='"+mqtt_server+"'>&nbsp;</label><br>";
@@ -130,14 +130,24 @@ void handle_main()
   page+="<div class='contentblock'>";
   page+="<h2 class='title'><center>Параметры подключения к Telegram боту</center></h2>";
   page+="<form method='get' action='/tgsetting'>";
-  page+="<br>&nbsp;&nbsp;Использовать бота: <span class='checkbox-apple'><input class='yep' type='checkbox' id='tg_bot' name='tg_bot' ";
+  page+="<br>&nbsp;&nbsp;Бот: <span class='checkbox-apple'><input class='yep' type='checkbox' id='tg_bot' name='tg_bot' ";
   if (tg_bot) page+="checked";
   page+="><label for='tg_bot'></label></span><br><br>";
   page+="&nbsp;&nbsp;<label>Токен: <input class='inputs' type='text' name='token'  length=40 value='"+bot_token+"'>&nbsp;</label><br>";
   page+="&nbsp;&nbsp;<label>ID чата: <input class='inputs' name='chatid' type='number' length=10 value='"+chatID+"'>&nbsp;&nbsp;</label><br>";
   page+="&nbsp;&nbsp;<input class='bigbuttons'  type='submit'></form>";
   page+="</div>";
-
+  //Температура и влажность
+  page+="<div class='icon-block'>";
+  page+="<svg width='50px' height='50px' fill='none' class='icon' xmlns='http://www.w3.org/2000/svg'>";
+  page+="<path d='M12 15.9998C11.4477 15.9998 11 16.4475 11 16.9998C11 17.5521 11.4477 17.9998 12 17.9998C12.5523 17.9998 13 17.5521 13 16.9998C13 16.4475 12.5523 15.9998 12 15.9998ZM12 15.9998V6M12 16.9998L12.0071 17.0069M16 16.9998C16 19.209 14.2091 20.9998 12 20.9998C9.79086 20.9998 8 19.209 8 16.9998C8 15.9854 8.37764 15.0591 9 14.354L9 6C9 4.34315 10.3431 3 12 3C13.6569 3 15 4.34315 15 6V14.354C15.6224 15.0591 16 15.9854 16 16.9998Z' stroke='#000000'";
+  page+="stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>";
+  page+=String(temperature)+"°С ";
+  page+="<svg fill='#000000' width='50px' height='50px' class='icon' xmlns='http://www.w3.org/2000/svg'>";
+  page+="<path d='M12,22c2.579,0,4-1.35,4-3.8,0-3.243-3.237-5.871-3.375-5.981a1,1,0,0,0-1.25,0C11.237,12.329,8,14.957,8,18.2,8,20.65,9.421,22,12,22Zm0-7.639A6.153,6.153,0,0,1,14,18.2c0,1.112-.335,1.8-2,1.8s-2-.688-2-1.8A6.153,6.153,0,0,1,12,14.361ZM6.625,2.219a1,1,0,0,0-1.25,0C5.237,2.329,2,4.957,2,8.2,2,10.65,3.421,12,6,12s4-1.35,4-3.8C10,4.957,6.763,2.329,6.625,2.219ZM6,10c-1.665,0-2-.688-2-1.8A6.153,6.153,0,0,1,6,4.361,6.153,6.153,0,0,1,8,8.2C8,";
+  page+="9.312,7.665,10,6,10ZM18.625,2.219a1,1,0,0,0-1.25,0C17.237,2.329,14,4.957,14,8.2c0,2.45,1.421,3.8,4,3.8s4-1.35,4-3.8C22,4.957,18.763,2.329,18.625,2.219ZM18,10c-1.665,0-2-.688-2-1.8a6.153,6.153,0,0,1,2-3.839A6.153,6.153,0,0,1,20,8.2C20,9.312,19.665,10,18,10Z'/></svg>";
+  page+=String(humidity)+"%";
+  page+="</div>";
   page+="<a href='/fileman' class='links'>Файловый менеджер</a>";
 
   //Завершающий код
