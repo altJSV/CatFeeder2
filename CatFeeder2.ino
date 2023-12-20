@@ -18,7 +18,6 @@
 #include <GyverHX711.h> //работа с цифровыми весами
 #include <FastBot.h> //Telegram бот
 #include <GyverStepper.h> //,библиотека шагового двигателя
-//#include <ElegantOTA.h> //OTA обновление
 #include <Update.h> //OTA обновления
 #include <WiFiServer.h> //веб интерфейс и OTA
 #include <ESPmDNS.h>//локальный DNS сервер
@@ -303,11 +302,12 @@ void setup()
  if (fs_init())
   {
         Serial.println("Чтение файла конфигурации...");
-        loadConfiguration("/config.json");
+        logStr+="Чтение файла конфигурации...";
+        loadConfiguration("/config.json"); 
         readFile(SPIFFS, "/config.json");
         touch_calibrate(false);
   }
-
+  logStr+="Запуск интерфейса... ";
   lv_init();//инициализация LVGL
   //Далее идут функции настройки LVGL 
   lv_disp_draw_buf_init( &draw_buf, buf, NULL, screenWidth * screenHeight / 6 ); //создаем буфер для вывода информации на экран
@@ -330,14 +330,15 @@ void setup()
   
 //Отрисовка интерфейса
   draw_interface();
-
+  logStr+="Ок...\n";
  
  //Инициализация wifi
- 
+ logStr+="Инициализация WiFi...\n";
   WiFi.mode(WIFI_AP_STA);
   WiFi.onEvent(WiFiGotIP, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
   if(!wm.autoConnect("CatFeeder2","12345678")) {
-        Serial.println("Не удалось подкключиться к сети");
+        Serial.println("Не удалось подключиться к сети");
+        logStr+="Не удалось подключиться к сети...\n";
         lv_obj_add_flag(ui_status_icons, LV_OBJ_FLAG_HIDDEN); 
         lv_obj_add_flag(ui_status_ip, LV_OBJ_FLAG_HIDDEN); 
     } 
@@ -347,21 +348,28 @@ void setup()
         lv_obj_clear_flag(ui_status_ip, LV_OBJ_FLAG_HIDDEN); //Показать IP адрес
         ntp.begin(); //сервис синхронизации времени
         //подключаем Telegram бота
+        logStr+="Телеграм бот инициализация... ";
         bot.setChatID(chatID); // открываем чат
         bot.attach(newMsg); //подключаем функцию обработки сообщений
         bot.sendMessage("Cat Feeder 2 готов к работе!"); //отправляем сообщение о готовности
+        logStr+="Ок\n";
     } 
   
   //запуск сервисов
   // DNS
-  if (!MDNS.begin("catfeeder2")) Serial.println("Ошибка открытия MDNS!");   
+  if (!MDNS.begin("catfeeder2")) {Serial.println("Ошибка открытия MDNS!");logStr+="Ошибка открытия MDNS!\n";}   
   else
     Serial.println("mDNS запущен. имя хоста = http://catfeeder2.local");
+    logStr+="mDNS запущен. имя хоста = http://catfeeder2.local\n";
   server_init();//запуск веб сервера
   //Запуск сервиса DHT
   pinMode(DHT_PIN, INPUT);
+  logStr+="Запуск DHT... ";
+  Serial.println("Запуск DHT...");
   dht.begin();
- 
+  logStr+="Ок\n";
+
+  logStr+="Запуск Таймеров... ";
   //Установка значений таймеров
   reftime.setInterval(1000);//обновление времени на экране 1000 мс или 1 секунда
   refremain.setInterval(10000);//обновление времени на экране 30000 мс или 30 секунд
@@ -369,14 +377,19 @@ void setup()
   refchecktime.setInterval(500);//раз в полсекунды
   refscale.setInterval(10000);//взвешивание миски разв 10 секунд
   refsaveconfigdelay.stop();
+  logStr+="Ок\n";
+  logStr+="Настройка подсветки экрана... ";
   pinMode(TFT_BACKLIGHT,OUTPUT);//Переключаем пин подсветки на передачу данных
   analogWrite(TFT_BACKLIGHT,bright_level);
+  logStr+="Ок\n";
+  logStr+="Устройство готово к работе\n";
   }
 
 /**** ВТОРОЙ БЛОК ФУНКЦИЙ ****/
 //Подключение к Wifi успешно. Получен ip адрес
 void WiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info){
-  Serial.println("WiFi connected");
+  Serial.println("WiFi подключен");
+  logStr +="WiFi подключен. IP: ";
   IPAddress ip = WiFi.localIP();
   String ipString =String(ip[0]);
   for (byte octet = 1; octet < 4; ++octet) {
@@ -384,6 +397,8 @@ void WiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info){
   }
   lv_label_set_text(ui_status_ip,ipString.c_str());
   Serial.println("IP address: ");
+  logStr+=ipString;
+  logStr+="\n";
   Serial.println(ip);
   if (usemqtt) MQTT_init();//Подключение к MQTT брокеру
   
@@ -436,7 +451,7 @@ void loop()
         Serial.println(foodWeight); 
       }
     }
-  if (refsaveconfigdelay.isReady()) {refsaveconfigdelay.stop();saveConfiguration("/config.json");} //Обновляем экран
+  if (refsaveconfigdelay.isReady()) {refsaveconfigdelay.stop();logStr+="Сохранение настроек..."; saveConfiguration("/config.json") ;} //сохраняем настройки
   if (refchecktime.isReady()) //проверка таймера кормления
       {
         static byte prevMin = 0;

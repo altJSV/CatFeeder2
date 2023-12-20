@@ -58,6 +58,7 @@ void feed(uint16_t amount)
       Serial.printf("last=%d, cur=%d, error=%d /n",lastWeight,curWeight,errorCount);
       if (errorCount>3) //счетчик ошибок превысил пороговое значение
         {
+          logStr+="Корм не подается! Проверьте наличие корма в бункере и вращение шнека!\n";
           if (tg_bot) bot.sendMessage("Корм не подается! Проверьте наличие корма в бункере и вращение шнека!");
           lastFeed=ntp.hour()*60 + ntp.minute();
           lv_obj_del(ui_feedwindow);

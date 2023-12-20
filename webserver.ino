@@ -40,7 +40,9 @@ void server_init()
     {server.send(200, "text/html", "<meta http-equiv='refresh' content='1;url=/fileman'>Файл загружен. <a href=/fileman>Вернуться к списку</a>"); }, handleFileUpload); 
   server.onNotFound([](){if(!handleFileRead(server.uri())) server.send(404, "text/plain", "404 Файл не найден");});
    //запускаем сервер
+   logStr+="Запуск веб интерфейса... ";
    server.begin();
+   logStr+="Ок\n";
 }
 
 //Главная страница веб интерфейса
@@ -170,8 +172,6 @@ void handle_mqtt_setting()
   int statusCode;
   if (saveConfiguration("/config.json"))
     {
-      //page="{'Успешно':'Cохранено в память устройства.'}";
-      //statusCode = 200;
       server.sendHeader("Location", "/",true);   //редирект на главную
       server.send(302, "text/plane","");
     }
@@ -197,8 +197,6 @@ void handle_tg_setting()
     {
        server.sendHeader("Location", "/",true);   //редирект на главную
       server.send(302, "text/plane","");
-      //page="{'Успешно':'Cохранено в память устройства.'}";
-      //statusCode = 200;
     }
     else
     {
@@ -226,8 +224,6 @@ void handle_alarm_setting() {
     {
        server.sendHeader("Location", "/",true);   //редирект на главную
       server.send(302, "text/plane","");
-      //page="{'Успешно':'Cохранено в память устройства.'}";
-      //statusCode = 200;
     }
     else
     {
@@ -251,8 +247,6 @@ void handle_step_setting()
     {
       server.sendHeader("Location", "/",true);   //редирект на главную
       server.send(302, "text/plane","");
-      //page="{'Успешно':'Cохранено в память устройства.'}";
-      //statusCode = 200;
     }
     else
     {
@@ -262,9 +256,6 @@ void handle_step_setting()
         server.sendHeader("Access-Control-Allow-Origin", "*");
         server.send(statusCode, "application/json", page);
     }
-    //server.sendHeader("Access-Control-Allow-Origin", "*");
-    //server.send(statusCode, "application/json", page);
-    
 }
 
 //Выдача корма
@@ -275,8 +266,6 @@ void handle_feed()
   int statusCode;
   if (saveConfiguration("/config.json"))
     {
-      //page="{'Успешно':'Cохранено в память устройства.'}";
-      //statusCode = 200;
       lv_slider_set_value(ui_slider_feed_amount, feedAmountSet, LV_ANIM_OFF);
       lv_label_set_text_fmt(ui_label_feedAmount,"%d грамм", feedAmountSet);
       prefid(feedAmountSet);
@@ -291,8 +280,6 @@ void handle_feed()
         server.sendHeader("Access-Control-Allow-Origin", "*");
         server.send(statusCode, "application/json", page);
     }
-    //server.sendHeader("Access-Control-Allow-Origin", "*");
-    //server.send(statusCode, "application/json", page);
     
 }
 
@@ -319,7 +306,7 @@ String getContentType(String filename){
 }
 
 bool handleFileRead(String path){
-  Serial.printf_P(PSTR("handleFileRead: %s\r\n"), path.c_str());
+  Serial.printf_P(PSTR("Чтение файла: %s\r\n"), path.c_str());
   if(path.endsWith("/")) path += "";
   String contentType = getContentType(path);
   String pathWithGz = path + ".gz";
@@ -330,10 +317,10 @@ bool handleFileRead(String path){
     File file = FILESYS.open(path, "r");
     size_t sent = server.streamFile(file, contentType);
     file.close();
-		Serial.println("Read OK");
+		Serial.println("Успешно");
     return true;
   }
-	Serial.printf("Read failed '%s', type '%s'\n", path.c_str(), contentType.c_str()) ;
+	Serial.printf("Ошибка чтения '%s', тип '%s'\n", path.c_str(), contentType.c_str()) ;
   return false;
 }
 
@@ -347,13 +334,13 @@ void handleFileUpload(){
   {
     String filename = upload.filename;
     if(!filename.startsWith("/")) filename = "/"+filename;
-    Serial.printf_P(PSTR("handleFileUpload Name: %s\r\n"), filename.c_str());
+    Serial.printf_P(PSTR("Загружаем файл: %s\r\n"), filename.c_str());
     fsUploadFile = FILESYS.open(filename, "w");
     filename = String();
   } 
   else if(upload.status == UPLOAD_FILE_WRITE)
   {
-    Serial.printf_P(PSTR("handleFileUpload Data: %d\r\n"), upload.currentSize);
+    Serial.printf_P(PSTR("Загружено: %d\r\n"), upload.currentSize);
     if(fsUploadFile)
       fsUploadFile.write(upload.buf, upload.currentSize);
   } 
@@ -362,8 +349,8 @@ void handleFileUpload(){
     if(fsUploadFile)
       fsUploadFile.close();    
     OK = true;
-    Serial.printf_P(PSTR("handleFileUpload Size: %d\r\n"), upload.totalSize);
-    sprintf(tempBuf,"File upload [%s] %s\n", upload.filename.c_str(), (OK)? "OK" : "failed");
+    Serial.printf_P(PSTR("Всего: %d\r\n"), upload.totalSize);
+    sprintf(tempBuf,"Файл загружен [%s] %s\n", upload.filename.c_str(), (OK)? "OK" : "failed");
     logStr += tempBuf;
   }
 }
@@ -373,14 +360,14 @@ void handleFileDelete(){
   //if(server.args() == 0) return server.send(500, "text/plain", "BAD ARGS");  
 	String path = server.arg("file");
 	//String path = server.arg(0);
-  Serial.printf_P(PSTR("handleFileDelete: '%s'\r\n"),path.c_str());
+  Serial.printf_P(PSTR("Удаление файла: '%s'\r\n"),path.c_str());
   if(path == "/")
-    return server.send(500, "text/html", "<meta http-equiv='refresh' content='1;url=/main>Can't delete root directory. <a href=/main>Back to list</a>");
+    return server.send(500, "text/html", "<meta http-equiv='refresh' content='1;url=/main>Can't delete root directory. <a href=/fileman>Вернуться к списку</a>");
   if(!FILESYS.exists(path))
-    return server.send(200, "text/html", "<meta http-equiv='refresh' content='1;url=/main'>File not found. <a href=/main>Back to list</a>");
+    return server.send(200, "text/html", "<meta http-equiv='refresh' content='1;url=/main'>File not found. <a href=/fileman>Вернуться к списку</a>");
   FILESYS.remove(path);
-  server.send(200, "text/html", "<meta http-equiv='refresh' content='1;url=/main'>File deleted. <a href=/main>Back to list</a>");
-  logStr += "Deleted ";
+  server.send(200, "text/html", "<meta http-equiv='refresh' content='1;url=/main'>File deleted. <a href=/fileman>Вернуться к списку</a>");
+  logStr += "Удален ";
   logStr += path;
   logStr +="\n";
   path = String();
@@ -407,8 +394,8 @@ void handleFileCreate(){
 		Serial.printf("Create file [%s] failed\n",path.c_str());
     return server.send(500, "text/plain", "CREATE FAILED");
 	}
-  server.send(200, "text/html", "<meta http-equiv='refresh' content='1;url=/main'>File created. <a href=/main>Back to list</a>");
-  logStr += "Created ";
+  server.send(200, "text/html", "<meta http-equiv='refresh' content='1;url=/main'>File created. <a href=/fileman>Вернуться к списку</a>");
+  logStr += "Создан ";
   logStr += path;
   logStr +="\n";
   path = String();

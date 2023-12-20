@@ -7,15 +7,18 @@ void MQTT_init(){
   while (--tries && !client.connected()) 
   {   
      Serial.println("Подключение к MQTT брокеру...");
+     logStr+="Подключение к MQTT брокеру... ";
      if (client.connect("CatFeeder", mqtt_login.c_str(),mqtt_pass.c_str()))
        {
       Serial.println("Подключено");
+      logStr+="Подключено\n";
       client.publish("CatFeeder/status","Ok");
       client.subscribe("CatFeeder/feed");
       }
     else
     {
-      Serial.print("Ошибка подключения: ");
+      Serial.print("");
+      logStr+="Ошибка подключения: "+String(client.state())+"\n";
       Serial.println(client.state());
       }
   }

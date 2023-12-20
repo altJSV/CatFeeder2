@@ -28,6 +28,7 @@ bool loadConfiguration(const char *filename) {
   File file = SPIFFS.open(filename);
   if(!file){
         Serial.println("Ошибка открытия файла");
+        logStr+="Ошибка открытия файла\n";
         return false;
         }
   //выделяем память под json
@@ -37,6 +38,7 @@ bool loadConfiguration(const char *filename) {
   DeserializationError error = deserializeJson(doc1, file);
   if (error) {
               Serial.println(F("Ошибка чтения JSON. Загружена конфигурация по умолчанию"));
+              logStr+="Ошибка чтения JSON. Загружена конфигурация по умолчанию\n";
               file.close();
               return false;
               }
@@ -74,6 +76,7 @@ bool loadConfiguration(const char *filename) {
   }
   // Закрываем файл
   file.close();
+  logStr+="Ок\n";
   return true;
 }
 
@@ -87,6 +90,7 @@ bool saveConfiguration(const char *filename)
   File file = SPIFFS.open(filename, FILE_WRITE);
   if (!file) {
     Serial.println(F("Ошибка создания файла"));
+    logStr+="Ошибка создания файла\n";
     return false;
   }
 
@@ -122,12 +126,14 @@ bool saveConfiguration(const char *filename)
   // Сохраняем JSON в файл
   if (serializeJson(doc1, file) == 0) {
     Serial.println(F("Ошибка записи в файл"));
+    logStr+="Ошибка записи в файл\n";
     file.close();
     return false;
   }
   else
   {
     Serial.println("Файл записан!");
+    logStr+="Ок!\n";
     file.close();
     return true;
   }  

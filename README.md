@@ -1,5 +1,6 @@
 # CatFeeder 2
 ![Лого](/docs/logo.png)
+
 Полная переработка проекта [CatFeeder](https://github.com/altJSV/CatFeeder) под ESP32.
 
 ## Оглавление
