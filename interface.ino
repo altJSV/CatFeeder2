@@ -619,15 +619,17 @@ void draw_interface()
     //вес корма
     ui_food_weight = lv_label_create(ui_tab1);
     lv_label_set_text_fmt(ui_food_weight, LV_SYMBOL_WEIGHT" %d грамм",foodWeight); 
-    lv_obj_align(ui_food_weight, LV_ALIGN_TOP_RIGHT, 0, 70);
-
+    lv_obj_align_to(ui_food_weight, ui_remain, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 2);
+    lv_obj_add_flag(ui_food_weight, LV_OBJ_FLAG_HIDDEN);
+    //Температура и влажность
     ui_temp_label = lv_label_create(ui_tab1); //температура
     lv_label_set_text_fmt(ui_temp_label, LV_SYMBOL_TEMP" %.1f °С",temperature);
     lv_obj_align_to(ui_temp_label, ui_remain, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 2);
+    lv_obj_align(ui_temp_label, LV_ALIGN_TOP_RIGHT, 0, 70);
 
     ui_humid_label = lv_label_create(ui_tab1); //осталось времени до срабатывания таймера
     lv_label_set_text_fmt(ui_humid_label, LV_SYMBOL_HUMID" %.1f%%",humidity);
-    lv_obj_align_to(ui_humid_label, ui_food_weight, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 2);
+    lv_obj_align_to(ui_humid_label, ui_temp_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 2);
 
 
   //Вкладка таймеров
