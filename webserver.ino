@@ -357,9 +357,7 @@ void handleFileUpload(){
 
 void handleFileDelete(){
 	 if(!server.hasArg("file")) {server.send(500, "text/html", "<meta http-equiv='refresh' content='1;url=/main'>Bad arguments. <a href=/main>Back to list</a>"); return;}
-  //if(server.args() == 0) return server.send(500, "text/plain", "BAD ARGS");  
 	String path = server.arg("file");
-	//String path = server.arg(0);
   Serial.printf_P(PSTR("Удаление файла: '%s'\r\n"),path.c_str());
   if(path == "/")
     return server.send(500, "text/html", "<meta http-equiv='refresh' content='1;url=/main>Can't delete root directory. <a href=/fileman>Вернуться к списку</a>");
@@ -560,7 +558,7 @@ void handleFileman() {
   }
   page+="</table>";	
    // форма редактирования
-   page += "<div><form action='/fileman' method='get'><textarea class='textareas' name=editBlock id=editBlock rows='30' cols='60'>";
+   page += "<div><form action='/fileman' method='get'><textarea class='textareas' name=editBlock id=editBlock rows='15' cols='60'>";
   
    if(bMode = "edit")
    {
