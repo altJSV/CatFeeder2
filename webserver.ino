@@ -1,3 +1,6 @@
+/*
+Все что касается веб интерфейса и OTA обновлений
+*/
 //Инициализация веб интерфейса
 void server_init()
 {
@@ -288,7 +291,7 @@ void handle_feed()
 }
 
 void handleFileSysFormat() {
-	FILESYS.format();
+	SPIFFS.format();
 	server.send(200, "text/json", "format complete");
 }
 
@@ -314,11 +317,11 @@ bool handleFileRead(String path){
   if(path.endsWith("/")) path += "";
   String contentType = getContentType(path);
   String pathWithGz = path + ".gz";
-  if(FILESYS.exists(pathWithGz) || FILESYS.exists(path))
+  if(SPIFFS.exists(pathWithGz) || SPIFFS.exists(path))
 	{
-    if(FILESYS.exists(pathWithGz))
+    if(SPIFFS.exists(pathWithGz))
       path += ".gz";
-    File file = FILESYS.open(path, "r");
+    File file = SPIFFS.open(path, "r");
     size_t sent = server.streamFile(file, contentType);
     file.close();
 		Serial.println("Успешно");
@@ -339,7 +342,7 @@ void handleFileUpload(){
     String filename = upload.filename;
     if(!filename.startsWith("/")) filename = "/"+filename;
     Serial.printf_P(PSTR("Загружаем файл: %s\r\n"), filename.c_str());
-    fsUploadFile = FILESYS.open(filename, "w");
+    fsUploadFile = SPIFFS.open(filename, "w");
     filename = String();
   } 
   else if(upload.status == UPLOAD_FILE_WRITE)
@@ -360,15 +363,15 @@ void handleFileUpload(){
 }
 
 void handleFileDelete(){
-	 if(!server.hasArg("file")) {server.send(500, "text/html", "<meta http-equiv='refresh' content='1;url=/main'>Bad arguments. <a href=/main>Back to list</a>"); return;}
+	 if(!server.hasArg("file")) {server.send(500, "text/html", "<meta http-equiv='refresh' content='1;url=/fileman'>Неверный аргумент. <a href=/fileman>Вернуться к списку</a>"); return;}
 	String path = server.arg("file");
   Serial.printf_P(PSTR("Удаление файла: '%s'\r\n"),path.c_str());
   if(path == "/")
-    return server.send(500, "text/html", "<meta http-equiv='refresh' content='1;url=/main>Can't delete root directory. <a href=/fileman>Вернуться к списку</a>");
-  if(!FILESYS.exists(path))
-    return server.send(200, "text/html", "<meta http-equiv='refresh' content='1;url=/main'>File not found. <a href=/fileman>Вернуться к списку</a>");
-  FILESYS.remove(path);
-  server.send(200, "text/html", "<meta http-equiv='refresh' content='1;url=/main'>File deleted. <a href=/fileman>Вернуться к списку</a>");
+    return server.send(500, "text/html", "<meta http-equiv='refresh' content='1;url=/fileman>Невозможно удалить корневую папку. <a href=/fileman>Вернуться к списку</a>");
+  if(!SPIFFS.exists(path))
+    return server.send(200, "text/html", "<meta http-equiv='refresh' content='1;url=/fileman'>Файл не найден. <a href=/fileman>Вернуться к списку</a>");
+  SPIFFS.remove(path);
+  server.send(200, "text/html", "<meta http-equiv='refresh' content='1;url=/fileman'>Файл удален. <a href=/fileman>Вернуться к списку</a>");
   logStr += "Удален ";
   logStr += path;
   logStr +="\n";
@@ -382,10 +385,10 @@ void handleFileCreate(){
   Serial.printf_P(PSTR("handleFileCreate: %s\r\n"),path.c_str());
   if(path == "/")
     return server.send(500, "text/plain", "BAD PATH");
-  if(FILESYS.exists(path))
+  if(SPIFFS.exists(path))
     return server.send(500, "text/plain", "FILE EXISTS");
   if(!path.startsWith("/")) path = "/"+path;    // is this needed for LittleFS?
-  File file = FILESYS.open(path, "w");
+  File file = SPIFFS.open(path, "w");
   if(file)
 	{
     file.close();
@@ -396,7 +399,7 @@ void handleFileCreate(){
 		Serial.printf("Create file [%s] failed\n",path.c_str());
     return server.send(500, "text/plain", "CREATE FAILED");
 	}
-  server.send(200, "text/html", "<meta http-equiv='refresh' content='1;url=/main'>File created. <a href=/fileman>Вернуться к списку</a>");
+  server.send(200, "text/html", "<meta http-equiv='refresh' content='1;url=/fileman'>Файл создан. <a href=/fileman>Вернуться к списку</a>");
   logStr += "Создан ";
   logStr += path;
   logStr +="\n";
@@ -476,7 +479,7 @@ void handleFileman() {
   if(foundName && foundText && bMode == "save")
   {
     Serial.println("Сохраняем");
-    file = FILESYS.open(bName, "w");
+    file = SPIFFS.open(bName, "w");
     if(file)
     {
       file.write((uint8_t *)bText.c_str(), bText.length());
@@ -487,7 +490,7 @@ void handleFileman() {
     }  
   }
   
-  File dir = FILESYS.open(path.c_str());
+  File dir = SPIFFS.open(path.c_str());
   if(!dir)
 	  Serial.printf("Папка [%s]не найдена", path.c_str());
 	else if(!dir.isDirectory())
@@ -567,7 +570,7 @@ void handleFileman() {
    if(bMode = "edit")
    {
       // читаем файл и вставляем содержимое
-      file = FILESYS.open(bName.c_str(), "r");
+      file = SPIFFS.open(bName.c_str(), "r");
       if(file)
       {        
         Serial.printf("File read avail %i, ",file.available());
@@ -605,7 +608,7 @@ void handleFileman() {
 
 bool initFS(bool format = false, bool force = false) 
 {
- bool fsFound = FILESYS.begin();
+ bool fsFound = SPIFFS.begin();
    if(!fsFound) 
      Serial.println(F("No file system found. Please format it."));
      
@@ -616,9 +619,9 @@ bool initFS(bool format = false, bool force = false)
 	if(!fsFound || force) 
 	{      
     Serial.println(F("Форматирование ФС."));
-	  if(FILESYS.format()) 
+	  if(SPIFFS.format()) 
     {
-			  if(FILESYS.begin())
+			  if(SPIFFS.begin())
         {
           Serial.println(F("Форматирование окончено."));
           return true;

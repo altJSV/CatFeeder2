@@ -24,50 +24,8 @@
 #include "DHT.h"// библиотека для работы с dht сенсором
 #include "webpages.h" //различные скрипты html код
 
-
-
-//Объявление глобальных переменных и массивов
-uint8_t feedTime[4][4] = {
-  {7, 0, 1,20},       // часы, минуты, флаг активности таймераб размер порции
-  {12, 0, 1,30},
-  {17, 0, 1,30},
-  {21, 0, 1,20},
-};
-
-uint8_t feedAmountSet = 10; //размер порции на слайдере
-uint8_t feedAmount = 10; //размер порции на слайдере
-int8_t timezone = 3; //часовой пояс
-
-//Яркость подсветки экрана
-uint8_t bright_level=250; 
-
-//переключатель цветовой темы оформления
-bool theme = true;  //true темная тема, false светлая
-//включение телеграм бота
-bool tg_bot = true;
-
-uint16_t lastFeed=0; //время последнего кормления
-
-long tareWeight=0; //вес миски в граммах
-long foodWeight=0; //вес еды в миске
-float scales_param=191.7; //коэффициент взвешивания
-uint16_t scales_control_weight=30;
-
-//Параметры шагового двигателя
-uint8_t fwd_steps=60; //шагов вперед
-uint8_t bck_steps=20; //шагов назад
-float step_speed = 100; //скорость вращения
-
-//Температура и влажность
-float temperature;
-float humidity;
-float temp_cal=25.0; //температура калибровки тензодатчика
-
-#define FORMAT_SPIFFS_IF_FAILED true //форматирование файловой системы при ошибке инициализации
-#define CALIBRATION_FILE "/TouchCalData" 
 #define TFT_BACKLIGHT 27 //пин подсветки экрана
 // Определяем пин и тип датчика температуры DHT22
-
 #define DHT_PIN 14
 #define DHT_TYPE DHT22
 
@@ -90,16 +48,54 @@ float temp_cal=25.0; //температура калибровки тензод�
 #define STEPDRVTYPE 1 //0-MX1508,  1 - A4988
 
 //файловая система
-#define FILESYSTYPE 1 
-#ifndef WM_PORTALTIMEOUT
-  #define WM_PORTALTIMEOUT 180
-#endif
-#define FILESYS SPIFFS
-  char fsName[] = "SPIFFS";
-  String logStr = "Старт сессии:\n";
-char tempBuf[256];
-File fsUploadFile;
-bool fsFound = false;
+#define FORMAT_SPIFFS_IF_FAILED true //форматирование файловой системы при ошибке инициализации
+#define CALIBRATION_FILE "/TouchCalData" 
+
+
+//Объявление глобальных переменных и массивов
+//массив будильников
+uint8_t feedTime[4][4] = {
+  {7, 0, 1,20},       // часы, минуты, флаг активности таймера, размер порции
+  {12, 0, 1,30},
+  {17, 0, 1,30},
+  {21, 0, 1,20},
+};
+
+uint8_t feedAmountSet = 10; //размер порции на слайдере
+uint8_t feedAmount = 10; //размер порции на слайдере
+int8_t timezone = 3; //часовой пояс
+
+//Яркость подсветки экрана
+uint8_t bright_level=250; 
+
+//переключатель цветовой темы оформления
+bool theme = true;  //true темная тема, false светлая
+
+//включение телеграм бота
+bool tg_bot = true;
+
+uint16_t lastFeed=0; //время последнего кормления
+
+long tareWeight=0; //вес миски в граммах
+long foodWeight=0; //вес еды в миске
+float scales_param=191.7; //коэффициент взвешивания
+uint16_t scales_control_weight=30;
+
+//Параметры шагового двигателя
+uint8_t fwd_steps=60; //шагов вперед
+uint8_t bck_steps=20; //шагов назад
+float step_speed = 100; //скорость вращения
+
+//Температура и влажность
+float temperature;
+float humidity;
+float temp_cal=25.0; //температура калибровки тензодатчика
+
+String logStr = "Старт сессии:\n"; //лог действий в веб интерфейсе
+char tempBuf[256]; //буфер для работы с файлами
+File fsUploadFile; //буфер загрузки файла
+bool fsFound = false; //флаг того что ФС найдена
+
 void fsList(void);
 bool initFS(bool format, bool force);
 
@@ -110,7 +106,6 @@ static const uint16_t screenHeight = 240; //высота экрана
 
 //MQTT настройки
 bool usemqtt = true;
-
 
 //Иконки статуса
 String status_icons=LV_SYMBOL_WIFI;
@@ -186,13 +181,14 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
 GyverNTP ntp(timezone); //инициализация работы с ntp, в параметрах часовой пояс
 TFT_eSPI tft = TFT_eSPI(); // создаем экземпляр объекта TFT_eSPI
 WiFiManager wm; //экземпляр объекта wifi manager
-WiFiClient esp32Client;
-PubSubClient client(esp32Client);
+WiFiClient esp32Client; //обмен данными по wifi
+PubSubClient client(esp32Client); //инициализируем библиотеку mqtt
 WebServer server(80); //поднимаем веб сервер на 80 порту
 GyverHX711 sensor(16, 13, HX_GAIN64_A); //data,clock, коэффициент усиления
-FastBot bot (bot_token);
-DHT dht(DHT_PIN, DHT_TYPE); // Создаем объект DHT
+FastBot bot (bot_token); //инициализация библиотеки ТГ бота
+DHT dht(DHT_PIN, DHT_TYPE); // Датчик DHT
 
+//Инициализируем библиотеку шагового двигателяв зависимости от типа драйвера
 #if (STEPDRVTYPE==1)
 GStepper<STEPPER2WIRE> stepper(200, 32,33,25); //шагов на полный оборот двигателя, step, dir, en (смотреть схему в документации)
 #else
@@ -201,14 +197,15 @@ GStepper<STEPPER4WIRE> stepper(200, 26,25,32,33); //шагов на полный
 
 //Инициализация таймеров
 GTimer reftime(MS);//часы
-GTimer refscale(MS);//взвешивание миски
+GTimer reftemp(MS);//взвешивание миски
 GTimer reflvgl(MS); //обновление экранов LVGL 
 GTimer refremain(MS); //таймер обновления времени до кормления 
 GTimer reffeedtime(MS); //таймер времени до запуска кормления
 GTimer refchecktime(MS);//проверка срабатывания таймеров кормления
 GTimer refsaveconfigdelay(MS);//проверка срабатывания таймеров кормления 
+
 /***** БЛОК СЛУЖЕБНЫХ ФУНКЦИЙ ****/
-//Функция для вывода содержимого буфера на экран
+//Функция для вывода содержимого буфера экрана на дисплей
 void my_disp_flush( lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p )
   {
  uint32_t w = ( area->x2 - area->x1 + 1 );
@@ -241,6 +238,7 @@ void my_touchpad_read( lv_indev_drv_t * indev_driver, lv_indev_data_t * data )
     }
 }
 
+//калибровка тач скрина
 void touch_calibrate(bool rewrite)
 {
   uint16_t calData[5];
@@ -262,7 +260,7 @@ void touch_calibrate(bool rewrite)
     // настройки калибровки верны
     tft.setTouch(calData);
   } else {
-    // data not valid so recalibrate
+    // выводим интерфейс калибровки экрана
     tft.fillScreen(TFT_BLACK);
     tft.setCursor(20, 0);
     tft.setTextSize(1);
@@ -276,12 +274,12 @@ void touch_calibrate(bool rewrite)
     tft.setTextColor(TFT_GREEN, TFT_BLACK);
     tft.println("Screen calibration complete!");
 
-    // store data
+    // сохраняем данные
     File f = SPIFFS.open(CALIBRATION_FILE, "w");
     if (f) {
       f.write((const unsigned char *)calData, 14);
       f.close();
-      ESP.restart();
+      ESP.restart();//перезагрузка esp32
     }
   }
 }
@@ -291,11 +289,11 @@ void touch_calibrate(bool rewrite)
 void setup() 
 {
   Serial.begin( 115200 ); //открытие серийного порта
-  stepper.setRunMode(FOLLOW_POS);
-  stepper.setAcceleration(0);
+  stepper.setRunMode(FOLLOW_POS);//устанвливаем режим работы двигателя Следовать к позиции
+  stepper.setAcceleration(0);//отключаем ускорения двигателя
   //Настройки экрана  
   tft.init(); // инициализируем дисплей
-  tft.setRotation (1); 
+  tft.setRotation (1); //ориентация эрана горизонтальная
 
   //Инициализация файловой системы
  if (fs_init())
@@ -307,6 +305,7 @@ void setup()
         touch_calibrate(false);
   }
   logStr+="Запуск интерфейса... ";
+
   lv_init();//инициализация LVGL
   //Далее идут функции настройки LVGL 
   lv_disp_draw_buf_init( &draw_buf, buf, NULL, screenWidth * screenHeight / 6 ); //создаем буфер для вывода информации на экран
@@ -319,6 +318,7 @@ void setup()
   disp_drv.flush_cb = my_disp_flush; //функция которая выводит содержимое буфера в заданное место экрана. Указываем имя функции которую мы написали выше
   disp_drv.draw_buf = &draw_buf; //объявляем библиотеке, что содержимое буфера экрана находится в переменной draw_buf
   lv_disp_drv_register( &disp_drv ); //регистрируем драйвер дисплея и сохраняем его настройки
+  
   // Инициализируем драйвер тачскрина
   static lv_indev_drv_t indev_drv; //объявляем переменные для хранения драйвера тачскрина
   lv_indev_drv_init( &indev_drv ); // базовая инициализация драйвера
@@ -346,6 +346,7 @@ void setup()
         lv_obj_clear_flag(ui_status_icons, LV_OBJ_FLAG_HIDDEN); //Отображение иконки wifi
         lv_obj_clear_flag(ui_status_ip, LV_OBJ_FLAG_HIDDEN); //Показать IP адрес
         ntp.begin(); //сервис синхронизации времени
+       
         //подключаем Telegram бота
         logStr+="Телеграм бот инициализация... ";
         bot.setChatID(chatID); // открываем чат
@@ -361,6 +362,7 @@ void setup()
     Serial.println("mDNS запущен. имя хоста = http://catfeeder2.local");
     logStr+="mDNS запущен. имя хоста = http://catfeeder2.local\n";
   server_init();//запуск веб сервера
+  
   //Запуск сервиса DHT
   pinMode(DHT_PIN, INPUT);
   logStr+="Запуск DHT... ";
@@ -369,12 +371,13 @@ void setup()
   logStr+="Ок\n";
 
   logStr+="Запуск Таймеров... ";
+  
   //Установка значений таймеров
   reftime.setInterval(1000);//обновление времени на экране 1000 мс или 1 секунда
   refremain.setInterval(10000);//обновление времени на экране 30000 мс или 30 секунд
   reflvgl.setInterval(30);//обновление экрана LVGL 30 мс
   refchecktime.setInterval(500);//раз в полсекунды
-  refscale.setInterval(10000);//взвешивание миски разв 10 секунд
+  reftemp.setInterval(10000);//взвешивание миски разв 10 секунд
   refsaveconfigdelay.stop();
   logStr+="Ок\n";
   logStr+="Настройка подсветки экрана... ";
@@ -385,6 +388,7 @@ void setup()
   }
 
 /**** ВТОРОЙ БЛОК ФУНКЦИЙ ****/
+
 //Подключение к Wifi успешно. Получен ip адрес
 void WiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info){
   Serial.println("WiFi подключен");
@@ -431,24 +435,13 @@ void loop()
   if (reftime.isReady()) {if (lv_tabview_get_tab_act(ui_tabview)==0) {lv_label_set_text(ui_clock, ntp.timeString().c_str());}} //обновляем занчение часов на экране
   if (refremain.isReady()){feedRemain();} //Отображение времени оставшегося до кормления
   if (reffeedtime.isReady()) {reffeedtime.stop();feed(feedAmount);}//ожидание загрузки экрана кормления и запуск функции
-  //Измерение веса корма
-  if (refscale.isReady()) 
+  //Измерение температуры
+  if (reftemp.isReady()) 
     {
       temperature = dht.readTemperature();
       lv_label_set_text_fmt(ui_temp_label, LV_SYMBOL_TEMP" %.1f °С",temperature);
       humidity = dht.readHumidity();
       lv_label_set_text_fmt(ui_humid_label, LV_SYMBOL_HUMID" %.1f%%",humidity);
-      if (sensor.available()) 
-      {
-        foodWeight=sensor.read();
-        float correctionFactor = getCorrectionFactor(temperature);
-        foodWeight=(foodWeight-tareWeight);
-        Serial.println(correctionFactor);
-        Serial.println(foodWeight/scales_param);
-        foodWeight=(foodWeight*correctionFactor)/scales_param;
-        lv_label_set_text_fmt(ui_food_weight, LV_SYMBOL_WEIGHT" %d грамм",foodWeight);
-        Serial.println(foodWeight); 
-      }
     }
   if (refsaveconfigdelay.isReady()) {refsaveconfigdelay.stop();logStr+="Сохранение настроек..."; saveConfiguration("/config.json") ;} //сохраняем настройки
   if (refchecktime.isReady()) //проверка таймера кормления
