@@ -1,0 +1,5 @@
+secrets.h
+*.json
+*.cfg
+*.svd
+build
