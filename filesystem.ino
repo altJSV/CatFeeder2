@@ -48,6 +48,8 @@ bool loadConfiguration(const char *filename) {
   mqtt_port= (uint16_t)doc1["mqtt_port"];
   const char * mqtt_login_p= doc1["mqtt_login"];
   const char * mqtt_pass_p= doc1["mqtt_pass"];
+  const char * cmdTopic_p= doc1["cmdTopic"];
+  const char * statusTopic_p= doc1["statusTopic"];
   const char * bot_token_p= doc1["token"];
   const char * chatID_p= doc1["сhatid"];
   feedAmountSet = (uint8_t)doc1["feed_amount"];
@@ -61,6 +63,8 @@ bool loadConfiguration(const char *filename) {
   mqtt_server=mqtt_server_p;
   mqtt_login=mqtt_login_p;
   mqtt_pass=mqtt_pass_p;
+  cmdTopic=cmdTopic_p;
+  statusTopic=statusTopic_p;
   bot_token=bot_token_p;
   chatID=chatID_p;
   fwd_steps=(uint8_t)doc1["fwdsteps"];// шаги вперед
@@ -101,6 +105,8 @@ bool saveConfiguration(const char *filename)
   doc1["mqtt_port"] = mqtt_port; //порт mqtt брокера
   doc1["mqtt_login"] = mqtt_login;//mqtt логин
   doc1["mqtt_pass"] = mqtt_pass; //mqtt пароль
+  doc1["cmdTopic"] = cmdTopic;//топик управления
+  doc1["statusTopic"] = statusTopic; //топик статуса
   doc1["bright_level"] = bright_level; //яркость подсветки экрана
   doc1["feed_amount"] = feedAmountSet;// размер порции
   doc1["tare"] = tareWeight;// вес пустой миски

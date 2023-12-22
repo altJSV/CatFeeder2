@@ -110,8 +110,7 @@ static const uint16_t screenHeight = 240; //высота экрана
 
 //MQTT настройки
 bool usemqtt = true;
-String mqtt_server = "192.168.1.1"; //ip или http адрес
-int mqtt_port = 1883; //порт
+
 
 //Иконки статуса
 String status_icons=LV_SYMBOL_WIFI;

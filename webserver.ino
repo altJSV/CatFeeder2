@@ -124,9 +124,11 @@ void handle_main()
   page+="<br>&nbsp;&nbsp;MQTT: <span class='checkbox-apple'><input class='yep' type='checkbox' id='usemqtt' name='usemqtt' ";
   if (usemqtt) page+="checked";
   page+="><label for='usemqtt'></label></span><br><br>";
-  page+="&nbsp;&nbsp;<label>Сервер: <input class='inputs' type='text' name='server'  length=32 value='"+mqtt_server+"'>&nbsp;</label><br>";
+  page+="&nbsp;&nbsp;<label>Сервер: <input class='inputs' type='text' name='server'  length=32 value='"+mqtt_server+"'>&nbsp;</label>&nbsp;&nbsp;";
   page+="&nbsp;&nbsp;<label>Порт: <input class='inputs' name='port' type='number' length=6 value='"+String(mqtt_port)+"'>&nbsp;&nbsp;</label><br>";
-  page+="&nbsp;&nbsp;<label>Логин: <input class='inputs' type='text' name='login'  length=32 value='"+mqtt_login+"'>&nbsp;</label><br>&nbsp;&nbsp;<label>Пароль: <input class='inputs' name='pass' type='password' length=64 value='"+mqtt_pass+"'>&nbsp;&nbsp;</label><br>";
+  page+="&nbsp;&nbsp;<label>Логин: <input class='inputs' type='text' name='login'  length=32 value='"+mqtt_login+"'>&nbsp;</label>&nbsp;&nbsp;<label>Пароль: <input class='inputs' name='pass' type='password' length=64 value='"+mqtt_pass+"'>&nbsp;&nbsp;</label><br>";
+  page+="&nbsp;&nbsp;<label>Топик управления: <input class='inputs' type='text' name='cmd'  length=100 value='"+cmdTopic+"'>&nbsp;</label><br>";
+  page+="&nbsp;&nbsp;<label>Топик статуса: <input class='inputs' name='status' type='text' length=100 value='"+statusTopic+"'>&nbsp;&nbsp;</label><br>";
   page+="&nbsp;&nbsp;<input class='bigbuttons'  type='submit'></form>";
   page+="</div>";
   //telegram
@@ -167,6 +169,8 @@ void handle_mqtt_setting()
   mqtt_port = server.arg("port").toInt();
   mqtt_login = server.arg("login");
   mqtt_pass = server.arg("pass");
+  cmdTopic = server.arg("cmd");
+  statusTopic = server.arg("status");
   if (server.arg("usemqtt")=="on")  usemqtt=1; else usemqtt=0;
   String page;
   int statusCode;
