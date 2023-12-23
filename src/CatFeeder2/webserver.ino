@@ -221,6 +221,7 @@ void handle_esp_restart()
   {
     server.sendHeader("Location", "/",true);   //редирект на главную
     server.send(302, "text/plane","");
+    delay(1000);//задержка для перехода на главную страницу
     espRes=true; //устанавливаем флаг перезагрузки
   }
 
