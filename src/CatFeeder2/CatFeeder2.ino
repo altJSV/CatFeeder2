@@ -74,6 +74,9 @@ bool theme = true;  //true темная тема, false светлая
 //включение телеграм бота
 bool tg_bot = true;
 
+//флаг выполнения перезагрузки
+bool espRes=false;
+
 uint16_t lastFeed=0; //время последнего кормления
 
 long tareWeight=0; //вес миски в граммах
@@ -460,7 +463,11 @@ void loop()
   if (usemqtt) client.loop(); //чтение состояния топиков MQQT
   if (tg_bot) bot.tick(); //поддерживаем соединение с telegram ботом
   server.handleClient(); //обработка запросов web интерфейса
-
+  if (espRes)
+    {
+      bot.tickManual();
+      ESP.restart();
+    }
 }
 
 

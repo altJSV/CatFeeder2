@@ -12,6 +12,7 @@ void server_init()
    server.on("/alarmsetting",handle_alarm_setting);//сохранение настроек будильников
    server.on("/feed",handle_feed);//выдача корма
    server.on("/fileman", HTTP_GET, handleFileman);
+   server.on("/esprestart", handle_esp_restart);
   server.on("/update", HTTP_POST, []() {
     server.sendHeader("Connection", "close");
     server.send(200, "text/plain", (Update.hasError()) ? "FAIL" : "OK");
@@ -216,7 +217,16 @@ void handle_tg_setting()
     
 }
 
-void handle_alarm_setting() { 
+void handle_esp_restart()
+  {
+    server.sendHeader("Location", "/",true);   //редирект на главную
+    server.send(302, "text/plane","");
+    espRes=true; //устанавливаем флаг перезагрузки
+  }
+
+
+void handle_alarm_setting() 
+  { 
   String Time="";              
   for (byte i=0; i<4; i++){
     Time=server.arg("alarm"+String (i));
@@ -331,7 +341,7 @@ bool handleFileRead(String path){
   return false;
 }
 
-// uses edit mode uploader
+// загрузка файла в ФС
 void handleFileUpload(){
   bool OK = false;
   if(server.uri() != "/edit") return;
@@ -406,7 +416,7 @@ void handleFileCreate(){
   path = String();
 }
 
-// main page JS scripts 
+// скрипты файлового менеджера
 const char edit_script[] PROGMEM = R"rawliteral(
 <script>
   var fName; 
@@ -430,11 +440,11 @@ const char edit_script[] PROGMEM = R"rawliteral(
 </script>
 )rawliteral";
 
-// generate HTML for main page
+// Генерация страницы файлового менеджера
 void handleFileman() {
-  bool foundText = false;
-  bool foundName = false;
-  bool foundMode = false;
+  bool foundText = false; //найден текст
+  bool foundName = false; //найдено имя
+  bool foundMode = false; //режим поиска
   bool foundSaveBut = false;
   char filebuf[FILEBUFSIZ];
   char fileName[128];
@@ -449,7 +459,7 @@ void handleFileman() {
     bMode = server.arg("mode");
     if(bMode.length() > 0) 
       foundMode = true;
-    Serial.printf("Mode %s\n",bMode.c_str());
+    Serial.printf("Режим %s\n",bMode.c_str());
   }
   if(server.hasArg("dir"))
 		path = server.arg("dir");
@@ -596,7 +606,7 @@ void handleFileman() {
    page += "&nbsp;&nbsp;Лог: <form><textarea class='textareas' name=log id=log rows='5' cols='85'>";
    page += logStr;
    page += "</textarea></form>";
-   page += "<BR><a class='links' href='/fileman'>Перезагрузить страницу</a>";
+   page += "<BR><a class='links' href='/esprestart'>Перезагрузить устройство</a>";
    page += "</div>";
    page += "<a class='links' href='/'>На главную</a>";
    //Закрывающие теги

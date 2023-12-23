@@ -23,6 +23,7 @@ void newMsg(FB_msg& msg)
   if (command=="/lastfeed") {bot.sendMessage("Время последнего кормления: "+ String((uint16_t)lastFeed/60)+":"+String((uint8_t)lastFeed%60)+" Размер порции: "+String(feedAmount)+ " грамм");}
   if (command=="/temp") {bot.sendMessage("Температура: "+ String(temperature)+"°С Влажность: "+String(humidity)+"%");}
   if (command=="/commandlist") {tg_send_cmdhelp();}
+  if (command=="/restart") {espRes=true;}//перезагрузка устройства
   //Установка значений таймеров
   if (paramstart>1) //если был указан параметр
     {
@@ -101,6 +102,7 @@ void tg_send_cmdhelp()
 "/lastfeed - вывод времени последнего кормления\n"
 "/temp - вывод информации с DHT22\n"
 "/alarmN - управление таймером (N - номер таймера от 0 до 3. Параметры hh:mm - время срабатывания или val -  колличество корма\n"
+"/restart - перезагрузка устройства\n"
 "/commandlist - справочник по командам)";
 bot.sendMessage(help);
 }

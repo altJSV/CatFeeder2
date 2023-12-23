@@ -59,6 +59,7 @@ void MQTTcallback(char* topic, byte* payload, unsigned int length)
   if (command=="/tgbot") {tg_bot=!tg_bot; if (tg_bot) client.publish(statusTopic.c_str(),"Бот включен"); else client.publish(statusTopic.c_str(),"Бот отключен"); refsaveconfigdelay.setInterval(10000);} //Включаем и отключаем бота
   if (command=="/lastfeed") {out="Время последнего кормления: "+ String((uint16_t)lastFeed/60)+":"+String((uint8_t)lastFeed%60)+" Размер порции: "+String(feedAmount)+ " грамм";client.publish(statusTopic.c_str(),out.c_str());}
   if (command=="/temp") {out="Температура: "+ String(temperature)+"°С Влажность: "+String(humidity)+"%"; client.publish(statusTopic.c_str(),out.c_str());}
+  if (command=="/restart") {espRes=true;}//перезагрузка устройства
   //Установка значений таймеров
   if (paramstart>1) //если был указан параметр
     {

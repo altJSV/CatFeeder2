@@ -50,7 +50,6 @@ void feed(uint16_t amount)
       lv_bar_set_value(ui_feed_progress_bar, i, LV_ANIM_OFF); //заполняем шкалы прогресса
       lv_label_set_text_fmt(ui_feed_progress_bar_label,"%d%%", i);
       lv_event_send(ui_feed_progress_bar, LV_EVENT_REFRESH, NULL);
-      lv_timer_handler();
       oneRev();
       lastWeight=curWeight;//запоминаем предыдущее значение веса
       if (sensor.available()) {curWeight=sensor.read();} //вычисляем текущий вес
@@ -79,11 +78,13 @@ void oneRev() {
     {
       //ждем пока мотор придет к заданной позиции
     }
+    lv_timer_handler();//обновление содержимого экрана
     stepper.setTarget(fwd_steps,RELATIVE);//крутим вперед
   while (stepper.tick())
     {
       //ждем пока мотор придет к заданной позиции
     }
+    lv_timer_handler();//обновление содержимого экрана
   
 }
 
