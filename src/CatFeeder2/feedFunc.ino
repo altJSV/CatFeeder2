@@ -9,9 +9,9 @@ void prefid(uint8_t feedA)
     ui_feedwindow = lv_win_create(lv_scr_act(), 0);
     lv_obj_t * feed_windows_cont = lv_win_get_content(ui_feedwindow);  //контейнер для содержимого окна
     //голодный кот
-    lv_obj_t * img_feed_cat_gif = lv_gif_create(feed_windows_cont);
-    lv_gif_set_src(img_feed_cat_gif, &feed_cat_img);
-    lv_obj_align(img_feed_cat_gif, LV_ALIGN_CENTER,0,0);
+    lv_obj_t * img_feed_cat = lv_img_create(feed_windows_cont);
+    lv_img_set_src(img_feed_cat, &feed_cat_img);
+    lv_obj_align(img_feed_cat, LV_ALIGN_CENTER,0,0);
     //Полоса прогресса кормления
     ui_feed_progress_bar = lv_bar_create(feed_windows_cont);
     lv_obj_set_size(ui_feed_progress_bar, lv_pct(100), 40);

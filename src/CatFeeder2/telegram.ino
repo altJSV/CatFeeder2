@@ -18,14 +18,43 @@ void newMsg(FB_msg& msg)
                               } else prefid(feedAmountSet); //выдаем заранее установленное значение корма
                               
                         } 
+  if (command=="/brightlevel") {//установить яркость подсветки
+                          if (paramstart>0) //если был указан параметр
+                              {
+                              val=param.toInt();
+                              if (val>0 && val<=255) {bright_level=val; lv_slider_set_value(ui_set_panel_display_bright_slider, bright_level, LV_ANIM_OFF); lv_label_set_text_fmt(ui_backlight_slider_label, "%d%", (int)lv_slider_get_value(ui_set_panel_display_bright_slider));} 
+                              else {bot.sendMessage("Укажите значение в интервале от 1 до 255!");} //при корректном значении устанавливаем яркость подсветки
+                              } else bot.sendMessage("Укажите в качестве параметра значение от 1 до 255!");; //выдаем предупреждение в чат
+                        }
+  if (command=="/daytime") {//отключение подсветки экрана в ночное время
+                          if (paramstart>0) //если был указан параметр
+                              {
+                              int8_t paramtype=param.indexOf(":");
+                              if (paramtype>0)
+                                {
+                                  val=param.substring(0,paramtype).toInt();
+                                  val2=param.substring(paramtype+1).toInt();
+                                  if (val>=0 && val2>=0 && val<24 && val2<24 && val<val2)
+                                    {
+                                      daybegin=val;//начало дня
+                                      dayend=val2;//конец дня
+                                      lv_slider_set_left_value(ui_slider_day_time, daybegin, LV_ANIM_OFF);
+                                      lv_slider_set_value(ui_slider_day_time, dayend, LV_ANIM_OFF);
+                                      bot.sendMessage("Интервал дневного время установлен: с "+String(daybegin)+" до "+String(dayend)+" часов"); refsaveconfigdelay.setInterval(10000);
+                                    } else {bot.sendMessage("Неверные параметры команды");} 
+                              } else {
+                                daytime=!daytime;
+                                if (daytime) {bot.sendMessage("Отключение подсветки экрана ночью включено"); lv_obj_add_state(ui_set_display_daytime_switch, LV_STATE_CHECKED);} else {bot.sendMessage("Отключение подсветки экрана ночью выключено");lv_obj_clear_state(ui_set_display_daytime_switch, LV_STATE_CHECKED);} refsaveconfigdelay.setInterval(10000);} 
+                              }
+                        }  
   if (command=="/info") {tg_send_info();} //информация о системе
-  if (command=="/mqtt") {usemqtt=!usemqtt; if (usemqtt) bot.sendMessage("MQTT включен"); else bot.sendMessage("MQTT отключен"); refsaveconfigdelay.setInterval(10000);} //Включаем и отключаем mqtt
+  if (command=="/mqtt") {usemqtt=!usemqtt; if (usemqtt) {bot.sendMessage("MQTT включен");lv_obj_add_state(ui_set_panel_usemqtt_switch, LV_STATE_CHECKED);} else {bot.sendMessage("MQTT отключен");lv_obj_clear_state(ui_set_panel_usemqtt_switch, LV_STATE_CHECKED);} refsaveconfigdelay.setInterval(10000);} //Включаем и отключаем mqtt
   if (command=="/lastfeed") {bot.sendMessage("Время последнего кормления: "+ String((uint16_t)lastFeed/60)+":"+String((uint8_t)lastFeed%60)+" Размер порции: "+String(feedAmount)+ " грамм");}
   if (command=="/temp") {bot.sendMessage("Температура: "+ String(temperature)+"°С Влажность: "+String(humidity)+"%");}
   if (command=="/commandlist") {tg_send_cmdhelp();}
   if (command=="/restart") {espRes=true;}//перезагрузка устройства
   //Установка значений таймеров
-  if (paramstart>1) //если был указан параметр
+  if (paramstart>0) //если был указан параметр
     {
       int8_t paramtype=param.indexOf(":");
       if (paramtype>0)
@@ -99,6 +128,8 @@ void tg_send_cmdhelp()
 "/feed - выдать корм (параметр колличество 1-60 гр)\n"
 "/info - вывод информации о работе устройства\n"
 "/mqtt - включение и отключение mqtt\n"
+"/brightlevel - установить яркость подсветки экрана (параметр 0-255)\n"
+"/daytime - без параметра, включение и отключение снижения яркости экрана. Параметр вида hn:he установка дневного времени. hn-начало, he-конец\n"
 "/lastfeed - вывод времени последнего кормления\n"
 "/temp - вывод информации с DHT22\n"
 "/alarmN - управление таймером (N - номер таймера от 0 до 3. Параметры hh:mm - время срабатывания или val -  колличество корма\n"

@@ -9,6 +9,7 @@ void server_init()
    server.on("/mqttsetting",handle_mqtt_setting);//сохранение настроек mqtt
    server.on("/tgsetting",handle_tg_setting);//сохранение настроек телеграм бота
    server.on("/stepsetting",handle_step_setting);//сохранение настроек шагового двигателя
+   server.on("/brightsetting",handle_bright_setting);//сохранение настроек подсветки
    server.on("/alarmsetting",handle_alarm_setting);//сохранение настроек будильников
    server.on("/feed",handle_feed);//выдача корма
    server.on("/fileman", HTTP_GET, handleFileman);
@@ -90,6 +91,7 @@ void handle_main()
   page+="&nbsp;&nbsp;Размер порции: <span id='feedamount_text'>"+String(feedAmountSet)+"</span> грамм<br><center><input name='feedamount' id='feedamount' type='range' class='slider' min='0' max='60' step='1' onchange='showSliderValue(id)' value='"+String(feedAmountSet)+"'></center><br>";
   page+="&nbsp;&nbsp;<input class='bigbuttons'  type='submit' value='Выдать корм'></form>";
   page+="</div>";
+
   //Параметры шагового двигателя
   page+="<div class='contentblock'>";
   page+="<h2 class='title'><center>Параметры шагового двигателя</center></h2>";
@@ -97,6 +99,19 @@ void handle_main()
   page+="&nbsp;&nbsp;Шагов вперед: <span id='fwd_steps_text'>"+String(fwd_steps)+"</span><br><center><input name='fwd_steps' id='fwd_steps' type='range' class='slider' min='0' max='200' step='1' onchange='showSliderValue(id)' value='"+String(fwd_steps)+"'></center><br>";
   page+="&nbsp;&nbsp;Шагов назад: <span id='bck_steps_text'>"+String(bck_steps)+"</span> <br><center><input name='bck_steps' id='bck_steps' type='range' class='slider' min='0' max='200' step='1' onchange='showSliderValue(id)' value='"+String(bck_steps)+"'></center><br>";
   page+="&nbsp;&nbsp;Скорость вращения: <span id='step_speed_text'>"+String(step_speed)+"</span><br><center><input id='step_speed' name='step_speed' type='range' class='slider' min='0' max='400' step='1'  onchange='showSliderValue(id)' value='"+String(step_speed)+"'></center><br>";
+  page+="&nbsp;&nbsp;<input class='bigbuttons'  type='submit'></form>";
+  page+="</div>";
+
+  //Параметры подсветки экрана
+  page+="<div class='contentblock'>";
+  page+="<h2 class='title'><center>Параметры подсветки экрана</center></h2>";
+  page+="<form method='get' action='/brightsetting'>";
+  page+="&nbsp;&nbsp;Яркость подсветки: <span id='bright_level'>"+String(bright_level)+"</span><br><center><input name='bright' id='bright' type='range' class='slider' min='0' max='255' step='1' onchange='showSliderValue(id)' value='"+String(bright_level)+"'></center><br>";
+  page+="&nbsp;&nbsp;Отключение подсветки ночью: <span class='checkbox-apple'><input class='yep' type='checkbox' id='daytime' name='daytime' ";
+  if (daytime) page+="checked";
+  page+="><label for='daytime'></label></span><br><br>";
+  page+="&nbsp;&nbsp;Начало дня: &nbsp; <input class='inputs' name='daybegin' type='number' min='0' max='12' length='2' value='"+String(daybegin)+"'>&nbsp;";
+  page+="Конец дня: &nbsp; <input class='inputs' name='dayend' type='number' min='13' max='23' length='2' value='"+String(dayend)+"'><br>";
   page+="&nbsp;&nbsp;<input class='bigbuttons'  type='submit'></form>";
   page+="</div>";
 
@@ -259,6 +274,35 @@ void handle_step_setting()
   fwd_steps = server.arg("fwd_steps").toInt();;
   bck_steps = server.arg("bck_steps").toInt();
   step_speed = server.arg("step_speed").toInt();
+  String page;
+  int statusCode;
+  if (saveConfiguration("/config.json"))
+    {
+      server.sendHeader("Location", "/",true);   //редирект на главную
+      server.send(302, "text/plane","");
+    }
+    else
+    {
+    page = "{'Ошибка':'404 не найдено'}";
+        statusCode = 404;
+        Serial.println("Отправляем 404");
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(statusCode, "application/json", page);
+    }
+}
+
+//Применение настроек подсветки
+void handle_bright_setting()
+{
+  bright_level = server.arg("bright_level").toInt();;
+  daybegin = server.arg("daybegin").toInt();
+  dayend = server.arg("dayend").toInt();
+  lv_slider_set_value(ui_set_panel_display_bright_slider, bright_level, LV_ANIM_OFF); 
+  lv_label_set_text_fmt(ui_backlight_slider_label, "%d%", (int)lv_slider_get_value(ui_set_panel_display_bright_slider));
+  if (server.arg("daytime")=="on")  daytime=true; else daytime=false;
+  if (daytime){lv_obj_add_state(ui_set_display_daytime_switch, LV_STATE_CHECKED); } else{lv_obj_clear_state(ui_set_display_daytime_switch, LV_STATE_CHECKED);}
+  lv_slider_set_left_value(ui_slider_day_time, daybegin, LV_ANIM_OFF);
+  lv_slider_set_value(ui_slider_day_time, dayend, LV_ANIM_OFF);
   String page;
   int statusCode;
   if (saveConfiguration("/config.json"))

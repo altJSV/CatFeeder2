@@ -1,6 +1,32 @@
 /* В данном файле находятся функции работы с LVG.
 Отрисовка интерфейса, обработчики событий и т.п.
 */
+//Обработка изменения значения установки времени работы подсветки
+  static void slider_daytime_event(lv_event_t * e)
+  {
+    lv_obj_t * slider = lv_event_get_target(e);
+    daybegin = (int)lv_slider_get_left_value(slider);
+    dayend = (int)lv_slider_get_value(slider);
+    lv_label_set_text_fmt(slider_daytime_label, "%d - %d", daybegin, dayend);
+    lv_obj_align_to(slider_daytime_label, slider, LV_ALIGN_CENTER, 0, 0);
+    refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+  }  
+
+//Переключение ночного режима подсветки
+  static void daytime_switch_event(lv_event_t * e)
+  {
+    lv_obj_t * obj = lv_event_get_target(e);
+        if (lv_obj_has_state(obj, LV_STATE_CHECKED)) 
+        {
+          daytime=true;
+        }
+        else
+        {
+          daytime=false;
+        }
+  refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+  } 
+
 //Обработка изменения значения слайдера яркости экрана
   static void slider_brightness_event_cb(lv_event_t * e)
   {
@@ -831,10 +857,37 @@ void draw_interface()
       lv_label_set_text_fmt(ui_backlight_slider_label, "%d%", (int)lv_slider_get_value(ui_set_panel_display_bright_slider));
       lv_obj_align_to(ui_backlight_slider_label,ui_set_panel_display_bright_slider, LV_ALIGN_CENTER, 0, 0);
 
+      //Надпись установки дневного времени
+    lv_obj_t  * ui_label_daytime = lv_label_create(ui_set_panel_display); //создаем объект заголовок
+    lv_label_set_text(ui_label_daytime, "Дневная подсветка"); //сам текст для надписи
+    lv_obj_align_to(ui_label_daytime, ui_set_panel_display_bright_slider,  LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
+
+    //Переключатель подсветки в ночное время
+      ui_set_display_daytime_switch = lv_switch_create(ui_set_panel_display);
+      lv_obj_add_event_cb(ui_set_display_daytime_switch, daytime_switch_event, LV_EVENT_VALUE_CHANGED, NULL);
+      lv_obj_set_size(ui_set_display_daytime_switch,32,22);
+      lv_obj_align_to(ui_set_display_daytime_switch, ui_label_daytime, LV_ALIGN_OUT_RIGHT_MID, 30, 0); //положение на экране
+      
+      if (daytime){lv_obj_add_state(ui_set_display_daytime_switch, LV_STATE_CHECKED); } else{lv_obj_clear_state(ui_set_display_daytime_switch, LV_STATE_CHECKED);}
+    
+    ui_slider_day_time = lv_slider_create(ui_set_panel_display);
+    lv_obj_align_to(ui_slider_day_time, ui_label_daytime, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20);
+    lv_slider_set_range(ui_slider_day_time, 0 , 23);
+    lv_obj_set_size(ui_slider_day_time, lv_pct(100), 20);
+    lv_slider_set_mode(ui_slider_day_time, LV_SLIDER_MODE_RANGE);
+    lv_slider_set_left_value(ui_slider_day_time, daybegin, LV_ANIM_OFF);
+    lv_slider_set_value(ui_slider_day_time, dayend, LV_ANIM_OFF);
+    lv_obj_refresh_ext_draw_size(ui_slider_day_time);
+
+    lv_obj_add_event_cb(ui_slider_day_time, slider_daytime_event, LV_EVENT_VALUE_CHANGED, NULL);
+    slider_daytime_label = lv_label_create(ui_set_panel_display);
+    lv_label_set_text_fmt(slider_daytime_label, "%d - %d", daybegin, dayend);
+    lv_obj_align_to(slider_daytime_label, ui_slider_day_time, LV_ALIGN_CENTER, 0, 0);
+
       //Переключение светлой и темной темы
       lv_obj_t  * ui_set_display_theme_label = lv_label_create(ui_set_panel_display); //создаем объект заголовок
       lv_label_set_text(ui_set_display_theme_label, "Темная тема"); //текст
-      lv_obj_align_to(ui_set_display_theme_label,ui_set_panel_display_bright_slider, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
+      lv_obj_align_to(ui_set_display_theme_label, ui_slider_day_time, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
       //Переключатель светлой и тёмной темы
       lv_obj_t * ui_set_display_theme_switch = lv_switch_create(ui_set_panel_display);
       lv_obj_add_event_cb(ui_set_display_theme_switch, theme_switch_event, LV_EVENT_VALUE_CHANGED, NULL);

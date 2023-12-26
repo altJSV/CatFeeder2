@@ -60,6 +60,9 @@ bool loadConfiguration(const char *filename) {
   temp_cal = (float)doc1["temp_cal"];
   scales_param = (float)doc1["scales_param"];
   bright_level = (uint8_t)doc1["bright_level"];
+  daytime = (bool)doc1["daytime"];
+  daybegin = (uint8_t)doc1["daybegin"];
+  dayend = (uint8_t)doc1["dayend"];
   theme = (bool)doc1["theme"];
   tg_bot = (bool)doc1["tgbot"];
   usemqtt = (bool)doc1["use_mqtt"];
@@ -111,6 +114,9 @@ bool saveConfiguration(const char *filename)
   doc1["cmdTopic"] = cmdTopic;//топик управления
   doc1["statusTopic"] = statusTopic; //топик статуса
   doc1["bright_level"] = bright_level; //яркость подсветки экрана
+  doc1["daytime"] = daytime; //ночной режим подсветки
+  doc1["daybegin"] = daybegin; //начало дня
+  doc1["dayend"] = dayend; //конец дня
   doc1["feed_amount"] = feedAmountSet;// размер порции
   doc1["tare"] = tareWeight;// вес пустой миски
   doc1["scales_param"] = scales_param;// коэффициент калибровки весов

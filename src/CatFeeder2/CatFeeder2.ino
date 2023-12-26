@@ -66,7 +66,10 @@ uint8_t feedAmount = 10; //размер порции на слайдере
 int8_t timezone = 3; //часовой пояс
 
 //Яркость подсветки экрана
-uint8_t bright_level=250; 
+uint8_t bright_level=250;
+uint8_t daybegin=7; //начало дня
+uint8_t dayend=22; //конец дня
+bool daytime=true; //отключение подсветки в ночное время
 
 //переключатель цветовой темы оформления
 bool theme = true;  //true темная тема, false светлая
@@ -168,7 +171,11 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
       //Окно настроек
       static lv_obj_t * ui_set_panel_display_bright_slider; //слайдер изменения ярккости подсветки экрана
       static lv_obj_t * ui_backlight_slider_label; //текст на слайдере яркости подсветки экрана
+      static lv_obj_t * slider_daytime_label; //текст на слайдере подсветки в ночное время
+      static lv_obj_t * ui_set_display_daytime_switch; //переключатель подсветки в ночное время
+      static lv_obj_t * ui_slider_day_time; //слайдер установки дневного времени
       static lv_obj_t * ui_gmt_slider_label; //текст на слайдере изменения часового пояса
+      static lv_obj_t * ui_set_panel_usemqtt_switch; //переключатель mqtt
       static lv_obj_t * ui_set_panel_scales_coef_label; //коэффициент весов
 
       //Окно настроек шагового двигателя
@@ -457,6 +464,8 @@ void loop()
                   prevMin = ntp.minute();
                   for (byte i = 0; i < sizeof(feedTime) / 2; i++)    // проверяем массив с расписанием
                   if (feedTime[i][0] == ntp.hour() && feedTime[i][1] == ntp.minute() &&feedTime[i][2] == 1) prefid(feedTime[i][3]);
+                  //проверка включен ли ночной режим
+                  if (daytime) {if (ntp.hour()<daybegin || ntp.hour()>=dayend) analogWrite(TFT_BACKLIGHT,20);} else {analogWrite(TFT_BACKLIGHT,bright_level);}//гасим подсветку экрана
                 }
             }
   }
