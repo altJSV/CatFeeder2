@@ -14,8 +14,8 @@ void newMsg(FB_msg& msg)
                           if (paramstart>0) //если был указан параметр
                               {
                               val=param.toInt();
-                              if (val>0 && val<=60) prefid(val); else bot.sendMessage("Укажите значение в интервале от 1 до 60!"); //при корректном значении параметра выдаем установленное значение корма
-                              } else prefid(feedAmountSet); //выдаем заранее установленное значение корма
+                              if (val>0 && val<=60) prefid(val); else {bot.sendMessage("Укажите значение в интервале от 1 до 60!");} //при корректном значении параметра выдаем установленное значение корма
+                              } else {prefid(feedAmountSet);} //выдаем заранее установленное значение корма
                               
                         } 
   if (command=="/brightlevel") {//установить яркость подсветки
@@ -23,7 +23,7 @@ void newMsg(FB_msg& msg)
                               {
                               val=param.toInt();
                               if (val>0 && val<=255) {bright_level=val; lv_slider_set_value(ui_set_panel_display_bright_slider, bright_level, LV_ANIM_OFF); lv_label_set_text_fmt(ui_backlight_slider_label, "%d%", (int)lv_slider_get_value(ui_set_panel_display_bright_slider));} 
-                              else {bot.sendMessage("Укажите значение в интервале от 1 до 255!");} //при корректном значении устанавливаем яркость подсветки
+                              else {bot.sendMessage("Укажите значение в интервале от 1 до 255!");} //при коректном значении устанавливаем яркость подсветки
                               } else bot.sendMessage("Укажите в качестве параметра значение от 1 до 255!");; //выдаем предупреждение в чат
                         }
   if (command=="/daytime") {//отключение подсветки экрана в ночное время

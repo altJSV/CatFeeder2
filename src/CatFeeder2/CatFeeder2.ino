@@ -167,6 +167,10 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
       //Окно кормления
       static lv_obj_t * ui_feed_progress_bar; //полоса прогресса кормления
       static lv_obj_t * ui_feed_progress_bar_label; //текст на полосе прогресса кормления
+      static lv_obj_t * ui_feed_label_max; //целевое значение корма
+      static lv_obj_t * ui_feed_label_cur; //текущее значение корма
+      
+
 
       //Окно настроек
       static lv_obj_t * ui_set_panel_display_bright_slider; //слайдер изменения ярккости подсветки экрана
@@ -474,7 +478,11 @@ void loop()
                   for (byte i = 0; i < sizeof(feedTime) / 2; i++)    // проверяем массив с расписанием
                   if (feedTime[i][0] == ntp.hour() && feedTime[i][1] == ntp.minute() &&feedTime[i][2] == 1) prefid(feedTime[i][3]);
                   //проверка включен ли ночной режим
-                  if (daytime) {if (ntp.hour()>=daybegin && ntp.hour()<dayend) analogWrite(TFT_BACKLIGHT,bright_level);} else {analogWrite(TFT_BACKLIGHT,20);}//гасим подсветку экрана
+                  if (daytime) 
+                  {
+                    if (ntp.hour()>=daybegin && ntp.hour()<dayend) {analogWrite(TFT_BACKLIGHT,bright_level);} else {analogWrite(TFT_BACKLIGHT,20);} 
+                  } else {analogWrite(TFT_BACKLIGHT,bright_level);}
+                  
                 }
             }
   }

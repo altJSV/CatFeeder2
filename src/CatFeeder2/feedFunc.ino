@@ -24,6 +24,16 @@ void prefid(uint8_t feedA)
     lv_obj_set_style_text_color(ui_feed_progress_bar_label,lv_palette_main(LV_PALETTE_CYAN),0);
     lv_obj_align_to(ui_feed_progress_bar_label, ui_feed_progress_bar, LV_ALIGN_CENTER, 0, 0);
     
+    //Целевое значение корма
+    ui_feed_label_max = lv_label_create(feed_windows_cont);//метка названия панели
+    lv_obj_align(ui_feed_label_max,LV_ALIGN_TOP_RIGHT, 0, 20); //положение на экране
+    lv_label_set_text (ui_feed_label_max,"Цель:");//Пишем текст метки
+
+    //Выданное колличество корма
+    ui_feed_label_cur = lv_label_create(feed_windows_cont);//метка названия панели
+    lv_obj_align(ui_feed_label_cur,LV_ALIGN_TOP_LEFT, 0, 20); //положение на экране
+    lv_label_set_text (ui_feed_label_cur,"Выдано:");//Пишем текст метки
+
     reffeedtime.setInterval(100); //запускаем таймер для подгрузки окна кормления
 }
 
@@ -44,6 +54,7 @@ void feed(uint16_t amount)
   long lastWeight=0; //последнее значение веса
   uint8_t i=0; //значение на прогресс баре
   uint8_t errorCount=0;//счетчик ошибок
+  lv_label_set_text_fmt(ui_feed_label_max, "Цель: %d грамм", maxWeight/scales_param);
   while (curWeight<maxWeight)//основной цикл
     {
       i=map(curWeight,minWeight,maxWeight,0,100);
@@ -53,6 +64,7 @@ void feed(uint16_t amount)
       oneRev();
       lastWeight=curWeight;//запоминаем предыдущее значение веса
       if (sensor.available()) {curWeight=sensor.read();} //вычисляем текущий вес
+      lv_label_set_text_fmt(ui_feed_label_cur, "Выдано: %d грамм", curWeight/scales_param);
       if (curWeight<=lastWeight) errorCount+=1; else errorCount=0;//если текущий вес не изменился увеличиваем счетчик ошибок
       Serial.printf("last=%d, cur=%d, error=%d /n",lastWeight,curWeight,errorCount);
       if (errorCount>3) //счетчик ошибок превысил пороговое значение
