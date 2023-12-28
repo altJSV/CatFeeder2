@@ -53,6 +53,7 @@ void feed(uint16_t amount)
   long minWeight=curWeight;
   long lastWeight=0; //последнее значение веса
   uint8_t i=0; //значение на прогресс баре
+  uint8_t movements=0; //Отключаем движок через 10 оборотов
   uint8_t errorCount=0;//счетчик ошибок
   lv_label_set_text_fmt(ui_feed_label_max, "Цель: %d грамм", maxWeight/scales_param);
   while (curWeight<maxWeight)//основной цикл
@@ -62,15 +63,29 @@ void feed(uint16_t amount)
       lv_label_set_text_fmt(ui_feed_progress_bar_label,"%d%%", i);
       lv_event_send(ui_feed_progress_bar, LV_EVENT_REFRESH, NULL);
       oneRev();
+      movements+=1;
       lastWeight=curWeight;//запоминаем предыдущее значение веса
-      if (sensor.available()) {curWeight=sensor.read();} //вычисляем текущий вес
-      lv_label_set_text_fmt(ui_feed_label_cur, "Выдано: %d грамм", curWeight/scales_param);
+      while (sensor.available()==false)
+      {
+      Serial.println("Waiting...");
+      delay(1);
+      } 
+      curWeight=sensor.read(); //вычисляем текущий вес
+      //lv_label_set_text_fmt(ui_feed_label_cur, "Выдано: %d грамм", curWeight/scales_param);
       if (curWeight<=lastWeight) errorCount+=1; else errorCount=0;//если текущий вес не изменился увеличиваем счетчик ошибок
       Serial.printf("last=%d, cur=%d, error=%d /n",lastWeight,curWeight,errorCount);
-      if (errorCount>3) //счетчик ошибок превысил пороговое значение
+      if (errorCount>3 || movements>10) //счетчик ошибок превысил пороговое значение
         {
-          logStr+="Корм не подается! Проверьте наличие корма в бункере и вращение шнека!\n";
-          if (tg_bot) bot.sendMessage("Корм не подается! Проверьте наличие корма в бункере и вращение шнека!");
+          if (errorCount>3)
+          { 
+            logStr+="Корм не подается! Проверьте наличие корма в бункере и вращение шнека!\n";
+            if (tg_bot) bot.sendMessage("Корм не подается! Проверьте наличие корма в бункере и вращение шнека!");
+          }
+          else
+            {
+            logStr+="Достигнуто максимальное число оборотов шнека\n";
+            if (tg_bot) bot.sendMessage("Достигуто максимальное число оборотов шнека! Возможна проблема с весовой платформой или застреванием корма");
+            }  
           lastFeed=ntp.hour()*60 + ntp.minute();
           lv_obj_del(ui_feedwindow);
           stepper.disable();//выключаем двигатель
