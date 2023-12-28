@@ -40,7 +40,6 @@ void server_init()
   });
  
   server.on("/delete", HTTP_GET, handleFileDelete);
-  // second callback handles file uploads at that location
   server.on("/edit", HTTP_POST, []()
     {server.send(200, "text/html", "<meta http-equiv='refresh' content='1;url=/fileman'>Файл загружен. <a href=/fileman>Вернуться к списку</a>"); }, handleFileUpload); 
   server.onNotFound([](){if(!handleFileRead(server.uri())) server.send(404, "text/plain", "404 Файл не найден");});
@@ -190,7 +189,13 @@ void handle_mqtt_setting()
   mqtt_pass = server.arg("pass");
   cmdTopic = server.arg("cmd");
   statusTopic = server.arg("status");
-  if (server.arg("usemqtt")=="on")  usemqtt=1; else usemqtt=0;
+  if (server.arg("usemqtt")=="on")  {usemqtt=1;lv_obj_add_state(ui_set_panel_usemqtt_switch, LV_STATE_CHECKED);} else {usemqtt=0;lv_obj_clear_state(ui_set_panel_usemqtt_switch, LV_STATE_CHECKED);}
+  lv_textarea_set_text(ui_set_panel_mqtt_adress_ta, mqtt_server.c_str());
+  lv_textarea_set_text(ui_set_panel_mqtt_port_ta, String(mqtt_port).c_str());
+  lv_textarea_set_text(ui_set_panel_mqtt_login_ta, mqtt_login.c_str());
+  lv_textarea_set_text(ui_set_panel_mqtt_pass_ta, mqtt_pass.c_str());
+  lv_textarea_set_text(ui_set_panel_mqtt_control_ta, cmdTopic.c_str());
+  lv_textarea_set_text(ui_set_panel_mqtt_status_ta, statusTopic.c_str());
   String page;
   int statusCode;
   if (saveConfiguration("/config.json"))
@@ -213,7 +218,9 @@ void handle_tg_setting()
 {
   bot_token = server.arg("token");
   chatID = server.arg("chatid");
-  if (server.arg("tg_bot")=="on")  tg_bot=1; else tg_bot=0;
+  if (server.arg("tg_bot")=="on")  {tg_bot=1; lv_obj_add_state(ui_set_panel_telegram_bot_switch, LV_STATE_CHECKED);} else {tg_bot=0; lv_obj_clear_state(ui_set_panel_telegram_bot_switch, LV_STATE_CHECKED);}
+  lv_textarea_set_text(ui_set_panel_telegram_token_ta, bot_token.c_str());
+  lv_textarea_set_text(ui_set_panel_telegram_chatid_ta, chatID.c_str());
   String page;
   int statusCode;
   if (saveConfiguration("/config.json"))
@@ -251,6 +258,24 @@ void handle_alarm_setting()
      if (server.arg("alarmcheck"+String (i))=="on") feedTime[i][2]=1; else feedTime[i][2]=0;
      feedTime[i][3]=server.arg("asize"+String (i)).toInt(); 
   }
+  //изменяем значения элементов на дисплее
+  lv_roller_set_selected(ui_timer1_hour, feedTime[0][0], LV_ANIM_OFF);
+  lv_roller_set_selected(ui_timer1_minute, feedTime[0][1], LV_ANIM_OFF);
+  lv_spinbox_set_value(ui_timer1_amount,feedTime[0][3]);
+  if (feedTime[0][2]==1) {lv_obj_add_state(ui_timer1_check, LV_STATE_CHECKED);} else {lv_obj_clear_state(ui_timer1_check, LV_STATE_CHECKED);}
+  lv_roller_set_selected(ui_timer2_hour, feedTime[1][0], LV_ANIM_OFF);
+  lv_roller_set_selected(ui_timer2_minute, feedTime[1][1], LV_ANIM_OFF);
+  lv_spinbox_set_value(ui_timer2_amount,feedTime[1][3]);
+  if (feedTime[1][2]==1) {lv_obj_add_state(ui_timer2_check, LV_STATE_CHECKED);} else {lv_obj_clear_state(ui_timer2_check, LV_STATE_CHECKED);}
+  lv_roller_set_selected(ui_timer3_hour, feedTime[2][0], LV_ANIM_OFF);
+  lv_roller_set_selected(ui_timer3_minute, feedTime[2][1], LV_ANIM_OFF);
+  lv_spinbox_set_value(ui_timer3_amount,feedTime[2][3]);
+  if (feedTime[2][2]==1) {lv_obj_add_state(ui_timer3_check, LV_STATE_CHECKED);} else {lv_obj_clear_state(ui_timer3_check, LV_STATE_CHECKED);}
+  lv_roller_set_selected(ui_timer4_hour, feedTime[3][0], LV_ANIM_OFF);
+  lv_roller_set_selected(ui_timer4_minute, feedTime[3][1], LV_ANIM_OFF);
+  lv_spinbox_set_value(ui_timer4_amount,feedTime[3][3]);
+  if (feedTime[3][2]==1) {lv_obj_add_state(ui_timer4_check, LV_STATE_CHECKED);} else {lv_obj_clear_state(ui_timer4_check, LV_STATE_CHECKED);}
+//формируем ответ сервера
   String page;
   int statusCode;
   if (saveConfiguration("/config.json"))

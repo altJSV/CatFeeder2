@@ -105,6 +105,22 @@
   refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
   }
 
+  //Изменение значения командного топика mqtt в текстовом поле
+ static void mqttcommand_ta_event_cb(lv_event_t * e)
+  {
+  lv_obj_t * ta = lv_event_get_target(e);
+  cmdTopic=lv_textarea_get_text(ta);
+  refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+  }
+
+  //Изменение значения статусного топика mqtt в текстовом поле
+ static void mqttstatus_ta_event_cb(lv_event_t * e)
+  {
+  lv_obj_t * ta = lv_event_get_target(e);
+  statusTopic=lv_textarea_get_text(ta);
+  refsaveconfigdelay.setInterval(10000); //запускаем планировщик сохранения настроек
+  }
+
   //Изменение значения логина mqtt в текстовом поле
  static void mqttlogin_ta_event_cb(lv_event_t * e)
   {
@@ -951,12 +967,24 @@ void draw_interface()
       lv_obj_t * ui_set_panel_telegram_label = lv_label_create(ui_set_panel_telegram);//метка названия панели
       lv_obj_align(ui_set_panel_telegram_label, LV_ALIGN_TOP_MID, 0, 0); //Выравниваем по центру вверху
       lv_label_set_text (ui_set_panel_telegram_label,"Настройки Telegram бота");//Пишем текст метки
+      
+      //Переключатель бота заголовок
+      lv_obj_t  * ui_set_panel_telegram_bot_label = lv_label_create(ui_set_panel_telegram); //создаем объект заголовок
+      lv_label_set_text(ui_set_panel_telegram_bot_label, "Использовать бота"); //текст
+      lv_obj_align(ui_set_panel_telegram_bot_label, LV_ALIGN_TOP_LEFT, 0, 20); //положение на экране
+      //Переключатель бота
+      ui_set_panel_telegram_bot_switch = lv_switch_create(ui_set_panel_telegram);
+      lv_obj_add_event_cb(ui_set_panel_telegram_bot_switch, tg_bot_switch_event, LV_EVENT_VALUE_CHANGED, NULL);
+      lv_obj_set_size(ui_set_panel_telegram_bot_switch,32,22);
+      lv_obj_align_to(ui_set_panel_telegram_bot_switch, ui_set_panel_telegram_bot_label, LV_ALIGN_OUT_RIGHT_MID, 30, 0); //положение на экране
+      if (tg_bot){lv_obj_add_state(ui_set_panel_telegram_bot_switch, LV_STATE_CHECKED); } else{lv_obj_clear_state(ui_set_panel_telegram_bot_switch, LV_STATE_CHECKED);}
+
       //Надпись токен
       lv_obj_t * ui_set_panel_telegram_token_label = lv_label_create(ui_set_panel_telegram);//метка названия панели
-      lv_obj_align(ui_set_panel_telegram_token_label, LV_ALIGN_TOP_LEFT, 0, 20); //Выравниваем по левому краю
+      lv_obj_align_to(ui_set_panel_telegram_token_label, ui_set_panel_telegram_bot_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
       lv_label_set_text (ui_set_panel_telegram_token_label,"Токен:");//Пишем текст метки
       //Поле ввода токена
-      lv_obj_t * ui_set_panel_telegram_token_ta = lv_textarea_create(ui_set_panel_telegram);
+      ui_set_panel_telegram_token_ta = lv_textarea_create(ui_set_panel_telegram);
       lv_textarea_set_one_line(ui_set_panel_telegram_token_ta, true);
       lv_textarea_set_text(ui_set_panel_telegram_token_ta, bot_token.c_str());
       lv_obj_set_width(ui_set_panel_telegram_token_ta, lv_pct(100));
@@ -969,25 +997,13 @@ void draw_interface()
       lv_label_set_text (ui_set_panel_telegram_chatid_label,"ID чата:");//Пишем текст метки
       lv_obj_align_to(ui_set_panel_telegram_chatid_label,ui_set_panel_telegram_token_ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
       //Поле ввода ID
-      lv_obj_t * ui_set_panel_telegram_chatid_ta = lv_textarea_create(ui_set_panel_telegram);
+      ui_set_panel_telegram_chatid_ta = lv_textarea_create(ui_set_panel_telegram);
       lv_textarea_set_one_line(ui_set_panel_telegram_chatid_ta, true);
       lv_textarea_set_text(ui_set_panel_telegram_chatid_ta, chatID.c_str());
       lv_obj_set_width(ui_set_panel_telegram_chatid_ta, lv_pct(100));
       lv_obj_align_to(ui_set_panel_telegram_chatid_ta,ui_set_panel_telegram_chatid_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10); //положение на экране
       lv_obj_add_event_cb(ui_set_panel_telegram_chatid_ta, ta_event_cb, LV_EVENT_ALL, kb);
       lv_obj_add_event_cb(ui_set_panel_telegram_chatid_ta, chatid_ta_event_cb, LV_EVENT_READY, NULL);
-      
-      //Переключатель бота заголовок
-      lv_obj_t  * ui_set_panel_telegram_bot_label = lv_label_create(ui_set_panel_telegram); //создаем объект заголовок
-      lv_label_set_text(ui_set_panel_telegram_bot_label, "Использовать бота"); //текст
-      lv_obj_align_to(ui_set_panel_telegram_bot_label,ui_set_panel_telegram_chatid_ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
-      //Переключатель бота
-      lv_obj_t * ui_set_panel_telegram_bot_switch = lv_switch_create(ui_set_panel_telegram);
-      lv_obj_add_event_cb(ui_set_panel_telegram_bot_switch, tg_bot_switch_event, LV_EVENT_VALUE_CHANGED, NULL);
-      lv_obj_set_size(ui_set_panel_telegram_bot_switch,32,22);
-      lv_obj_align_to(ui_set_panel_telegram_bot_switch, ui_set_panel_telegram_bot_label, LV_ALIGN_OUT_RIGHT_MID, 30, 0); //положение на экране
-      
-      if (tg_bot){lv_obj_add_state(ui_set_panel_telegram_bot_switch, LV_STATE_CHECKED); } else{lv_obj_clear_state(ui_set_panel_telegram_bot_switch, LV_STATE_CHECKED);}
 
     lv_obj_set_size(ui_set_panel_telegram, lv_pct(100),LV_SIZE_CONTENT);
     //lv_obj_align_to(ui_set_panel_time, ui_set_panel_display, LV_ALIGN_OUT_BOTTOM_LEFT,0,5); 
@@ -1014,7 +1030,7 @@ void draw_interface()
       lv_obj_align_to(ui_set_panel_mqtt_adress_label, ui_set_panel_usemqtt_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
       lv_label_set_text (ui_set_panel_mqtt_adress_label,"Адрес брокера:");//Пишем текст метки
       //Поле ввода адреса
-      lv_obj_t * ui_set_panel_mqtt_adress_ta = lv_textarea_create(ui_set_panel_mqtt);
+      ui_set_panel_mqtt_adress_ta = lv_textarea_create(ui_set_panel_mqtt);
       lv_textarea_set_one_line(ui_set_panel_mqtt_adress_ta, true);
       lv_textarea_set_text(ui_set_panel_mqtt_adress_ta, mqtt_server.c_str());
       lv_obj_set_width(ui_set_panel_mqtt_adress_ta, lv_pct(100));
@@ -1027,7 +1043,7 @@ void draw_interface()
       lv_label_set_text (ui_set_panel_mqtt_port_label,"Порт:");//Пишем текст метки
       lv_obj_align_to(ui_set_panel_mqtt_port_label,ui_set_panel_mqtt_adress_ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
       //Поле ввода порта
-      lv_obj_t * ui_set_panel_mqtt_port_ta = lv_textarea_create(ui_set_panel_mqtt);
+      ui_set_panel_mqtt_port_ta = lv_textarea_create(ui_set_panel_mqtt);
       lv_textarea_set_one_line(ui_set_panel_mqtt_port_ta, true);
       lv_textarea_set_text(ui_set_panel_mqtt_port_ta, String(mqtt_port).c_str());
       lv_textarea_set_accepted_chars(ui_set_panel_mqtt_port_ta, "0123456789");
@@ -1041,7 +1057,7 @@ void draw_interface()
       lv_obj_align_to(ui_set_panel_mqtt_login_label, ui_set_panel_mqtt_port_ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
       lv_label_set_text (ui_set_panel_mqtt_login_label,"Логин:");//Пишем текст метки
       //Поле ввода логина
-      lv_obj_t * ui_set_panel_mqtt_login_ta = lv_textarea_create(ui_set_panel_mqtt);
+      ui_set_panel_mqtt_login_ta = lv_textarea_create(ui_set_panel_mqtt);
       lv_textarea_set_one_line(ui_set_panel_mqtt_login_ta, true);
       lv_textarea_set_text(ui_set_panel_mqtt_login_ta, mqtt_login.c_str());
       lv_obj_set_width(ui_set_panel_mqtt_login_ta, lv_pct(100));
@@ -1053,7 +1069,7 @@ void draw_interface()
       lv_obj_align_to(ui_set_panel_mqtt_pass_label, ui_set_panel_mqtt_login_ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
       lv_label_set_text (ui_set_panel_mqtt_pass_label,"Пароль:");//Пишем текст метки
       //Поле ввода пароля
-      lv_obj_t * ui_set_panel_mqtt_pass_ta = lv_textarea_create(ui_set_panel_mqtt);
+      ui_set_panel_mqtt_pass_ta = lv_textarea_create(ui_set_panel_mqtt);
       lv_textarea_set_one_line(ui_set_panel_mqtt_pass_ta, true);
       lv_textarea_set_password_mode(ui_set_panel_mqtt_pass_ta, true);
       lv_textarea_set_text(ui_set_panel_mqtt_pass_ta, mqtt_pass.c_str());
@@ -1061,7 +1077,32 @@ void draw_interface()
       lv_obj_align_to(ui_set_panel_mqtt_pass_ta,ui_set_panel_mqtt_pass_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10); //положение на экране
       lv_obj_add_event_cb(ui_set_panel_mqtt_pass_ta, ta_event_cb, LV_EVENT_ALL, kb);
       lv_obj_add_event_cb(ui_set_panel_mqtt_pass_ta, mqttpass_ta_event_cb, LV_EVENT_READY, NULL);
-      
+      //поле ввода топика управления
+      //Надпись Топик управления
+      lv_obj_t * ui_set_panel_mqtt_control_label = lv_label_create(ui_set_panel_mqtt);//метка названия панели
+      lv_obj_align_to(ui_set_panel_mqtt_control_label, ui_set_panel_mqtt_pass_ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
+      lv_label_set_text (ui_set_panel_mqtt_control_label,"Топик управления:");//Пишем текст метки
+      //Поле ввода топика
+      ui_set_panel_mqtt_control_ta = lv_textarea_create(ui_set_panel_mqtt);
+      lv_textarea_set_one_line(ui_set_panel_mqtt_control_ta, true);
+      lv_textarea_set_text(ui_set_panel_mqtt_control_ta, cmdTopic.c_str());
+      lv_obj_set_width(ui_set_panel_mqtt_control_ta, lv_pct(100));
+      lv_obj_align_to(ui_set_panel_mqtt_control_ta,ui_set_panel_mqtt_control_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10); //положение на экране
+      lv_obj_add_event_cb(ui_set_panel_mqtt_control_ta, ta_event_cb, LV_EVENT_ALL, kb);
+      lv_obj_add_event_cb(ui_set_panel_mqtt_control_ta, mqttcommand_ta_event_cb, LV_EVENT_READY, NULL);
+      //поле ввода топика статуса
+      //Надпись Топик статуса
+      lv_obj_t * ui_set_panel_mqtt_status_label = lv_label_create(ui_set_panel_mqtt);//метка названия панели
+      lv_obj_align_to(ui_set_panel_mqtt_status_label, ui_set_panel_mqtt_control_ta, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 20); //положение на экране
+      lv_label_set_text (ui_set_panel_mqtt_status_label,"Топик статуса:");//Пишем текст метки
+      //Поле ввода топика
+      ui_set_panel_mqtt_status_ta = lv_textarea_create(ui_set_panel_mqtt);
+      lv_textarea_set_one_line(ui_set_panel_mqtt_status_ta, true);
+      lv_textarea_set_text(ui_set_panel_mqtt_status_ta, statusTopic.c_str());
+      lv_obj_set_width(ui_set_panel_mqtt_status_ta, lv_pct(100));
+      lv_obj_align_to(ui_set_panel_mqtt_status_ta,ui_set_panel_mqtt_status_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 10); //положение на экране
+      lv_obj_add_event_cb(ui_set_panel_mqtt_status_ta, ta_event_cb, LV_EVENT_ALL, kb);
+      lv_obj_add_event_cb(ui_set_panel_mqtt_status_ta, mqttstatus_ta_event_cb, LV_EVENT_READY, NULL);
 
     lv_obj_set_size(ui_set_panel_mqtt, lv_pct(100),LV_SIZE_CONTENT);
   }

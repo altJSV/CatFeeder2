@@ -63,10 +63,10 @@ void newMsg(FB_msg& msg)
           val2=param.substring(paramtype+1).toInt();
           if (val>=0 && val2>=0 && val<24 && val2<60)
           {
-            if (command=="/alarm0") {feedTime[0][0]=val; feedTime[0][1]=val2; bot.sendMessage("Будильник 0 установлен на: "+String(feedTime[0][0])+":"+String(feedTime[0][1])); refsaveconfigdelay.setInterval(10000);}
-            if (command=="/alarm1") {feedTime[1][0]=val; feedTime[1][1]=val2; bot.sendMessage("Будильник 1 установлен на: "+String(feedTime[1][0])+":"+String(feedTime[1][1])); refsaveconfigdelay.setInterval(10000);}
-            if (command=="/alarm2") {feedTime[2][0]=val; feedTime[2][1]=val2; bot.sendMessage("Будильник 2 установлен на: "+String(feedTime[2][0])+":"+String(feedTime[2][1])); refsaveconfigdelay.setInterval(10000);}
-            if (command=="/alarm3") {feedTime[3][0]=val; feedTime[3][1]=val2; bot.sendMessage("Будильник 3 установлен на: "+String(feedTime[3][0])+":"+String(feedTime[3][1])); refsaveconfigdelay.setInterval(10000);}
+            if (command=="/alarm0") {feedTime[0][0]=val; feedTime[0][1]=val2; bot.sendMessage("Будильник 0 установлен на: "+String(feedTime[0][0])+":"+String(feedTime[0][1])); lv_roller_set_selected(ui_timer1_hour, feedTime[0][0], LV_ANIM_OFF); lv_roller_set_selected(ui_timer1_minute, feedTime[0][1], LV_ANIM_OFF); refsaveconfigdelay.setInterval(10000);}
+            if (command=="/alarm1") {feedTime[1][0]=val; feedTime[1][1]=val2; bot.sendMessage("Будильник 1 установлен на: "+String(feedTime[1][0])+":"+String(feedTime[1][1])); lv_roller_set_selected(ui_timer2_hour, feedTime[1][0], LV_ANIM_OFF); lv_roller_set_selected(ui_timer2_minute, feedTime[1][1], LV_ANIM_OFF); refsaveconfigdelay.setInterval(10000);}
+            if (command=="/alarm2") {feedTime[2][0]=val; feedTime[2][1]=val2; bot.sendMessage("Будильник 2 установлен на: "+String(feedTime[2][0])+":"+String(feedTime[2][1])); lv_roller_set_selected(ui_timer3_hour, feedTime[2][0], LV_ANIM_OFF); lv_roller_set_selected(ui_timer3_minute, feedTime[2][1], LV_ANIM_OFF); refsaveconfigdelay.setInterval(10000);}
+            if (command=="/alarm3") {feedTime[3][0]=val; feedTime[3][1]=val2; bot.sendMessage("Будильник 3 установлен на: "+String(feedTime[3][0])+":"+String(feedTime[3][1])); lv_roller_set_selected(ui_timer4_hour, feedTime[3][0], LV_ANIM_OFF); lv_roller_set_selected(ui_timer4_minute, feedTime[3][1], LV_ANIM_OFF); refsaveconfigdelay.setInterval(10000);}
           } else {bot.sendMessage("Установите значение в пределах 0:00 - 23:59!");}  
         }
         else
@@ -74,19 +74,19 @@ void newMsg(FB_msg& msg)
           val = param.toInt(); 
           if (val>1 && val<=60)
           {
-          if (command=="/alarm0") {feedTime[0][3]=val; bot.sendMessage("Колличество корма будильника 0 установлено на: "+String(feedTime[0][3])+" грамм"); refsaveconfigdelay.setInterval(10000);}
-          if (command=="/alarm1") {feedTime[1][3]=val; bot.sendMessage("Колличество корма будильника 1 установлено на: "+String(feedTime[1][3])+" грамм"); refsaveconfigdelay.setInterval(10000);}
-          if (command=="/alarm2") {feedTime[2][3]=val; bot.sendMessage("Колличество корма будильника 2 установлено на: "+String(feedTime[2][3])+" грамм"); refsaveconfigdelay.setInterval(10000);}
-          if (command=="/alarm3") {feedTime[3][3]=val; bot.sendMessage("Колличество корма будильника 3 установлено на: "+String(feedTime[3][3])+" грамм"); refsaveconfigdelay.setInterval(10000);}
+          if (command=="/alarm0") {feedTime[0][3]=val; bot.sendMessage("Количество корма будильника 0 установлено на: "+String(feedTime[0][3])+" грамм"); lv_spinbox_set_value(ui_timer1_amount,feedTime[0][3]); refsaveconfigdelay.setInterval(10000);}
+          if (command=="/alarm1") {feedTime[1][3]=val; bot.sendMessage("Количество корма будильника 1 установлено на: "+String(feedTime[1][3])+" грамм"); lv_spinbox_set_value(ui_timer2_amount,feedTime[1][3]); refsaveconfigdelay.setInterval(10000);}
+          if (command=="/alarm2") {feedTime[2][3]=val; bot.sendMessage("Количество корма будильника 2 установлено на: "+String(feedTime[2][3])+" грамм"); lv_spinbox_set_value(ui_timer3_amount,feedTime[2][3]); refsaveconfigdelay.setInterval(10000);}
+          if (command=="/alarm3") {feedTime[3][3]=val; bot.sendMessage("Количество корма будильника 3 установлено на: "+String(feedTime[3][3])+" грамм"); lv_spinbox_set_value(ui_timer4_amount,feedTime[3][3]); refsaveconfigdelay.setInterval(10000);}
           } else {bot.sendMessage("Укажите значение в интервале от 1 до 60!");}
         }
     }
     else
     {  
-      if (command=="/alarm0") {bool astate=feedTime[0][2]; astate=!astate; if (astate) bot.sendMessage("Таймер 0 включен"); else bot.sendMessage("Таймер 0 отключен"); feedTime[0][2]=astate; refsaveconfigdelay.setInterval(10000);} //Включаем и отключаем таймер 0
-      if (command=="/alarm1") {bool astate=feedTime[1][2]; astate=!astate; if (astate) bot.sendMessage("Таймер 1 включен"); else bot.sendMessage("Таймер 1 отключен"); feedTime[1][2]=astate; refsaveconfigdelay.setInterval(10000);} //Включаем и отключаем таймер 1
-      if (command=="/alarm2") {bool astate=feedTime[2][2]; astate=!astate; if (astate) bot.sendMessage("Таймер 2 включен"); else bot.sendMessage("Таймер 2 отключен"); feedTime[2][2]=astate; refsaveconfigdelay.setInterval(10000);} //Включаем и отключаем таймер 2
-      if (command=="/alarm3") {bool astate=feedTime[3][2]; astate=!astate; if (astate) bot.sendMessage("Таймер 3 включен"); else bot.sendMessage("Таймер 3 отключен"); feedTime[3][2]=astate; refsaveconfigdelay.setInterval(10000);} //Включаем и отключаем таймер 3
+      if (command=="/alarm0") {bool astate=feedTime[0][2]; astate=!astate; if (astate) {bot.sendMessage("Таймер 0 включен"); lv_obj_add_state(ui_timer1_check, LV_STATE_CHECKED);} else {bot.sendMessage("Таймер 0 отключен"); lv_obj_clear_state(ui_timer1_check, LV_STATE_CHECKED);} feedTime[0][2]=astate; refsaveconfigdelay.setInterval(10000);} //Включаем и отключаем таймер 0
+      if (command=="/alarm1") {bool astate=feedTime[1][2]; astate=!astate; if (astate) {bot.sendMessage("Таймер 1 включен"); lv_obj_add_state(ui_timer2_check, LV_STATE_CHECKED);} else {bot.sendMessage("Таймер 1 отключен"); lv_obj_clear_state(ui_timer2_check, LV_STATE_CHECKED);} feedTime[1][2]=astate; refsaveconfigdelay.setInterval(10000);} //Включаем и отключаем таймер 1
+      if (command=="/alarm2") {bool astate=feedTime[2][2]; astate=!astate; if (astate) {bot.sendMessage("Таймер 2 включен"); lv_obj_add_state(ui_timer3_check, LV_STATE_CHECKED);} else {bot.sendMessage("Таймер 2 отключен"); lv_obj_clear_state(ui_timer3_check, LV_STATE_CHECKED);} feedTime[2][2]=astate; refsaveconfigdelay.setInterval(10000);} //Включаем и отключаем таймер 2
+      if (command=="/alarm3") {bool astate=feedTime[3][2]; astate=!astate; if (astate) {bot.sendMessage("Таймер 3 включен"); lv_obj_add_state(ui_timer4_check, LV_STATE_CHECKED);} else {bot.sendMessage("Таймер 3 отключен"); lv_obj_clear_state(ui_timer4_check, LV_STATE_CHECKED);} feedTime[3][2]=astate; refsaveconfigdelay.setInterval(10000);} //Включаем и отключаем таймер 3
     }
   
   

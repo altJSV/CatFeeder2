@@ -176,6 +176,15 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
       static lv_obj_t * ui_slider_day_time; //слайдер установки дневного времени
       static lv_obj_t * ui_gmt_slider_label; //текст на слайдере изменения часового пояса
       static lv_obj_t * ui_set_panel_usemqtt_switch; //переключатель mqtt
+      static lv_obj_t * ui_set_panel_mqtt_adress_ta; //адрес mqtt
+      static lv_obj_t * ui_set_panel_mqtt_port_ta; //порт mqtt
+      static lv_obj_t * ui_set_panel_mqtt_login_ta; //логин mqtt
+      static lv_obj_t * ui_set_panel_mqtt_pass_ta; //пароль mqtt
+      static lv_obj_t * ui_set_panel_mqtt_control_ta; //топик управления mqtt
+      static lv_obj_t * ui_set_panel_mqtt_status_ta; //топик статуса mqtt
+      static lv_obj_t * ui_set_panel_telegram_token_ta; //токен телеграм бота
+      static lv_obj_t * ui_set_panel_telegram_chatid_ta; //чат ID телеграм бота
+      static lv_obj_t * ui_set_panel_telegram_bot_switch;//переключатель бота
       static lv_obj_t * ui_set_panel_scales_coef_label; //коэффициент весов
 
       //Окно настроек шагового двигателя
@@ -465,7 +474,7 @@ void loop()
                   for (byte i = 0; i < sizeof(feedTime) / 2; i++)    // проверяем массив с расписанием
                   if (feedTime[i][0] == ntp.hour() && feedTime[i][1] == ntp.minute() &&feedTime[i][2] == 1) prefid(feedTime[i][3]);
                   //проверка включен ли ночной режим
-                  if (daytime) {if (ntp.hour()<daybegin || ntp.hour()>=dayend) analogWrite(TFT_BACKLIGHT,20);} else {analogWrite(TFT_BACKLIGHT,bright_level);}//гасим подсветку экрана
+                  if (daytime) {if (ntp.hour()>=daybegin && ntp.hour()<dayend) analogWrite(TFT_BACKLIGHT,bright_level);} else {analogWrite(TFT_BACKLIGHT,20);}//гасим подсветку экрана
                 }
             }
   }
