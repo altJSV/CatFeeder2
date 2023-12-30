@@ -373,7 +373,7 @@ static void scales_weight_increment_event_cb(lv_event_t * e)
     lv_event_code_t code = lv_event_get_code(e);
     if(code == LV_EVENT_SHORT_CLICKED || code  == LV_EVENT_LONG_PRESSED_REPEAT) {
         lv_spinbox_increment(ui_scales_window_weight);
-        scales_control_weight=lv_spinbox_get_value(ui_scales_window_weight);
+        scales_control_weight=(float)lv_spinbox_get_value(ui_scales_window_weight);
     }
 }
 
@@ -382,7 +382,7 @@ static void scales_weight_decrement_event_cb(lv_event_t * e)
     lv_event_code_t code = lv_event_get_code(e);
     if(code == LV_EVENT_SHORT_CLICKED || code == LV_EVENT_LONG_PRESSED_REPEAT) {
         lv_spinbox_decrement(ui_scales_window_weight);
-         scales_control_weight=lv_spinbox_get_value(ui_scales_window_weight);
+         scales_control_weight=(float)lv_spinbox_get_value(ui_scales_window_weight);
     }
 }
 
@@ -403,14 +403,11 @@ static void event_scales_calibrate_param(lv_event_t * e)
   lv_event_code_t code = lv_event_get_code(e);
    if(code == LV_EVENT_CLICKED) 
     {
-      if (sensor.available()) 
-      {
-        curWeight=sensor.read();
-        curWeight-=tareWeight;
-        Serial.println(curWeight);
-        scales_param=curWeight/scales_control_weight;
+        sensor.setCalFactor(1.0);
+        sensor.refreshDataSet();
+        scales_param=sensor.getNewCalibration(scales_control_weight);
+        Serial.println(scales_param);
         lv_label_set_text_fmt (ui_scales_window_param_label,"К: %.2f   Температура: %.1f ºС",scales_param,temp_cal);//Пишем текст метки
-      }
     }
   }
 
@@ -551,12 +548,11 @@ static void event_scales_calibrate(lv_event_t * e)
   lv_event_code_t code = lv_event_get_code(e);
    if(code == LV_EVENT_CLICKED) 
    {
-    while (sensor.available()==false)
-    {
-      Serial.println("Waiting...");
-      delay(10);
-    }
-    tareWeight=sensor.read();
+    sensor.setTareOffset(0);
+    sensor.tare();
+    tareWeight=sensor.getTareOffset();
+    Serial.println(tareWeight);
+    sensor.setTareOffset(tareWeight);
     temp_cal = dht.readTemperature();
     window_scales_calibrate();
     }
@@ -665,7 +661,7 @@ void draw_interface()
     ui_food_weight = lv_label_create(ui_tab1);
     lv_label_set_text_fmt(ui_food_weight, LV_SYMBOL_WEIGHT" %d грамм",foodWeight); 
     lv_obj_align_to(ui_food_weight, ui_remain, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 2);
-    lv_obj_add_flag(ui_food_weight, LV_OBJ_FLAG_HIDDEN);
+    //lv_obj_add_flag(ui_food_weight, LV_OBJ_FLAG_HIDDEN);
     //Температура и влажность
     ui_temp_label = lv_label_create(ui_tab1); //температура
     lv_label_set_text_fmt(ui_temp_label, LV_SYMBOL_TEMP" %.1f °С",temperature);

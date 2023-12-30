@@ -15,7 +15,8 @@
 #include <WebServer.h> //веб интерфейс
 #include <WiFiUdp.h>//поддержка широковещательных рассылок
 #include <ArduinoJson.h>//библиотека для работы с файлами конфигурации
-#include <GyverHX711.h> //работа с цифровыми весами
+//#include <GyverHX711.h> //работа с цифровыми весами
+#include <HX711_ADC.h> //работа с цифровыми весами
 #include <FastBot.h> //Telegram бот
 #include <GyverStepper.h> //,библиотека шагового двигателя
 #include <Update.h> //OTA обновления
@@ -85,7 +86,7 @@ uint16_t lastFeed=0; //время последнего кормления
 long tareWeight=0; //вес миски в граммах
 long foodWeight=0; //вес еды в миске
 float scales_param=191.7; //коэффициент взвешивания
-uint16_t scales_control_weight=30;
+float scales_control_weight=30;
 
 //Параметры шагового двигателя
 uint8_t fwd_steps=60; //шагов вперед
@@ -207,7 +208,7 @@ WiFiManager wm; //экземпляр объекта wifi manager
 WiFiClient esp32Client; //обмен данными по wifi
 PubSubClient client(esp32Client); //инициализируем библиотеку mqtt
 WebServer server(80); //поднимаем веб сервер на 80 порту
-GyverHX711 sensor(16, 13, HX_GAIN64_A); //data,clock, коэффициент усиления
+HX711_ADC sensor(16, 13); //data,clock
 FastBot bot (bot_token); //инициализация библиотеки ТГ бота
 DHT dht(DHT_PIN, DHT_TYPE); // Датчик DHT
 
@@ -392,7 +393,13 @@ void setup()
   Serial.println("Запуск DHT...");
   dht.begin();
   logStr+="Ок\n";
-
+  logStr+="Запуск весов... ";
+  sensor.begin();
+  sensor.setTareOffset(tareWeight);
+  sensor.start(2000,false); //таймаут 2 секунды для запуска датчика и тарирование не выполняем
+  sensor.setCalFactor(scales_param); //калибровочный фактор
+  logStr+="Ок\n";
+  Serial.println("Запуск весов завершен");
   logStr+="Запуск Таймеров... ";
   
   //Установка значений таймеров
@@ -488,6 +495,9 @@ void loop()
   }
   if (usemqtt) client.loop(); //чтение состояния топиков MQQT
   if (tg_bot) bot.tick(); //поддерживаем соединение с telegram ботом
+  sensor.update(); 
+    float weight=sensor.getData();
+    lv_label_set_text_fmt(ui_food_weight, LV_SYMBOL_WEIGHT" %.2f грамм",weight);
   server.handleClient(); //обработка запросов web интерфейса
   if (espRes)
     {

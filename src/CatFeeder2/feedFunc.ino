@@ -41,21 +41,16 @@ void prefid(uint8_t feedA)
 //Запуск кормления
 void feed(uint16_t amount) 
 { 
-  while (sensor.available()==false)
-    {
-      Serial.println("Waiting...");
-      delay(10);
-    }
-  long  curWeight=sensor.read(); //вычисляем текущий вес
+  float  curWeight=sensor.getData(); //вычисляем текущий вес
   stepper.setMaxSpeed(step_speed);
   stepper.enable();
-  long maxWeight=curWeight+(amount*scales_param);//максимальный вес
-  long minWeight=curWeight;
-  long lastWeight=0; //последнее значение веса
+  float maxWeight=curWeight+amount;//максимальный вес
+  float minWeight=curWeight;
+  float lastWeight=0; //последнее значение веса
   uint8_t i=0; //значение на прогресс баре
-  uint8_t movements=0; //Отключаем движок через 10 оборотов
+  uint8_t movements=0; //обороты двигателя
   uint8_t errorCount=0;//счетчик ошибок
-  lv_label_set_text_fmt(ui_feed_label_max, "Цель: %d грамм", maxWeight/scales_param);
+  lv_label_set_text_fmt(ui_feed_label_max, "Цель: %d грамм", maxWeight);
   while (curWeight<maxWeight)//основной цикл
     {
       i=map(curWeight,minWeight,maxWeight,0,100);
@@ -65,12 +60,8 @@ void feed(uint16_t amount)
       oneRev();
       movements+=1;
       lastWeight=curWeight;//запоминаем предыдущее значение веса
-      while (sensor.available()==false)
-      {
-      Serial.println("Waiting...");
-      delay(1);
-      } 
-      curWeight=sensor.read(); //вычисляем текущий вес
+      while (sensor.updateAsync()==false);
+      curWeight=sensor.getData(); //вычисляем текущий вес
       //lv_label_set_text_fmt(ui_feed_label_cur, "Выдано: %d грамм", curWeight/scales_param);
       if (curWeight<=lastWeight) errorCount+=1; else errorCount=0;//если текущий вес не изменился увеличиваем счетчик ошибок
       Serial.printf("last=%d, cur=%d, error=%d /n",lastWeight,curWeight,errorCount);
@@ -81,7 +72,7 @@ void feed(uint16_t amount)
             logStr+="Корм не подается! Проверьте наличие корма в бункере и вращение шнека!\n";
             if (tg_bot) bot.sendMessage("Корм не подается! Проверьте наличие корма в бункере и вращение шнека!");
           }
-          else
+          else //Отключаем движок через 10 оборотов
             {
             logStr+="Достигнуто максимальное число оборотов шнека\n";
             if (tg_bot) bot.sendMessage("Достигуто максимальное число оборотов шнека! Возможна проблема с весовой платформой или застреванием корма");
