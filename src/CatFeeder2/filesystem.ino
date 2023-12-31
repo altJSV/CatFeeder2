@@ -35,7 +35,7 @@ bool loadConfiguration(const char *filename) {
         return false;
         }
   //выделяем память под json
-  StaticJsonDocument<2048> doc1;
+  StaticJsonDocument <2048> doc1;
 
   // читаем json
   DeserializationError error = deserializeJson(doc1, file);
@@ -76,6 +76,7 @@ bool loadConfiguration(const char *filename) {
   fwd_steps=(uint8_t)doc1["fwdsteps"];// шаги вперед
   bck_steps=(uint8_t)doc1["bcksteps"];// шагов назад
   step_speed=(float)doc1["stepspeed"];// скорость шагов в секунду
+  max_revs=(uint8_t)doc1["maxrev"];// // максимум оборотов до остановки двигателя
   //массив данных будильника
   for (byte i = 0; i < 4; i++) 
   {

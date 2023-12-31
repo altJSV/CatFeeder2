@@ -319,7 +319,7 @@ void handle_step_setting()
 //Применение настроек подсветки
 void handle_bright_setting()
 {
-  bright_level = server.arg("bright_level").toInt();;
+  bright_level = server.arg("bright").toInt();;
   daybegin = server.arg("daybegin").toInt();
   dayend = server.arg("dayend").toInt();
   lv_slider_set_value(ui_set_panel_display_bright_slider, bright_level, LV_ANIM_OFF); 
