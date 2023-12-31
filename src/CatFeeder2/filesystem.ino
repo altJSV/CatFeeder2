@@ -129,6 +129,7 @@ bool saveConfiguration(const char *filename)
   doc1["fwdsteps"] = fwd_steps;// шаги вперед
   doc1["bcksteps"] = bck_steps;// шагов назад
   doc1["stepspeed"] = step_speed;// скорость шагов в секунду
+  doc1["maxrev"] = max_revs;// максимум оборотов до остановки
   //массив данных будильника
   for (byte i = 0; i < 4; i++) 
   {

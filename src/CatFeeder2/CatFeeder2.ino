@@ -91,6 +91,7 @@ uint16_t scales_control_weight=30;
 uint8_t fwd_steps=60; //шагов вперед
 uint8_t bck_steps=20; //шагов назад
 float step_speed = 100; //скорость вращения
+uint8_t max_revs=16; //максимальное число оборотов до остановки мотора
 
 //Температура и влажность
 float temperature;
@@ -193,8 +194,10 @@ static lv_color_t buf[screenWidth * screenHeight / 6];
 
       //Окно настроек шагового двигателя
       static lv_obj_t * ui_step_window_fwdstep_slider_label;//надаись на слайдере шагов вперед
-      static lv_obj_t * ui_step_window_bckstep_slider_label;//надаись на слайдере шагов вперед
-      static lv_obj_t * ui_step_window_speed_slider_label;//надаись на слайдере шагов вперед
+      static lv_obj_t * ui_step_window_bckstep_slider_label;//надаись на слайдере шагов назад
+      static lv_obj_t * ui_step_window_speed_slider_label;//надаись на слайдере скорость вращения
+      static lv_obj_t * ui_step_window_maxrev_slider_label;//максимум оборотов до остановки
+
 
       //Окно калибровки весов
       static lv_obj_t * ui_scales_window_param_label; //калибровочный коэффициент

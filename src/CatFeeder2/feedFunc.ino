@@ -74,7 +74,7 @@ void feed(uint16_t amount)
       //lv_label_set_text_fmt(ui_feed_label_cur, "Выдано: %d грамм", curWeight/scales_param);
       if (curWeight<=lastWeight) errorCount+=1; else errorCount=0;//если текущий вес не изменился увеличиваем счетчик ошибок
       Serial.printf("last=%d, cur=%d, error=%d /n",lastWeight,curWeight,errorCount);
-      if (errorCount>3 || movements>10) //счетчик ошибок превысил пороговое значение
+      if (errorCount>3 || movements>max_revs) //счетчик ошибок превысил пороговое значение
         {
           if (errorCount>3)
           { 
