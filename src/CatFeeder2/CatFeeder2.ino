@@ -468,6 +468,13 @@ void loop()
       lv_label_set_text_fmt(ui_temp_label, LV_SYMBOL_TEMP" %.1f °С",temperature);
       humidity = dht.readHumidity();
       lv_label_set_text_fmt(ui_humid_label, LV_SYMBOL_HUMID" %.1f%%",humidity);
+      if (usemqtt)
+      {
+      String mqtemp=String (temperature);
+      String mqhumid=String (humidity);
+      client.publish(tempTopic.c_str(),mqtemp.c_str());
+      client.publish(humidTopic.c_str(),mqhumid.c_str());
+      }
     }
   if (refsaveconfigdelay.isReady()) {refsaveconfigdelay.stop();logStr+="Сохранение настроек..."; saveConfiguration("/config.json") ;} //сохраняем настройки
   if (refchecktime.isReady()) //проверка таймера кормления
