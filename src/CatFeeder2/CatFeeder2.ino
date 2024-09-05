@@ -113,6 +113,7 @@ static const uint16_t screenHeight = 240; //высота экрана
 
 //MQTT настройки
 bool usemqtt = true;
+long lastReconnectAttempt = 0;
 
 //Иконки статуса
 String status_icons=LV_SYMBOL_WIFI;
@@ -320,7 +321,7 @@ void setup()
   //Настройки экрана  
   tft.init(); // инициализируем дисплей
   tft.setRotation (1); //ориентация эрана горизонтальная
-
+  lastReconnectAttempt = 0; //таймер mqtt
   //Инициализация файловой системы
  if (fs_init())
   {
@@ -442,7 +443,23 @@ void loop()
     { 
       status_icons="";
       if (tg_bot) status_icons+=LV_SYMBOL_TELEGRAM" ";
-      if (client.connected()) status_icons+=LV_SYMBOL_LOOP" ";
+      if (client.connected()) 
+      {
+        status_icons+=LV_SYMBOL_LOOP" ";
+      }
+      else
+      {
+        long now = millis();
+      if (now - lastReconnectAttempt > 5000) 
+        {
+          lastReconnectAttempt = now;
+          if (client.connect(clientID.c_str(), mqtt_login.c_str(),mqtt_pass.c_str(),statusTopic.c_str(),1,true,"Клиент отключен"))
+            {
+              client.subscribe(cmdTopic.c_str());
+              lastReconnectAttempt = 0;
+            }
+        }
+      }  
       status_icons+=LV_SYMBOL_WIFI;
       lv_label_set_text(ui_status_icons, status_icons.c_str());
       lv_obj_clear_flag(ui_status_icons, LV_OBJ_FLAG_HIDDEN);

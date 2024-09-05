@@ -89,11 +89,6 @@ void feed(uint16_t amount)
           lastFeed=ntp.hour()*60 + ntp.minute();
           lv_obj_del(ui_feedwindow);
           stepper.disable();//выключаем двигатель
-          if (usemqtt)
-          {
-           String mqttfeed=String(ntp.hour())+ ":" +String (ntp.minute());; 
-          client.publish(feedTopic.c_str(),mqttfeed.c_str());
-          }
           return; //выход из цикла
         }
     }
@@ -102,11 +97,6 @@ void feed(uint16_t amount)
 
   lv_obj_del(ui_feedwindow);
   stepper.disable();//выключаем двигатель
-  if (usemqtt)
-          {
-           String mqttfeed=String(ntp.hour())+ ":" +String (ntp.minute()); 
-          client.publish(feedTopic.c_str(),mqttfeed.c_str());
-          }
 }
 
 //крутим мотор
